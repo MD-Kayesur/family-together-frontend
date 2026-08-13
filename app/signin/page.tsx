@@ -34,14 +34,14 @@ export default function SignInPage() {
   const handleQuickDemoLogin = (role: "owner" | "admin" | "member") => {
     setSelectedRole(role);
     if (role === "owner") {
-      setEmail("kayesur.rahman@familyroots.io");
-      setPassword("FamilyLegacy2026!");
+      setEmail("owner@gmail.com");
+      setPassword("owner");
     } else if (role === "admin") {
-      setEmail("sara.rahman@familyroots.io");
-      setPassword("AdminAccess2026!");
+      setEmail("admin@gmail.com");
+      setPassword("admin");
     } else {
-      setEmail("rafi.rahman@familyroots.io");
-      setPassword("MemberUser2026!");
+      setEmail("member@gmail.com");
+      setPassword("member");
     }
     setErrorMsg("");
     setSuccessMsg("Demo credentials loaded! Click 'Sign In to FamilyRoots' below.");
