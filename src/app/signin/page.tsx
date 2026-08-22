@@ -2,7 +2,7 @@
 
 import React, { useState } from "react";
 import Link from "next/link";
-import { useSignInMutation, useForgotPasswordMutation } from "@/lib/redux/api/authApi";
+import { useSignInMutation, useForgotPasswordMutation } from "@/redux/api/authApi";
 
 export default function SignInPage() {
   const [email, setEmail] = useState("");
@@ -134,33 +134,30 @@ export default function SignInPage() {
               <button
                 type="button"
                 onClick={() => handleQuickDemoLogin("owner")}
-                className={`px-2 py-1.5 rounded-lg text-xs font-medium border transition-all text-left truncate ${
-                  selectedRole === "owner"
+                className={`px-2 py-1.5 rounded-lg text-xs font-medium border transition-all text-left truncate ${selectedRole === "owner"
                     ? "bg-primary text-on-primary border-primary font-semibold"
                     : "bg-surface-container-lowest text-on-surface border-outline-variant hover:border-primary"
-                }`}
+                  }`}
               >
                 Kayesur (Owner)
               </button>
               <button
                 type="button"
                 onClick={() => handleQuickDemoLogin("admin")}
-                className={`px-2 py-1.5 rounded-lg text-xs font-medium border transition-all text-left truncate ${
-                  selectedRole === "admin"
+                className={`px-2 py-1.5 rounded-lg text-xs font-medium border transition-all text-left truncate ${selectedRole === "admin"
                     ? "bg-primary text-on-primary border-primary font-semibold"
                     : "bg-surface-container-lowest text-on-surface border-outline-variant hover:border-primary"
-                }`}
+                  }`}
               >
                 Sara (Admin)
               </button>
               <button
                 type="button"
                 onClick={() => handleQuickDemoLogin("member")}
-                className={`px-2 py-1.5 rounded-lg text-xs font-medium border transition-all text-left truncate ${
-                  selectedRole === "member"
+                className={`px-2 py-1.5 rounded-lg text-xs font-medium border transition-all text-left truncate ${selectedRole === "member"
                     ? "bg-primary text-on-primary border-primary font-semibold"
                     : "bg-surface-container-lowest text-on-surface border-outline-variant hover:border-primary"
-                }`}
+                  }`}
               >
                 Rafi (Member)
               </button>

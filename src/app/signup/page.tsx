@@ -2,7 +2,7 @@
 
 import React, { useState } from "react";
 import Link from "next/link";
-import { useSignUpMutation } from "@/lib/redux/api/authApi";
+import { useSignUpMutation } from "@/redux/api/authApi";
 
 export default function SignUpPage() {
   const [fullName, setFullName] = useState("");
