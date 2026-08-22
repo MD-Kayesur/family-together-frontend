@@ -2,17 +2,19 @@
 
 import React, { useState } from "react";
 import Link from "next/link";
+import { useSignUpMutation } from "@/lib/redux/api/authApi";
 
 export default function SignUpPage() {
   const [fullName, setFullName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
-  const [isLoading, setIsLoading] = useState(false);
   const [errorMsg, setErrorMsg] = useState("");
   const [successMsg, setSuccessMsg] = useState("");
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const [signUp, { isLoading: isSigningUp }] = useSignUpMutation();
+
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setErrorMsg("");
     setSuccessMsg("");
@@ -32,12 +34,17 @@ export default function SignUpPage() {
       return;
     }
 
-    setIsLoading(true);
-
-    setTimeout(() => {
-      setIsLoading(false);
-      setSuccessMsg(`Welcome to FamilyRoots, ${fullName.split(" ")[0]}! Your family sanctuary workspace is ready.`);
-    }, 1200);
+    try {
+      await signUp({
+        fullName: fullName.trim(),
+        email: email.trim(),
+        password,
+      }).unwrap();
+      setSuccessMsg(`Welcome to FamilyRoots, ${fullName.split(" ")[0]}! Account created successfully via RTK Query. Please sign in.`);
+    } catch (err: any) {
+      const msg = err?.data?.message || "Failed to create account. Email may already be registered.";
+      setErrorMsg(Array.isArray(msg) ? msg.join(", ") : msg);
+    }
   };
 
   return (
@@ -206,12 +213,12 @@ export default function SignUpPage() {
             <button
               className="w-full flex items-center justify-center py-3 px-4 bg-primary-container text-on-primary rounded-lg font-label-md text-label-md hover:bg-primary-fixed-variant hover:shadow-lg transition-all duration-200 focus:ring-2 focus:ring-offset-2 focus:ring-primary disabled:opacity-75 disabled:cursor-not-allowed cursor-pointer"
               type="submit"
-              disabled={isLoading}
+              disabled={isSigningUp}
             >
-              {isLoading ? (
+              {isSigningUp ? (
                 <span className="flex items-center gap-2">
                   <span className="h-4 w-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
-                  <span>Creating Sanctuary...</span>
+                  <span>Creating Sanctuary via RTK Query...</span>
                 </span>
               ) : (
                 <>

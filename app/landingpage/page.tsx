@@ -2,18 +2,16 @@
 
 import React, { useState } from "react";
 import Link from "next/link";
-import { useSignInMutation, useForgotPasswordMutation } from "@/lib/redux/api/authApi";
+import { navigate } from "next/dist/client/components/segment-cache/navigation";
 
 export default function SignInPage() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
   const [errorMsg, setErrorMsg] = useState("");
   const [successMsg, setSuccessMsg] = useState("");
   const [selectedRole, setSelectedRole] = useState<"owner" | "admin" | "member">("owner");
-
-  const [signIn, { isLoading: isSigningIn }] = useSignInMutation();
-  const [forgotPassword] = useForgotPasswordMutation();
 
   // Quick Demo credentials helper for Kayesur Rahman
   const handleQuickDemoLogin = (role: "owner" | "admin" | "member") => {
@@ -21,6 +19,8 @@ export default function SignInPage() {
     if (role === "owner") {
       setEmail("kayesur.rahman@familyroots.io");
       setPassword("FamilyLegacy2026!");
+
+    
     } else if (role === "admin") {
       setEmail("sara.rahman@familyroots.io");
       setPassword("AdminAccess2026!");
@@ -32,7 +32,7 @@ export default function SignInPage() {
     setSuccessMsg("Demo credentials loaded! Click 'Sign In' below.");
   };
 
-  const handleSubmit = async (e: React.FormEvent) => {
+  const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     setErrorMsg("");
     setSuccessMsg("");
@@ -47,17 +47,12 @@ export default function SignInPage() {
       return;
     }
 
-    try {
-      const response = await signIn({ email, password }).unwrap();
-      setSuccessMsg(`Welcome back, ${response.user?.fullName || "User"}! Authenticated via RTK Query.`);
-    } catch (err: any) {
-      const message = err?.data?.message
-        ? Array.isArray(err.data.message)
-          ? err.data.message.join(", ")
-          : err.data.message
-        : "Failed to sign in. Please check your credentials.";
-      setErrorMsg(message);
-    }
+    setIsLoading(true);
+
+    setTimeout(() => {
+      setIsLoading(false);
+      setSuccessMsg(`Welcome back! Authenticating your family tree access...`);
+    }, 1200);
   };
 
   return (
@@ -220,23 +215,11 @@ export default function SignInPage() {
                     Password
                   </label>
                   <a
-                    className="font-label-sm text-label-sm text-primary hover:text-primary-fixed-dim transition-colors cursor-pointer"
+                    className="font-label-sm text-label-sm text-primary hover:text-primary-fixed-dim transition-colors"
                     href="#forgot"
-                    onClick={async (e) => {
+                    onClick={(e) => {
                       e.preventDefault();
-                      setErrorMsg("");
-                      setSuccessMsg("");
-                      if (!email || !email.includes("@")) {
-                        setErrorMsg("Please enter your email address first to reset password.");
-                        return;
-                      }
-                      try {
-                        const res = await forgotPassword({ email }).unwrap();
-                        setSuccessMsg(res.message || "Password reset instructions sent to your email.");
-                      } catch (err: any) {
-                        const msg = err?.data?.message || "Could not process password reset request.";
-                        setErrorMsg(Array.isArray(msg) ? msg.join(", ") : msg);
-                      }
+                      setSuccessMsg("Password reset instructions sent to your email.");
                     }}
                   >
                     Forgot Password?
@@ -274,12 +257,12 @@ export default function SignInPage() {
             <button
               className="w-full flex items-center justify-center py-3 px-4 bg-primary-container text-on-primary rounded-lg font-label-md text-label-md hover:bg-primary-fixed-dim hover:text-on-primary-fixed-variant transition-all duration-200 focus:ring-2 focus:ring-offset-2 focus:ring-primary disabled:opacity-75 disabled:cursor-not-allowed cursor-pointer"
               type="submit"
-              disabled={isSigningIn}
+              disabled={isLoading}
             >
-              {isSigningIn ? (
+              {isLoading ? (
                 <span className="flex items-center gap-2">
                   <span className="h-4 w-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
-                  <span>Signing In via RTK Query...</span>
+                  <span>Signing In...</span>
                 </span>
               ) : (
                 "Sign In"
