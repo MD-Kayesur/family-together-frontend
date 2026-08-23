@@ -42,10 +42,10 @@ export default function SignUpPage() {
         email: email.trim(),
         password,
       }).unwrap();
-      setSuccessMsg(`Welcome to FamilyRoots, ${fullName.split(" ")[0]}! Account created successfully. Redirecting to sign in...`);
+      setSuccessMsg(`Welcome to FamilyRoots, ${fullName.split(" ")[0]}! Account created successfully. Redirecting to landing page...`);
       setTimeout(() => {
-        router.push("/signin");
-      }, 1000);
+        router.push("/landingpage");
+      }, 800);
     } catch (err: any) {
       const msg = err?.data?.message || "Failed to create account. Email may already be registered.";
       setErrorMsg(Array.isArray(msg) ? msg.join(", ") : msg);
