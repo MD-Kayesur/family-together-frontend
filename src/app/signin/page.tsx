@@ -10,27 +10,9 @@ export default function SignInPage() {
   const [showPassword, setShowPassword] = useState(false);
   const [errorMsg, setErrorMsg] = useState("");
   const [successMsg, setSuccessMsg] = useState("");
-  const [selectedRole, setSelectedRole] = useState<"owner" | "admin" | "member">("owner");
 
   const [signIn, { isLoading: isSigningIn }] = useSignInMutation();
   const [forgotPassword] = useForgotPasswordMutation();
-
-  // Quick Demo credentials helper for Kayesur Rahman
-  const handleQuickDemoLogin = (role: "owner" | "admin" | "member") => {
-    setSelectedRole(role);
-    if (role === "owner") {
-      setEmail("kayesur.rahman@familyroots.io");
-      setPassword("FamilyLegacy2026!");
-    } else if (role === "admin") {
-      setEmail("sara.rahman@familyroots.io");
-      setPassword("AdminAccess2026!");
-    } else {
-      setEmail("rafi.rahman@familyroots.io");
-      setPassword("MemberUser2026!");
-    }
-    setErrorMsg("");
-    setSuccessMsg("Demo credentials loaded! Click 'Sign In' below.");
-  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -119,49 +101,6 @@ export default function SignInPage() {
             <p className="font-body-md text-body-md text-on-surface-variant">
               Welcome back to your private sanctuary.
             </p>
-          </div>
-
-          {/* Quick Demo Preset Switcher */}
-          <div className="mb-5 p-3 rounded-xl bg-surface-container-high/60 border border-outline-variant/50 space-y-2">
-            <div className="flex items-center justify-between">
-              <span className="text-xs font-semibold text-primary flex items-center gap-1">
-                <span className="material-symbols-outlined text-[16px]">stars</span>
-                Quick Demo Presets
-              </span>
-              <span className="text-[11px] text-on-surface-variant">1-Click Test</span>
-            </div>
-            <div className="grid grid-cols-3 gap-2">
-              <button
-                type="button"
-                onClick={() => handleQuickDemoLogin("owner")}
-                className={`px-2 py-1.5 rounded-lg text-xs font-medium border transition-all text-left truncate ${selectedRole === "owner"
-                    ? "bg-primary text-on-primary border-primary font-semibold"
-                    : "bg-surface-container-lowest text-on-surface border-outline-variant hover:border-primary"
-                  }`}
-              >
-                Kayesur (Owner)
-              </button>
-              <button
-                type="button"
-                onClick={() => handleQuickDemoLogin("admin")}
-                className={`px-2 py-1.5 rounded-lg text-xs font-medium border transition-all text-left truncate ${selectedRole === "admin"
-                    ? "bg-primary text-on-primary border-primary font-semibold"
-                    : "bg-surface-container-lowest text-on-surface border-outline-variant hover:border-primary"
-                  }`}
-              >
-                Sara (Admin)
-              </button>
-              <button
-                type="button"
-                onClick={() => handleQuickDemoLogin("member")}
-                className={`px-2 py-1.5 rounded-lg text-xs font-medium border transition-all text-left truncate ${selectedRole === "member"
-                    ? "bg-primary text-on-primary border-primary font-semibold"
-                    : "bg-surface-container-lowest text-on-surface border-outline-variant hover:border-primary"
-                  }`}
-              >
-                Rafi (Member)
-              </button>
-            </div>
           </div>
 
           {/* Alert messages */}
