@@ -1,12 +1,14 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useSignInMutation, useForgotPasswordMutation } from "@/redux/api/authApi";
+import { useAppSelector } from "@/redux/store";
 
 export default function SignInPage() {
   const router = useRouter();
+  const { isAuthenticated } = useAppSelector((state) => state.auth);
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
@@ -15,6 +17,12 @@ export default function SignInPage() {
 
   const [signIn, { isLoading: isSigningIn }] = useSignInMutation();
   const [forgotPassword] = useForgotPasswordMutation();
+
+  useEffect(() => {
+    if (isAuthenticated) {
+      router.push("/dashboard");
+    }
+  }, [isAuthenticated, router]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -33,9 +41,9 @@ export default function SignInPage() {
 
     try {
       const response = await signIn({ email, password }).unwrap();
-      setSuccessMsg(`Welcome back, ${response.user?.fullName || "User"}! Redirecting to home...`);
+      setSuccessMsg(`Welcome back, ${response.user?.fullName || "User"}! Redirecting to dashboard...`);
       setTimeout(() => {
-        router.push("/");
+        router.push("/dashboard");
       }, 800);
     } catch (err: any) {
       const message = err?.data?.message

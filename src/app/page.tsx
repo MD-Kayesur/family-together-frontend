@@ -13,7 +13,8 @@ import {
   Heart,
   LogIn,
   LogOut,
-  UserCheck
+  UserCheck,
+  LayoutDashboard
 } from "lucide-react";
 import { useAppSelector } from "@/redux/store";
 import { useLogoutMutation } from "@/redux/api/authApi";
@@ -44,10 +45,19 @@ export default function Home() {
           <div className="flex items-center gap-3">
             {isAuthenticated && user ? (
               <div className="flex items-center gap-3">
+                <Link
+                  href="/dashboard"
+                  className="flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-semibold text-white bg-gradient-to-r from-amber-500 to-emerald-600 hover:from-amber-600 hover:to-emerald-700 shadow-md shadow-amber-500/20 transition-all hover:scale-[1.02]"
+                >
+                  <LayoutDashboard className="h-4 w-4" />
+                  <span>Dashboard</span>
+                </Link>
+
                 <div className="flex items-center gap-2 px-3 py-1.5 rounded-xl bg-emerald-500/10 border border-emerald-500/20 text-emerald-600 dark:text-emerald-400 text-xs font-semibold">
                   <UserCheck className="h-4 w-4" />
                   <span>{user.fullName}</span>
                 </div>
+
                 <button
                   type="button"
                   onClick={() => logout()}
@@ -102,10 +112,14 @@ export default function Home() {
         {/* Action Buttons */}
         <div className="flex flex-col sm:flex-row items-center gap-4 w-full sm:w-auto">
           {isAuthenticated && user ? (
-            <div className="px-8 py-4 rounded-2xl bg-gradient-to-r from-amber-500 via-amber-600 to-emerald-600 text-white font-bold text-base shadow-xl shadow-amber-500/25 flex items-center justify-center gap-3">
-              <UserCheck className="h-5 w-5" />
-              <span>Welcome Back, {user.fullName}!</span>
-            </div>
+            <Link
+              href="/dashboard"
+              className="w-full sm:w-auto px-8 py-4 rounded-2xl bg-gradient-to-r from-amber-500 via-amber-600 to-emerald-600 text-white font-bold text-base shadow-xl shadow-amber-500/25 hover:scale-[1.02] active:scale-[0.98] transition-all flex items-center justify-center gap-3"
+            >
+              <LayoutDashboard className="h-5 w-5" />
+              <span>Go to Your Dashboard</span>
+              <ArrowRight className="h-5 w-5" />
+            </Link>
           ) : (
             <Link
               href="/signin"
