@@ -17,9 +17,16 @@ import {
   AlertCircle,
   XCircle
 } from "lucide-react";
+import { useAppSelector } from "@/redux/store";
+import SuperAdminDashboardPage from "./super/page";
 
 export default function AdminDashboardPage() {
+  const { user } = useAppSelector((state) => state.auth);
   const [filterRole, setFilterRole] = useState<string>("ALL");
+
+  if (user?.role?.toUpperCase() === "SUPER_ADMIN") {
+    return <SuperAdminDashboardPage />;
+  }
 
   const recentUsers = [
     {

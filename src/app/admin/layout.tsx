@@ -134,7 +134,19 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
       <div className="flex-1 flex flex-col min-w-0">
         {/* Top Header Bar */}
         <header className="h-16 bg-white border-b border-slate-200 px-8 flex items-center justify-between sticky top-0 z-40">
-          <h1 className="font-bold text-lg text-slate-800">Admin Control Center</h1>
+          <div className="flex items-center gap-3">
+            <h1 className="font-bold text-lg text-slate-800">Admin Control Center</h1>
+            {user.role?.toUpperCase() === "SUPER_ADMIN" && (
+              <span className="px-2.5 py-0.5 rounded text-[10px] font-extrabold bg-rose-100 text-rose-600 uppercase tracking-wider">
+                SUPER ADMIN
+              </span>
+            )}
+            {user.role?.toUpperCase() === "ADMIN" && (
+              <span className="px-2.5 py-0.5 rounded text-[10px] font-extrabold bg-indigo-100 text-indigo-600 uppercase tracking-wider">
+                ADMIN
+              </span>
+            )}
+          </div>
 
           <div className="flex items-center gap-4">
             {/* Search Input */}
@@ -142,7 +154,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
               <Search className="h-4 w-4 absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
               <input
                 type="text"
-                placeholder="Search..."
+                placeholder="Search logs, users..."
                 className="w-full pl-9 pr-4 py-1.5 bg-slate-100 border border-slate-200 rounded-full text-xs text-slate-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 placeholder:text-slate-400 transition-all"
               />
             </div>
