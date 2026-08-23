@@ -30,8 +30,9 @@ import {
 } from "lucide-react";
 import { useAppSelector } from "@/redux/store";
 import { useLogoutMutation } from "@/redux/api/authApi";
+import ViewerDashboardPage from "./viewer/page";
 
-export default function OwnerDashboardPage() {
+export default function DashboardPage() {
   const pathname = usePathname();
   const router = useRouter();
   const { user, isAuthenticated } = useAppSelector((state) => state.auth);
@@ -62,6 +63,11 @@ export default function OwnerDashboardPage() {
         </div>
       </div>
     );
+  }
+
+  // Render Viewer Sanctuary Dashboard for VIEWER role
+  if (user?.role?.toUpperCase() === "VIEWER") {
+    return <ViewerDashboardPage />;
   }
 
   const familyName = user.fullName.split(" ").slice(-1)[0] || "Rahman";
