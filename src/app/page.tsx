@@ -18,10 +18,14 @@ import {
 } from "lucide-react";
 import { useAppSelector } from "@/redux/store";
 import { useLogoutMutation } from "@/redux/api/authApi";
+import { getDashboardRouteByRole, getDashboardLabelByRole } from "@/lib/utils/roleUtils";
 
 export default function Home() {
   const { user, isAuthenticated } = useAppSelector((state) => state.auth);
   const [logout] = useLogoutMutation();
+
+  const dashboardHref = getDashboardRouteByRole(user?.role);
+  const dashboardLabel = getDashboardLabelByRole(user?.role);
 
   return (
     <div className="min-h-screen flex flex-col bg-stone-50 dark:bg-stone-950 text-stone-900 dark:text-stone-100 bg-mesh-amber selection:bg-amber-500 selection:text-white">
@@ -46,11 +50,11 @@ export default function Home() {
             {isAuthenticated && user ? (
               <div className="flex items-center gap-3">
                 <Link
-                  href="/dashboard"
+                  href={dashboardHref}
                   className="flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-semibold text-white bg-gradient-to-r from-amber-500 to-emerald-600 hover:from-amber-600 hover:to-emerald-700 shadow-md shadow-amber-500/20 transition-all hover:scale-[1.02]"
                 >
                   <LayoutDashboard className="h-4 w-4" />
-                  <span>Dashboard</span>
+                  <span>{dashboardLabel}</span>
                 </Link>
 
                 <div className="flex items-center gap-2 px-3 py-1.5 rounded-xl bg-emerald-500/10 border border-emerald-500/20 text-emerald-600 dark:text-emerald-400 text-xs font-semibold">
@@ -113,11 +117,11 @@ export default function Home() {
         <div className="flex flex-col sm:flex-row items-center gap-4 w-full sm:w-auto">
           {isAuthenticated && user ? (
             <Link
-              href="/dashboard"
+              href={dashboardHref}
               className="w-full sm:w-auto px-8 py-4 rounded-2xl bg-gradient-to-r from-amber-500 via-amber-600 to-emerald-600 text-white font-bold text-base shadow-xl shadow-amber-500/25 hover:scale-[1.02] active:scale-[0.98] transition-all flex items-center justify-center gap-3"
             >
               <LayoutDashboard className="h-5 w-5" />
-              <span>Go to Your Dashboard</span>
+              <span>Go to {dashboardLabel}</span>
               <ArrowRight className="h-5 w-5" />
             </Link>
           ) : (

@@ -5,10 +5,11 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useSignInMutation, useForgotPasswordMutation } from "@/redux/api/authApi";
 import { useAppSelector } from "@/redux/store";
+import { getDashboardRouteByRole } from "@/lib/utils/roleUtils";
 
 export default function SignInPage() {
   const router = useRouter();
-  const { isAuthenticated } = useAppSelector((state) => state.auth);
+  const { user, isAuthenticated } = useAppSelector((state) => state.auth);
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
@@ -20,9 +21,9 @@ export default function SignInPage() {
 
   useEffect(() => {
     if (isAuthenticated) {
-      router.push("/dashboard");
+      router.push(getDashboardRouteByRole(user?.role));
     }
-  }, [isAuthenticated, router]);
+  }, [isAuthenticated, user, router]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -41,9 +42,10 @@ export default function SignInPage() {
 
     try {
       const response = await signIn({ email, password }).unwrap();
-      setSuccessMsg(`Welcome back, ${response.user?.fullName || "User"}! Redirecting to dashboard...`);
+      const target = getDashboardRouteByRole(response.user?.role);
+      setSuccessMsg(`Welcome back, ${response.user?.fullName || "User"}! Redirecting...`);
       setTimeout(() => {
-        router.push("/dashboard");
+        router.push(target);
       }, 800);
     } catch (err: any) {
       const message = err?.data?.message

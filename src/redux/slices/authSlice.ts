@@ -1,10 +1,11 @@
 import { createSlice, PayloadAction } from "@reduxjs/toolkit";
+import { UserRole } from "@/lib/utils/roleUtils";
 
 export interface User {
   id: string;
   email: string;
   fullName: string;
-  role?: string;
+  role?: UserRole;
   status?: string;
   avatarUrl?: string;
   emailVerified?: boolean;

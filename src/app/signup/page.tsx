@@ -5,10 +5,11 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useSignUpMutation } from "@/redux/api/authApi";
 import { useAppSelector } from "@/redux/store";
+import { getDashboardRouteByRole } from "@/lib/utils/roleUtils";
 
 export default function SignUpPage() {
   const router = useRouter();
-  const { isAuthenticated } = useAppSelector((state) => state.auth);
+  const { user, isAuthenticated } = useAppSelector((state) => state.auth);
   const [fullName, setFullName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -20,9 +21,9 @@ export default function SignUpPage() {
 
   useEffect(() => {
     if (isAuthenticated) {
-      router.push("/dashboard");
+      router.push(getDashboardRouteByRole(user?.role));
     }
-  }, [isAuthenticated, router]);
+  }, [isAuthenticated, user, router]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -45,14 +46,15 @@ export default function SignUpPage() {
     }
 
     try {
-      await signUp({
+      const response = await signUp({
         fullName: fullName.trim(),
         email: email.trim(),
         password,
       }).unwrap();
-      setSuccessMsg(`Welcome to FamilyRoots, ${fullName.split(" ")[0]}! Account created successfully. Redirecting to dashboard...`);
+      const target = getDashboardRouteByRole(response.user?.role);
+      setSuccessMsg(`Welcome to FamilyRoots, ${fullName.split(" ")[0]}! Account created successfully. Redirecting...`);
       setTimeout(() => {
-        router.push("/dashboard");
+        router.push(target);
       }, 800);
     } catch (err: any) {
       const msg = err?.data?.message || "Failed to create account. Email may already be registered.";
