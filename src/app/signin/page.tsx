@@ -33,9 +33,9 @@ export default function SignInPage() {
 
     try {
       const response = await signIn({ email, password }).unwrap();
-      setSuccessMsg(`Welcome back, ${response.user?.fullName || "User"}! Redirecting to landing page...`);
+      setSuccessMsg(`Welcome back, ${response.user?.fullName || "User"}! Redirecting to home...`);
       setTimeout(() => {
-        router.push("/landingpage");
+        router.push("/");
       }, 800);
     } catch (err: any) {
       const message = err?.data?.message

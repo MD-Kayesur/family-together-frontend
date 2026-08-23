@@ -1,3 +1,5 @@
+"use client";
+
 import Link from "next/link";
 import {
   TreePine,
@@ -9,10 +11,17 @@ import {
   FolderLock,
   Sparkles,
   Heart,
-  LogIn
+  LogIn,
+  LogOut,
+  UserCheck
 } from "lucide-react";
+import { useAppSelector } from "@/redux/store";
+import { useLogoutMutation } from "@/redux/api/authApi";
 
 export default function Home() {
+  const { user, isAuthenticated } = useAppSelector((state) => state.auth);
+  const [logout] = useLogoutMutation();
+
   return (
     <div className="min-h-screen flex flex-col bg-stone-50 dark:bg-stone-950 text-stone-900 dark:text-stone-100 bg-mesh-amber selection:bg-amber-500 selection:text-white">
       {/* Top Navbar */}
@@ -33,21 +42,40 @@ export default function Home() {
           </Link>
 
           <div className="flex items-center gap-3">
-            <Link
-              href="/signin"
-              className="flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-semibold text-stone-700 dark:text-stone-200 hover:text-stone-900 dark:hover:text-white bg-stone-100 dark:bg-stone-900 hover:bg-stone-200 dark:hover:bg-stone-800 transition-all"
-            >
-              <LogIn className="h-4 w-4" />
-              <span>Sign In</span>
-            </Link>
+            {isAuthenticated && user ? (
+              <div className="flex items-center gap-3">
+                <div className="flex items-center gap-2 px-3 py-1.5 rounded-xl bg-emerald-500/10 border border-emerald-500/20 text-emerald-600 dark:text-emerald-400 text-xs font-semibold">
+                  <UserCheck className="h-4 w-4" />
+                  <span>{user.fullName}</span>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => logout()}
+                  className="flex items-center gap-2 px-3 py-1.5 rounded-xl text-xs font-semibold text-rose-600 dark:text-rose-400 hover:bg-rose-500/10 transition-all border border-rose-500/20 cursor-pointer"
+                >
+                  <LogOut className="h-3.5 w-3.5" />
+                  <span>Log Out</span>
+                </button>
+              </div>
+            ) : (
+              <>
+                <Link
+                  href="/signin"
+                  className="flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-semibold text-stone-700 dark:text-stone-200 hover:text-stone-900 dark:hover:text-white bg-stone-100 dark:bg-stone-900 hover:bg-stone-200 dark:hover:bg-stone-800 transition-all"
+                >
+                  <LogIn className="h-4 w-4" />
+                  <span>Sign In</span>
+                </Link>
 
-            <Link
-              href="/signin"
-              className="flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-semibold text-white bg-gradient-to-r from-amber-500 to-emerald-600 hover:from-amber-600 hover:to-emerald-700 shadow-md shadow-amber-500/20 transition-all hover:scale-[1.02]"
-            >
-              <span>Get Started</span>
-              <ArrowRight className="h-4 w-4" />
-            </Link>
+                <Link
+                  href="/signup"
+                  className="flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-semibold text-white bg-gradient-to-r from-amber-500 to-emerald-600 hover:from-amber-600 hover:to-emerald-700 shadow-md shadow-amber-500/20 transition-all hover:scale-[1.02]"
+                >
+                  <span>Get Started</span>
+                  <ArrowRight className="h-4 w-4" />
+                </Link>
+              </>
+            )}
           </div>
         </div>
       </header>
@@ -73,14 +101,21 @@ export default function Home() {
 
         {/* Action Buttons */}
         <div className="flex flex-col sm:flex-row items-center gap-4 w-full sm:w-auto">
-          <Link
-            href="/signin"
-            className="w-full sm:w-auto px-8 py-4 rounded-2xl bg-gradient-to-r from-amber-500 via-amber-600 to-emerald-600 text-white font-bold text-base shadow-xl shadow-amber-500/25 hover:scale-[1.02] active:scale-[0.98] transition-all flex items-center justify-center gap-3"
-          >
-            <LogIn className="h-5 w-5" />
-            <span>Sign In to Your Workspace</span>
-            <ArrowRight className="h-5 w-5" />
-          </Link>
+          {isAuthenticated && user ? (
+            <div className="px-8 py-4 rounded-2xl bg-gradient-to-r from-amber-500 via-amber-600 to-emerald-600 text-white font-bold text-base shadow-xl shadow-amber-500/25 flex items-center justify-center gap-3">
+              <UserCheck className="h-5 w-5" />
+              <span>Welcome Back, {user.fullName}!</span>
+            </div>
+          ) : (
+            <Link
+              href="/signin"
+              className="w-full sm:w-auto px-8 py-4 rounded-2xl bg-gradient-to-r from-amber-500 via-amber-600 to-emerald-600 text-white font-bold text-base shadow-xl shadow-amber-500/25 hover:scale-[1.02] active:scale-[0.98] transition-all flex items-center justify-center gap-3"
+            >
+              <LogIn className="h-5 w-5" />
+              <span>Sign In to Your Workspace</span>
+              <ArrowRight className="h-5 w-5" />
+            </Link>
+          )}
         </div>
 
         {/* Feature Grid */}
