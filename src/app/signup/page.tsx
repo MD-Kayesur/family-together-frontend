@@ -2,9 +2,11 @@
 
 import React, { useState } from "react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { useSignUpMutation } from "@/redux/api/authApi";
 
 export default function SignUpPage() {
+  const router = useRouter();
   const [fullName, setFullName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -40,7 +42,10 @@ export default function SignUpPage() {
         email: email.trim(),
         password,
       }).unwrap();
-      setSuccessMsg(`Welcome to FamilyRoots, ${fullName.split(" ")[0]}! Account created successfully via RTK Query. Please sign in.`);
+      setSuccessMsg(`Welcome to FamilyRoots, ${fullName.split(" ")[0]}! Account created successfully. Redirecting to sign in...`);
+      setTimeout(() => {
+        router.push("/signin");
+      }, 1000);
     } catch (err: any) {
       const msg = err?.data?.message || "Failed to create account. Email may already be registered.";
       setErrorMsg(Array.isArray(msg) ? msg.join(", ") : msg);

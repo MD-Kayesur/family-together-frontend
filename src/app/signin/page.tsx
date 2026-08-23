@@ -2,9 +2,11 @@
 
 import React, { useState } from "react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { useSignInMutation, useForgotPasswordMutation } from "@/redux/api/authApi";
 
 export default function SignInPage() {
+  const router = useRouter();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
@@ -31,7 +33,10 @@ export default function SignInPage() {
 
     try {
       const response = await signIn({ email, password }).unwrap();
-      setSuccessMsg(`Welcome back, ${response.user?.fullName || "User"}! Authenticated via RTK Query.`);
+      setSuccessMsg(`Welcome back, ${response.user?.fullName || "User"}! Redirecting to landing page...`);
+      setTimeout(() => {
+        router.push("/landingpage");
+      }, 800);
     } catch (err: any) {
       const message = err?.data?.message
         ? Array.isArray(err.data.message)
