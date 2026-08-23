@@ -30,13 +30,23 @@ import {
 } from "lucide-react";
 import { useAppSelector } from "@/redux/store";
 import { useLogoutMutation } from "@/redux/api/authApi";
+import { useGetSanctuaryQuery } from "@/redux/api/familyApi";
 import ViewerDashboardPage from "./viewer/page";
+import AddMemberModal from "@/components/modals/AddMemberModal";
+import AddMemoryModal from "@/components/modals/AddMemoryModal";
 
 export default function DashboardPage() {
   const pathname = usePathname();
   const router = useRouter();
   const { user, isAuthenticated } = useAppSelector((state) => state.auth);
   const [logout] = useLogoutMutation();
+
+  const { data: sanctuaryData, isLoading: isSanctuaryLoading } = useGetSanctuaryQuery(undefined, {
+    skip: !isAuthenticated,
+  });
+
+  const [isAddMemberOpen, setIsAddMemberOpen] = useState(false);
+  const [isAddMemoryOpen, setIsAddMemoryOpen] = useState(false);
 
   const [pendingRequests, setPendingRequests] = useState([
     {
@@ -224,7 +234,8 @@ export default function DashboardPage() {
 
               <button
                 type="button"
-                className="px-4 py-2.5 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white font-bold text-xs shadow-md shadow-indigo-600/25 transition-all inline-flex items-center gap-2 cursor-pointer"
+                onClick={() => setIsAddMemberOpen(true)}
+                className="px-4 py-2.5 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white font-bold text-xs shadow-md shadow-indigo-600/25 transition-all inline-flex items-center gap-2 cursor-pointer hover:scale-[1.02]"
               >
                 <Plus className="h-4 w-4" />
                 <span>Add Member</span>
@@ -243,7 +254,9 @@ export default function DashboardPage() {
                 </div>
               </div>
               <div className="flex items-baseline gap-2">
-                <span className="text-3xl font-extrabold text-slate-900">42</span>
+                <span className="text-3xl font-extrabold text-slate-900">
+                  {sanctuaryData?.stats?.totalMembers ?? 42}
+                </span>
                 <span className="text-xs font-medium text-emerald-600">+3 this month</span>
               </div>
             </div>
@@ -498,6 +511,10 @@ export default function DashboardPage() {
           </div>
         </main>
       </div>
+
+      {/* Interactive Modals */}
+      <AddMemberModal isOpen={isAddMemberOpen} onClose={() => setIsAddMemberOpen(false)} />
+      <AddMemoryModal isOpen={isAddMemoryOpen} onClose={() => setIsAddMemoryOpen(false)} />
     </div>
   );
 }
