@@ -2,17 +2,19 @@
 
 import React, { useState } from "react";
 import SanctuaryDashboardWrapper from "@/components/dashboard/SanctuaryDashboardWrapper";
-import { TreePine, Plus, ZoomIn, ZoomOut, RotateCcw } from "lucide-react";
+import { useGetMembersQuery } from "@/redux/api/familyApi";
+import { TreePine, Plus, ZoomIn, ZoomOut, RotateCcw, Loader2 } from "lucide-react";
 import AddMemberModal from "@/components/modals/AddMemberModal";
 
 export default function FamilyTreePage() {
+  const { data: members = [], isLoading } = useGetMembersQuery();
   const [zoomLevel, setZoomLevel] = useState(100);
   const [isAddMemberOpen, setIsAddMemberOpen] = useState(false);
 
   return (
     <SanctuaryDashboardWrapper
       title="Family Tree Visualizer"
-      subtitle="Interactive generational lineage tree canvas connected to live PostgreSQL relationship records."
+      subtitle="Interactive generational lineage tree canvas connected live to your PostgreSQL sanctuary records."
     >
       <div className="space-y-6">
         {/* Controls Bar */}
@@ -54,58 +56,61 @@ export default function FamilyTreePage() {
           </button>
         </div>
 
-        {/* Tree Canvas Preview */}
-        <div className="relative w-full h-[520px] rounded-3xl bg-gradient-to-br from-indigo-50/50 via-slate-50 to-emerald-50/50 border border-slate-200/90 shadow-inner flex items-center justify-center overflow-hidden p-8">
-          <div
-            className="relative z-10 flex flex-col items-center gap-12 transition-transform duration-300"
-            style={{ transform: `scale(${zoomLevel / 100})` }}
-          >
-            {/* Grandparents */}
-            <div className="flex gap-16 items-center">
-              <div className="w-32 bg-white rounded-2xl border border-slate-200 p-3.5 flex flex-col items-center shadow-md">
-                <div className="h-12 w-12 rounded-full bg-slate-100 font-bold text-lg flex items-center justify-center mb-1">
-                  👴
-                </div>
-                <span className="text-xs font-bold text-slate-800">Omar Rahman</span>
-                <span className="text-[10px] text-slate-400 font-medium">Grandfather</span>
-              </div>
-
-              <div className="w-32 bg-white rounded-2xl border border-slate-200 p-3.5 flex flex-col items-center shadow-md">
-                <div className="h-12 w-12 rounded-full bg-slate-100 font-bold text-lg flex items-center justify-center mb-1">
-                  👵
-                </div>
-                <span className="text-xs font-bold text-slate-800">Fatima Rahman</span>
-                <span className="text-[10px] text-slate-400 font-medium">Grandmother</span>
-              </div>
+        {/* Dynamic Tree Canvas */}
+        <div className="relative w-full min-h-[520px] rounded-3xl bg-gradient-to-br from-indigo-50/50 via-slate-50 to-emerald-50/50 border border-slate-200/90 shadow-inner flex items-center justify-center overflow-hidden p-8">
+          {isLoading ? (
+            <div className="flex items-center gap-3 text-indigo-600 font-semibold text-sm">
+              <Loader2 className="h-6 w-6 animate-spin" />
+              <span>Rendering tree nodes from PostgreSQL...</span>
             </div>
-
-            {/* Parents & Siblings */}
-            <div className="flex gap-12 items-center">
-              <div className="w-32 bg-white rounded-2xl border border-slate-200 p-3.5 flex flex-col items-center shadow-md">
-                <div className="h-12 w-12 rounded-full bg-indigo-100 font-bold text-lg flex items-center justify-center mb-1 text-indigo-700">
-                  👨
-                </div>
-                <span className="text-xs font-bold text-slate-800">Tariq Rahman</span>
-                <span className="text-[10px] text-indigo-600 font-bold">Sanctuary Owner</span>
-              </div>
-
-              <div className="w-36 bg-white rounded-2xl border-2 border-indigo-600 p-3.5 flex flex-col items-center shadow-xl ring-4 ring-indigo-600/15">
-                <div className="h-12 w-12 rounded-full bg-indigo-600 font-bold text-lg flex items-center justify-center mb-1 text-white shadow-md">
-                  👩
-                </div>
-                <span className="text-xs font-extrabold text-indigo-700">Aisha Rahman</span>
-                <span className="text-[10px] text-slate-400 font-medium">Archivist</span>
-              </div>
-
-              <div className="w-32 bg-white rounded-2xl border border-slate-200 p-3.5 flex flex-col items-center shadow-md">
-                <div className="h-12 w-12 rounded-full bg-rose-100 font-bold text-lg flex items-center justify-center mb-1 text-rose-700">
-                  👧
-                </div>
-                <span className="text-xs font-bold text-slate-800">Farah N.</span>
-                <span className="text-[10px] text-slate-400 font-medium">Cousin</span>
-              </div>
+          ) : members.length === 0 ? (
+            <div className="text-center space-y-3">
+              <TreePine className="h-12 w-12 text-slate-300 mx-auto" />
+              <h3 className="font-bold text-base text-slate-800">Tree canvas empty</h3>
+              <p className="text-xs text-slate-500 max-w-sm">
+                Add your first relative to populate your family lineage graph.
+              </p>
+              <button
+                type="button"
+                onClick={() => setIsAddMemberOpen(true)}
+                className="px-4 py-2 bg-indigo-600 text-white text-xs font-bold rounded-xl shadow-md"
+              >
+                + Add Relative
+              </button>
             </div>
-          </div>
+          ) : (
+            <div
+              className="relative z-10 flex flex-wrap gap-8 items-center justify-center max-w-4xl transition-transform duration-300 p-4"
+              style={{ transform: `scale(${zoomLevel / 100})` }}
+            >
+              {members.map((m, idx) => (
+                <div
+                  key={m.id}
+                  className={`w-36 bg-white rounded-2xl p-4 flex flex-col items-center text-center shadow-md transition-all hover:scale-105 ${
+                    idx === 0 ? "border-2 border-indigo-600 shadow-indigo-600/15" : "border border-slate-200"
+                  }`}
+                >
+                  <div
+                    className={`h-12 w-12 rounded-full font-bold text-lg flex items-center justify-center mb-1 shadow-sm ${
+                      m.gender === "FEMALE"
+                        ? "bg-rose-100 text-rose-700"
+                        : m.gender === "MALE"
+                        ? "bg-indigo-100 text-indigo-700"
+                        : "bg-slate-100 text-slate-700"
+                    }`}
+                  >
+                    {m.gender === "FEMALE" ? "👩" : m.gender === "MALE" ? "👨" : "👤"}
+                  </div>
+                  <span className="text-xs font-extrabold text-slate-900 truncate w-full">
+                    {m.firstName} {m.lastName}
+                  </span>
+                  <span className="text-[10px] text-slate-400 font-medium capitalize mt-0.5">
+                    {m.bio || m.gender || "Family Member"}
+                  </span>
+                </div>
+              ))}
+            </div>
+          )}
         </div>
       </div>
 
@@ -113,3 +118,4 @@ export default function FamilyTreePage() {
     </SanctuaryDashboardWrapper>
   );
 }
+
