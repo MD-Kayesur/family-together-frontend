@@ -92,7 +92,22 @@ export const familyApi = baseApi.injectEndpoints({
     }),
     addMember: builder.mutation<
       FamilyMemberRecord,
-      { firstName: string; lastName: string; gender?: string; bio?: string }
+      {
+        firstName: string;
+        lastName: string;
+        gender?: string;
+        bio?: string;
+        middleName?: string;
+        nickname?: string;
+        dob?: string;
+        birthplace?: string;
+        isDeceased?: boolean;
+        dateOfPassing?: string;
+        occupation?: string;
+        location?: string;
+        contactInfo?: string;
+        avatarUrl?: string;
+      }
     >({
       query: (body) => ({
         url: "/family/members",
