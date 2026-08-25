@@ -45,6 +45,41 @@ export interface EventRecord {
   isVirtual?: boolean;
 }
 
+export interface RelationshipRecord {
+  id: string;
+  from: string;
+  to: string;
+  type: string;
+  status: string;
+  fromPersonId?: string;
+  toPersonId?: string;
+}
+
+export interface DocumentRecord {
+  id: string;
+  name: string;
+  category: string;
+  size: string;
+  uploadedBy: string;
+  createdAt?: string;
+}
+
+export interface InvitationRecord {
+  id: string;
+  name: string;
+  email: string;
+  role: string;
+  status: string;
+  note?: string;
+}
+
+export interface ActivityRecord {
+  id: string;
+  title: string;
+  timestamp: string;
+  type: string;
+}
+
 export const familyApi = baseApi.injectEndpoints({
   endpoints: (builder) => ({
     getSanctuary: builder.query<SanctuaryResponse, void>({
@@ -64,7 +99,7 @@ export const familyApi = baseApi.injectEndpoints({
         method: "POST",
         body,
       }),
-      invalidatesTags: ["Sanctuary", "Members"],
+      invalidatesTags: ["Sanctuary", "Members", "Activity"],
     }),
     updateMember: builder.mutation<
       FamilyMemberRecord,
@@ -97,7 +132,7 @@ export const familyApi = baseApi.injectEndpoints({
         method: "POST",
         body,
       }),
-      invalidatesTags: ["Sanctuary", "Memories"],
+      invalidatesTags: ["Sanctuary", "Memories", "Activity"],
     }),
     getEvents: builder.query<EventRecord[], void>({
       query: () => "/family/events",
@@ -114,6 +149,84 @@ export const familyApi = baseApi.injectEndpoints({
       }),
       invalidatesTags: ["Sanctuary", "Events"],
     }),
+    getRelationships: builder.query<RelationshipRecord[], void>({
+      query: () => "/family/relationships",
+      providesTags: ["Relationships"],
+    }),
+    addRelationship: builder.mutation<
+      RelationshipRecord,
+      { fromPersonId: string; toPersonId: string; typeCode?: string }
+    >({
+      query: (body) => ({
+        url: "/family/relationships",
+        method: "POST",
+        body,
+      }),
+      invalidatesTags: ["Sanctuary", "Relationships"],
+    }),
+    getDocuments: builder.query<DocumentRecord[], void>({
+      query: () => "/family/documents",
+      providesTags: ["Documents"],
+    }),
+    addDocument: builder.mutation<
+      DocumentRecord,
+      { name: string; category?: string; size?: string; uploadedBy?: string }
+    >({
+      query: (body) => ({
+        url: "/family/documents",
+        method: "POST",
+        body,
+      }),
+      invalidatesTags: ["Sanctuary", "Documents"],
+    }),
+    deleteDocument: builder.mutation<{ success: boolean }, string>({
+      query: (id) => ({
+        url: `/family/documents/${id}`,
+        method: "DELETE",
+      }),
+      invalidatesTags: ["Sanctuary", "Documents"],
+    }),
+    getInvitations: builder.query<InvitationRecord[], void>({
+      query: () => "/family/invitations",
+      providesTags: ["Invitations"],
+    }),
+    addInvitation: builder.mutation<
+      InvitationRecord,
+      { name: string; email: string; role?: string; note?: string }
+    >({
+      query: (body) => ({
+        url: "/family/invitations",
+        method: "POST",
+        body,
+      }),
+      invalidatesTags: ["Sanctuary", "Invitations"],
+    }),
+    updateInvitationStatus: builder.mutation<
+      InvitationRecord,
+      { id: string; status: string }
+    >({
+      query: ({ id, status }) => ({
+        url: `/family/invitations/${id}`,
+        method: "PATCH",
+        body: { status },
+      }),
+      invalidatesTags: ["Sanctuary", "Invitations"],
+    }),
+    getActivityLogs: builder.query<ActivityRecord[], void>({
+      query: () => "/family/activity",
+      providesTags: ["Activity"],
+    }),
+    updateSanctuarySettings: builder.mutation<
+      any,
+      { name?: string; description?: string }
+    >({
+      query: (body) => ({
+        url: "/family/settings",
+        method: "PATCH",
+        body,
+      }),
+      invalidatesTags: ["Sanctuary"],
+    }),
   }),
 });
 
@@ -127,4 +240,15 @@ export const {
   useAddMemoryMutation,
   useGetEventsQuery,
   useAddEventMutation,
+  useGetRelationshipsQuery,
+  useAddRelationshipMutation,
+  useGetDocumentsQuery,
+  useAddDocumentMutation,
+  useDeleteDocumentMutation,
+  useGetInvitationsQuery,
+  useAddInvitationMutation,
+  useUpdateInvitationStatusMutation,
+  useGetActivityLogsQuery,
+  useUpdateSanctuarySettingsMutation,
 } = familyApi;
+
