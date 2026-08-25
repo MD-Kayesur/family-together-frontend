@@ -23,6 +23,7 @@ import {
   ZoomIn,
   ZoomOut,
   Maximize2,
+  Minimize2,
 } from "lucide-react";
 
 interface NodePosition {
@@ -54,6 +55,7 @@ export default function InteractiveFamilyTreeCanvas({
   const [connections, setConnections] = useState<Connection[]>([]);
   const [activeTool, setActiveTool] = useState<"MOVE" | "LINK">("MOVE");
   const [zoomLevel, setZoomLevel] = useState<number>(100);
+  const [isFullScreen, setIsFullScreen] = useState(false);
 
   // Link Modal States
   const [selectedSourceId, setSelectedSourceId] = useState<string | null>(null);
@@ -308,7 +310,13 @@ export default function InteractiveFamilyTreeCanvas({
   const nodeHeight = isCompact ? 60 : 70;
 
   return (
-    <div className="space-y-3 w-full">
+    <div
+      className={`space-y-3 w-full ${
+        isFullScreen
+          ? "fixed inset-0 z-50 bg-slate-950/95 backdrop-blur-xl p-4 sm:p-6 flex flex-col justify-between overflow-hidden"
+          : ""
+      }`}
+    >
       {/* Canvas Top Toolbar */}
       <div className="flex flex-wrap items-center justify-between gap-3 p-3 rounded-2xl bg-white border border-slate-200/80 shadow-sm">
         <div className="flex items-center gap-2">
@@ -343,7 +351,7 @@ export default function InteractiveFamilyTreeCanvas({
             <span>Connect Links</span>
           </button>
 
-          {/* Zoom Controls */}
+          {/* Zoom & Fullscreen Controls */}
           <div className="flex items-center gap-1 pl-2 border-l border-slate-200">
             <button
               type="button"
@@ -370,6 +378,20 @@ export default function InteractiveFamilyTreeCanvas({
               title="Reset Zoom"
             >
               {zoomLevel}%
+            </button>
+
+            <button
+              type="button"
+              onClick={() => setIsFullScreen(!isFullScreen)}
+              className={`p-1.5 rounded-lg border font-bold text-xs flex items-center gap-1 cursor-pointer transition-colors ${
+                isFullScreen
+                  ? "bg-indigo-600 border-indigo-600 text-white"
+                  : "border-slate-200 bg-slate-50 hover:bg-slate-100 text-slate-700"
+              }`}
+              title={isFullScreen ? "Exit Fullscreen" : "Full Screen Canvas"}
+            >
+              {isFullScreen ? <Minimize2 className="h-3.5 w-3.5" /> : <Maximize2 className="h-3.5 w-3.5" />}
+              <span className="hidden sm:inline">{isFullScreen ? "Exit" : "Full Screen"}</span>
             </button>
           </div>
         </div>
@@ -430,7 +452,11 @@ export default function InteractiveFamilyTreeCanvas({
         onPointerMove={handleCanvasPointerMove}
         onPointerUp={handleCanvasPointerUp}
         className={`relative w-full ${
-          isCompact ? "h-[320px]" : "h-[540px]"
+          isCompact
+            ? "h-[360px]"
+            : isFullScreen
+            ? "h-[calc(100vh-130px)]"
+            : "h-[calc(100vh-210px)] min-h-[640px]"
         } rounded-3xl bg-slate-50 border border-slate-200/90 shadow-inner overflow-hidden select-none touch-none bg-[radial-gradient(#e2e8f0_1px,transparent_1px)] [background-size:16px_16px]`}
       >
         {isLoadingMembers ? (
