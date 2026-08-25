@@ -451,12 +451,12 @@ export default function InteractiveFamilyTreeCanvas({
         ref={canvasRef}
         onPointerMove={handleCanvasPointerMove}
         onPointerUp={handleCanvasPointerUp}
-        className={`relative w-full ${
+        className={`relative ${
           isCompact
-            ? "h-[360px]"
+            ? "w-full h-[380px]"
             : isFullScreen
-            ? "h-[calc(100vh-130px)]"
-            : "h-[calc(100vh-210px)] min-h-[640px]"
+            ? "w-screen h-screen fixed inset-0 z-50 rounded-none border-none"
+            : "w-full h-screen min-h-screen"
         } rounded-3xl bg-slate-50 border border-slate-200/90 shadow-inner overflow-hidden select-none touch-none bg-[radial-gradient(#e2e8f0_1px,transparent_1px)] [background-size:16px_16px]`}
       >
         {isLoadingMembers ? (
