@@ -30,7 +30,13 @@ import {
 } from "lucide-react";
 import { useAppSelector } from "@/redux/store";
 import { useLogoutMutation } from "@/redux/api/authApi";
-import { useGetSanctuaryQuery } from "@/redux/api/familyApi";
+import {
+  useGetSanctuaryQuery,
+  useGetInvitationsQuery,
+  useUpdateInvitationStatusMutation,
+  useGetActivityLogsQuery,
+  useGetMembersQuery,
+} from "@/redux/api/familyApi";
 import ViewerDashboardPage from "./viewer/page";
 import AddMemberModal from "@/components/modals/AddMemberModal";
 import AddMemoryModal from "@/components/modals/AddMemoryModal";
@@ -41,21 +47,25 @@ export default function DashboardPage() {
   const { user, isAuthenticated } = useAppSelector((state) => state.auth);
   const [logout] = useLogoutMutation();
 
-  const { data: sanctuaryData, isLoading: isSanctuaryLoading } = useGetSanctuaryQuery(undefined, {
+  const { data: sanctuaryData } = useGetSanctuaryQuery(undefined, {
     skip: !isAuthenticated,
   });
+  const { data: invitations = [] } = useGetInvitationsQuery(undefined, {
+    skip: !isAuthenticated,
+  });
+  const { data: activityLogs = [] } = useGetActivityLogsQuery(undefined, {
+    skip: !isAuthenticated,
+  });
+  const { data: members = [] } = useGetMembersQuery(undefined, {
+    skip: !isAuthenticated,
+  });
+
+  const [updateInvitationStatus] = useUpdateInvitationStatusMutation();
 
   const [isAddMemberOpen, setIsAddMemberOpen] = useState(false);
   const [isAddMemoryOpen, setIsAddMemoryOpen] = useState(false);
 
-  const [pendingRequests, setPendingRequests] = useState([
-    {
-      id: "req_1",
-      initial: "Z",
-      name: "Zain Rahman",
-      note: "Claims to be cousin",
-    },
-  ]);
+  const pendingRequests = invitations.filter((inv) => inv.status === "PENDING");
 
   // Route Protection: Redirect unauthenticated users to Sign In
   useEffect(() => {
@@ -95,12 +105,20 @@ export default function DashboardPage() {
     { name: "Settings", href: "/dashboard/settings", icon: Settings, badge: null },
   ];
 
-  const handleApprove = (id: string) => {
-    setPendingRequests((prev) => prev.filter((r) => r.id !== id));
+  const handleApprove = async (id: string) => {
+    try {
+      await updateInvitationStatus({ id, status: "APPROVED" }).unwrap();
+    } catch (err) {
+      console.error("Failed to approve invitation", err);
+    }
   };
 
-  const handleReject = (id: string) => {
-    setPendingRequests((prev) => prev.filter((r) => r.id !== id));
+  const handleReject = async (id: string) => {
+    try {
+      await updateInvitationStatus({ id, status: "REJECTED" }).unwrap();
+    } catch (err) {
+      console.error("Failed to reject invitation", err);
+    }
   };
 
   return (
@@ -269,7 +287,9 @@ export default function DashboardPage() {
                   <LinkIcon className="h-4 w-4" />
                 </div>
               </div>
-              <div className="text-3xl font-extrabold text-slate-900">12</div>
+              <div className="text-3xl font-extrabold text-slate-900">
+                {sanctuaryData?.stats?.connectedUsers ?? 1}
+              </div>
             </div>
 
             {/* Relationships */}
@@ -280,7 +300,9 @@ export default function DashboardPage() {
                   <Heart className="h-4 w-4" />
                 </div>
               </div>
-              <div className="text-3xl font-extrabold text-slate-900">86</div>
+              <div className="text-3xl font-extrabold text-slate-900">
+                {sanctuaryData?.stats?.relationships ?? 3}
+              </div>
             </div>
 
             {/* Pending Invites */}
@@ -292,7 +314,9 @@ export default function DashboardPage() {
                 </div>
               </div>
               <div className="flex items-center justify-between">
-                <span className="text-3xl font-extrabold text-rose-600">2</span>
+                <span className="text-3xl font-extrabold text-rose-600">
+                  {sanctuaryData?.stats?.pendingInvites ?? pendingRequests.length}
+                </span>
                 <Link
                   href="/dashboard/invitations"
                   className="text-xs font-bold text-slate-600 hover:text-indigo-600 inline-flex items-center gap-1"
@@ -392,11 +416,11 @@ export default function DashboardPage() {
                     >
                       <div className="flex items-center gap-3">
                         <div className="h-9 w-9 rounded-full bg-slate-100 text-slate-700 font-bold text-xs flex items-center justify-center shrink-0">
-                          {req.initial}
+                          {req.name.charAt(0)}
                         </div>
                         <div className="space-y-0.5">
                           <div className="font-bold text-xs text-slate-900">{req.name}</div>
-                          <div className="text-[11px] text-slate-400">{req.note}</div>
+                          <div className="text-[11px] text-slate-400">{req.note || req.email}</div>
                         </div>
                       </div>
 
@@ -441,53 +465,23 @@ export default function DashboardPage() {
                 </div>
 
                 <div className="space-y-4 pt-1">
-                  <div className="flex items-start gap-3">
-                    <div className="h-7 w-7 rounded-full bg-slate-100 text-slate-600 flex items-center justify-center shrink-0 mt-0.5">
-                      <Clock className="h-3.5 w-3.5" />
-                    </div>
-                    <div className="space-y-0.5">
-                      <p className="text-xs font-semibold text-slate-800">
-                        <span className="font-bold">Sarah R.</span> updated her profile information.
-                      </p>
-                      <span className="text-[10px] text-slate-400 font-medium">2 hours ago</span>
-                    </div>
-                  </div>
-
-                  <div className="flex items-start gap-3">
-                    <div className="h-7 w-7 rounded-full bg-indigo-50 text-indigo-600 flex items-center justify-center shrink-0 mt-0.5">
-                      <Users className="h-3.5 w-3.5" />
-                    </div>
-                    <div className="space-y-0.5">
-                      <p className="text-xs font-semibold text-slate-800">
-                        <span className="font-bold">Ahmed R.</span> added a new relationship: <span className="italic">Spouse</span>.
-                      </p>
-                      <span className="text-[10px] text-slate-400 font-medium">Yesterday, 4:30 PM</span>
-                    </div>
-                  </div>
-
-                  <div className="flex items-start gap-3">
-                    <div className="h-7 w-7 rounded-full bg-purple-50 text-purple-600 flex items-center justify-center shrink-0 mt-0.5">
-                      <FolderLock className="h-3.5 w-3.5" />
-                    </div>
-                    <div className="space-y-0.5">
-                      <p className="text-xs font-semibold text-slate-800">
-                        <span className="font-bold">Uncle Javed</span> added a new memory document.
-                      </p>
-                      <span className="text-[10px] text-slate-400 font-medium">Oct 24, 2023</span>
-                    </div>
-                  </div>
-
-                  <div className="flex items-start gap-3">
-                    <div className="h-7 w-7 rounded-full bg-emerald-50 text-emerald-600 flex items-center justify-center shrink-0 mt-0.5">
-                      <UserPlus className="h-3.5 w-3.5" />
-                    </div>
-                    <div className="space-y-0.5">
-                      <p className="text-xs font-semibold text-slate-800">
-                        You invited <span className="font-bold">Laila M.</span> to the family.
-                      </p>
-                      <span className="text-[10px] text-slate-400 font-medium">Oct 20, 2023</span>
-                    </div>
-                  </div>
+                  {activityLogs.length > 0 ? (
+                    activityLogs.map((log) => (
+                      <div key={log.id} className="flex items-start gap-3">
+                        <div className="h-7 w-7 rounded-full bg-indigo-50 text-indigo-600 flex items-center justify-center shrink-0 mt-0.5">
+                          <Clock className="h-3.5 w-3.5" />
+                        </div>
+                        <div className="space-y-0.5">
+                          <p className="text-xs font-semibold text-slate-800">{log.title}</p>
+                          <span className="text-[10px] text-slate-400 font-medium">
+                            {new Date(log.timestamp).toLocaleDateString()}
+                          </span>
+                        </div>
+                      </div>
+                    ))
+                  ) : (
+                    <div className="text-xs text-slate-400 italic">No recent activities logged.</div>
+                  )}
                 </div>
               </div>
             </div>

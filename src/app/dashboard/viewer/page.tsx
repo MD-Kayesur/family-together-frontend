@@ -29,12 +29,21 @@ import {
 } from "lucide-react";
 import { useAppSelector } from "@/redux/store";
 import { useLogoutMutation } from "@/redux/api/authApi";
+import {
+  useGetMemoriesQuery,
+  useGetEventsQuery,
+  useGetMembersQuery,
+} from "@/redux/api/familyApi";
 
 export default function ViewerDashboardPage() {
   const pathname = usePathname();
   const router = useRouter();
   const { user, isAuthenticated } = useAppSelector((state) => state.auth);
   const [logout] = useLogoutMutation();
+
+  const { data: memories = [] } = useGetMemoriesQuery();
+  const { data: events = [] } = useGetEventsQuery();
+  const { data: members = [] } = useGetMembersQuery();
 
   // Route Protection: Redirect unauthenticated users to Sign In
   useEffect(() => {
@@ -233,17 +242,17 @@ export default function ViewerDashboardPage() {
                 </span>
                 <span className="px-3 py-1 rounded-full bg-black/40 backdrop-blur-md text-xs font-medium text-slate-200 inline-flex items-center gap-1.5">
                   <ImageIcon className="h-3.5 w-3.5" />
-                  <span>12 photos</span>
+                  <span>{memories[0]?.photoCount || 1} photos</span>
                 </span>
               </div>
 
               {/* Bottom Memory Details */}
               <div className="space-y-3 max-w-xl">
                 <h2 className="text-2xl sm:text-3xl font-extrabold text-white tracking-tight">
-                  Eid al-Fitr Gathering 2023
+                  {memories[0]?.title || "Eid al-Fitr Gathering 2023"}
                 </h2>
                 <p className="text-xs sm:text-sm text-slate-300 leading-relaxed font-normal">
-                  Shared by Amina Rahman • A wonderful weekend celebrating with extended family from overseas.
+                  {memories[0]?.description || "Shared by Amina Rahman • A wonderful weekend celebrating with extended family."}
                 </p>
                 <Link
                   href="/dashboard/memories"
@@ -271,33 +280,36 @@ export default function ViewerDashboardPage() {
 
                 {/* Lineage Tree Diagram */}
                 <div className="p-4 rounded-xl bg-slate-50/60 border border-slate-100 flex flex-col items-center justify-center space-y-4">
-                  {/* Top Node */}
                   <div className="flex flex-col items-center">
                     <div className="h-9 w-9 rounded-full bg-slate-300 text-slate-700 font-bold text-xs flex items-center justify-center border border-white shadow-sm overflow-hidden">
                       👨
                     </div>
-                    <span className="text-[11px] font-bold text-slate-800 mt-1">Tariq R.</span>
+                    <span className="text-[11px] font-bold text-slate-800 mt-1">
+                      {members[0]?.firstName || "Tariq"} R.
+                    </span>
                   </div>
 
-                  {/* Branch Line */}
                   <div className="w-24 border-t-2 border-slate-200 relative">
                     <div className="absolute left-1/2 -top-2 bottom-0 w-0.5 bg-slate-200" />
                   </div>
 
-                  {/* Children Row */}
                   <div className="flex items-center gap-8">
                     <div className="flex flex-col items-center">
                       <div className="h-8 w-8 rounded-full bg-indigo-100 text-indigo-700 font-bold text-[11px] flex items-center justify-center border border-white shadow-sm">
                         👩
                       </div>
-                      <span className="text-[10px] font-semibold text-slate-700 mt-1">Amina R.</span>
+                      <span className="text-[10px] font-semibold text-slate-700 mt-1">
+                        {members[1]?.firstName || "Aisha"} R.
+                      </span>
                     </div>
 
                     <div className="flex flex-col items-center">
                       <div className="h-8 w-8 rounded-full bg-amber-100 text-amber-700 font-bold text-[11px] flex items-center justify-center border border-white shadow-sm">
                         👦
                       </div>
-                      <span className="text-[10px] font-semibold text-slate-700 mt-1">Omar R.</span>
+                      <span className="text-[10px] font-semibold text-slate-700 mt-1">
+                        {members[2]?.firstName || "Omar"} R.
+                      </span>
                     </div>
                   </div>
                 </div>
@@ -316,35 +328,36 @@ export default function ViewerDashboardPage() {
                 </div>
 
                 <div className="space-y-3">
-                  {/* Event 1 */}
-                  <div className="flex items-center gap-3.5 p-2.5 rounded-xl hover:bg-slate-50 transition-colors">
-                    <div className="h-12 w-12 rounded-xl bg-slate-100 border border-slate-200 flex flex-col items-center justify-center shrink-0 leading-none">
-                      <span className="text-[9px] font-extrabold uppercase text-slate-500">AUG</span>
-                      <span className="text-base font-extrabold text-slate-900 mt-0.5">14</span>
-                    </div>
-                    <div className="space-y-0.5">
-                      <div className="font-bold text-xs text-slate-800">Grandpa&apos;s 80th Birthday</div>
-                      <div className="text-[11px] text-slate-500 flex items-center gap-1">
-                        <MapPin className="h-3 w-3 text-slate-400" />
-                        <span>Dhaka, Bangladesh</span>
+                  {events.length > 0 ? (
+                    events.slice(0, 2).map((evt) => (
+                      <div
+                        key={evt.id}
+                        className="flex items-center gap-3.5 p-2.5 rounded-xl hover:bg-slate-50 transition-colors"
+                      >
+                        <div className="h-12 w-12 rounded-xl bg-slate-100 border border-slate-200 flex flex-col items-center justify-center shrink-0 leading-none">
+                          <span className="text-[9px] font-extrabold uppercase text-slate-500">
+                            {new Date(evt.date).toLocaleString("default", { month: "short" })}
+                          </span>
+                          <span className="text-base font-extrabold text-slate-900 mt-0.5">
+                            {new Date(evt.date).getDate()}
+                          </span>
+                        </div>
+                        <div className="space-y-0.5">
+                          <div className="font-bold text-xs text-slate-800">{evt.title}</div>
+                          <div className="text-[11px] text-slate-500 flex items-center gap-1">
+                            {evt.isVirtual ? (
+                              <Video className="h-3 w-3 text-indigo-500" />
+                            ) : (
+                              <MapPin className="h-3 w-3 text-slate-400" />
+                            )}
+                            <span>{evt.location || "Location TBD"}</span>
+                          </div>
+                        </div>
                       </div>
-                    </div>
-                  </div>
-
-                  {/* Event 2 */}
-                  <div className="flex items-center gap-3.5 p-2.5 rounded-xl hover:bg-slate-50 transition-colors">
-                    <div className="h-12 w-12 rounded-xl bg-indigo-50 border border-indigo-100 flex flex-col items-center justify-center shrink-0 leading-none">
-                      <span className="text-[9px] font-extrabold uppercase text-indigo-600">SEP</span>
-                      <span className="text-base font-extrabold text-indigo-900 mt-0.5">02</span>
-                    </div>
-                    <div className="space-y-0.5">
-                      <div className="font-bold text-xs text-slate-800">Annual Family Reunion</div>
-                      <div className="text-[11px] text-indigo-600 flex items-center gap-1 font-semibold">
-                        <Video className="h-3 w-3 text-indigo-500" />
-                        <span>Virtual Link</span>
-                      </div>
-                    </div>
-                  </div>
+                    ))
+                  ) : (
+                    <div className="text-xs text-slate-400 italic">No events scheduled.</div>
+                  )}
                 </div>
 
                 <div className="pt-2 text-center border-t border-slate-100">
@@ -373,43 +386,35 @@ export default function ViewerDashboardPage() {
             </div>
 
             <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
-              <div className="p-4 rounded-xl bg-slate-50/70 border border-slate-100 flex flex-col items-center text-center space-y-2">
-                <div className="h-12 w-12 rounded-full bg-slate-200 text-slate-700 font-bold text-base flex items-center justify-center border border-white shadow-sm">
-                  👵
+              {members.slice(0, 3).map((m) => (
+                <div
+                  key={m.id}
+                  className="p-4 rounded-xl bg-slate-50/70 border border-slate-100 flex flex-col items-center text-center space-y-2"
+                >
+                  <div className="h-12 w-12 rounded-full bg-indigo-100 text-indigo-700 font-bold text-base flex items-center justify-center border border-white shadow-sm">
+                    {m.gender === "FEMALE" ? "👩" : "👨"}
+                  </div>
+                  <div>
+                    <div className="font-bold text-xs text-slate-900">
+                      {m.firstName} {m.lastName.charAt(0)}.
+                    </div>
+                    <div className="text-[11px] text-slate-400 font-medium">
+                      {m.bio || m.gender || "Member"}
+                    </div>
+                  </div>
                 </div>
-                <div>
-                  <div className="font-bold text-xs text-slate-900">Fatima R.</div>
-                  <div className="text-[11px] text-slate-400 font-medium">Matriarch</div>
-                </div>
-              </div>
+              ))}
 
-              <div className="p-4 rounded-xl bg-slate-50/70 border border-slate-100 flex flex-col items-center text-center space-y-2">
-                <div className="h-12 w-12 rounded-full bg-indigo-600 text-white font-bold text-base flex items-center justify-center shadow-sm">
-                  👨‍💼
-                </div>
-                <div>
-                  <div className="font-bold text-xs text-slate-900">Hasan R.</div>
-                  <div className="text-[11px] text-slate-400 font-medium">Owner / Admin</div>
-                </div>
-              </div>
-
-              <div className="p-4 rounded-xl bg-slate-50/70 border border-slate-100 flex flex-col items-center text-center space-y-2">
-                <div className="h-12 w-12 rounded-full bg-amber-100 text-amber-800 font-bold text-base flex items-center justify-center shadow-sm">
-                  👩‍🦰
-                </div>
-                <div>
-                  <div className="font-bold text-xs text-slate-900">Zara M.</div>
-                  <div className="text-[11px] text-slate-400 font-medium">Cousin</div>
-                </div>
-              </div>
-
-              <div className="p-4 rounded-xl bg-indigo-50/50 border border-indigo-100 flex flex-col items-center text-center justify-center space-y-1 cursor-pointer hover:bg-indigo-100/50 transition-colors">
-                <span className="text-xl font-extrabold text-indigo-600">+42</span>
+              <Link
+                href="/dashboard/members"
+                className="p-4 rounded-xl bg-indigo-50/50 border border-indigo-100 flex flex-col items-center text-center justify-center space-y-1 cursor-pointer hover:bg-indigo-100/50 transition-colors"
+              >
+                <span className="text-xl font-extrabold text-indigo-600">+{members.length}</span>
                 <div>
                   <div className="font-bold text-xs text-indigo-950">Explore All</div>
                   <div className="text-[10px] text-indigo-600 font-medium">Shared Profiles</div>
                 </div>
-              </div>
+              </Link>
             </div>
           </div>
         </main>
