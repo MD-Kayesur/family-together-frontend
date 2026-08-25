@@ -40,6 +40,7 @@ import {
 import ViewerDashboardPage from "./viewer/page";
 import AddMemberModal from "@/components/modals/AddMemberModal";
 import AddMemoryModal from "@/components/modals/AddMemoryModal";
+import InteractiveFamilyTreeCanvas from "@/components/tree/InteractiveFamilyTreeCanvas";
 
 export default function DashboardPage() {
   const pathname = usePathname();
@@ -346,53 +347,8 @@ export default function DashboardPage() {
                 </Link>
               </div>
 
-              {/* Tree Diagram Visual Canvas */}
-              <div className="p-8 rounded-xl bg-slate-50/70 border border-slate-100 flex flex-col items-center justify-center space-y-8 min-h-[260px] relative overflow-hidden">
-                {/* Top Node */}
-                <div className="px-5 py-2.5 rounded-xl bg-white border border-slate-200 shadow-sm flex items-center gap-3 z-10">
-                  <div className="h-8 w-8 rounded-full bg-slate-200 text-slate-700 font-bold text-xs flex items-center justify-center">
-                    👨‍🦳
-                  </div>
-                  <div>
-                    <div className="font-bold text-xs text-slate-800">Omar Rahman</div>
-                    <div className="text-[10px] text-slate-400 font-medium">1945 - Present</div>
-                  </div>
-                </div>
-
-                {/* Connecting Lines */}
-                <div className="w-1/2 border-t-2 border-slate-200 relative -my-4">
-                  <div className="absolute left-1/2 -top-4 bottom-0 w-0.5 bg-slate-200" />
-                </div>
-
-                {/* Child Nodes Row */}
-                <div className="grid grid-cols-3 gap-6 w-full max-w-lg z-10">
-                  <div className="px-3 py-2 rounded-xl bg-white border border-slate-200 shadow-sm flex items-center gap-2 text-center justify-center">
-                    <div className="h-7 w-7 rounded-full bg-indigo-100 text-indigo-700 font-bold text-[11px] flex items-center justify-center shrink-0">
-                      A
-                    </div>
-                    <span className="font-semibold text-xs text-slate-700 truncate">Aisha R.</span>
-                  </div>
-
-                  <div className="px-3 py-2 rounded-xl bg-white border-2 border-indigo-600 shadow-md flex items-center gap-2 justify-center relative">
-                    <div className="h-7 w-7 rounded-full bg-indigo-600 text-white font-bold text-[11px] flex items-center justify-center shrink-0">
-                      👩
-                    </div>
-                    <div className="truncate text-left">
-                      <div className="font-bold text-xs text-slate-900">Tariq Rahman</div>
-                      <span className="px-1.5 py-0.5 rounded text-[9px] font-extrabold bg-indigo-100 text-indigo-700 uppercase">
-                        YOU
-                      </span>
-                    </div>
-                  </div>
-
-                  <div className="px-3 py-2 rounded-xl bg-white border border-slate-200 shadow-sm flex items-center gap-2 text-center justify-center">
-                    <div className="h-7 w-7 rounded-full bg-amber-100 text-amber-700 font-bold text-[11px] flex items-center justify-center shrink-0">
-                      F
-                    </div>
-                    <span className="font-semibold text-xs text-slate-700 truncate">Farah N.</span>
-                  </div>
-                </div>
-              </div>
+              {/* Dynamic Interactive 2D Canvas */}
+              <InteractiveFamilyTreeCanvas isCompact />
             </div>
 
             {/* Right Stacked Column (Action Required + Recent Activity) */}
