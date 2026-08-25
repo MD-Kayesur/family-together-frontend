@@ -230,9 +230,9 @@ export default function InteractiveFamilyTreeCanvas({
     if (fromM && toM) {
       try {
         await addRelationship({
-          from: `${fromM.firstName} ${fromM.lastName}`,
-          to: `${toM.firstName} ${toM.lastName}`,
-          type: relType,
+          fromPersonId: fromM.id,
+          toPersonId: toM.id,
+          typeCode: relType,
         }).unwrap();
       } catch (err) {}
     }
