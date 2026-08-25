@@ -20,6 +20,9 @@ import {
   GitMerge,
   HelpCircle,
   X,
+  ZoomIn,
+  ZoomOut,
+  Maximize2,
 } from "lucide-react";
 
 interface NodePosition {
@@ -46,41 +49,44 @@ export default function InteractiveFamilyTreeCanvas({
 
   const canvasRef = useRef<HTMLDivElement>(null);
 
-  // States
+  // Layout & State
   const [nodePositions, setNodePositions] = useState<Record<string, { x: number; y: number }>>({});
   const [connections, setConnections] = useState<Connection[]>([]);
   const [activeTool, setActiveTool] = useState<"MOVE" | "LINK">("MOVE");
+  const [zoomLevel, setZoomLevel] = useState<number>(100);
+
+  // Link Modal States
   const [selectedSourceId, setSelectedSourceId] = useState<string | null>(null);
   const [pendingTargetId, setPendingTargetId] = useState<string | null>(null);
   const [relType, setRelType] = useState("Parent-Child");
   const [isLinkModalOpen, setIsLinkModalOpen] = useState(false);
   const [savedToast, setSavedToast] = useState(false);
 
-  // Dragging state
+  // Node Dragging State
   const [draggingNodeId, setDraggingNodeId] = useState<string | null>(null);
   const [dragOffset, setDragOffset] = useState({ x: 0, y: 0 });
 
-  // 1. Initial Position calculation & Load from LocalStorage
+  // Handle Drag-to-Connect rubberband state
+  const [linkingFromId, setLinkingFromId] = useState<string | null>(null);
+  const [linkingCursor, setLinkingCursor] = useState<{ x: number; y: number } | null>(null);
+
+  // 1. Initial Positions & LocalStorage Restore
   useEffect(() => {
     if (members.length === 0) return;
 
     const savedPositions = localStorage.getItem("family_tree_positions_v1");
     if (savedPositions) {
       try {
-        const parsed = JSON.parse(savedPositions);
-        setNodePositions(parsed);
+        setNodePositions(JSON.parse(savedPositions));
       } catch (e) {
         console.error("Failed to parse stored node positions", e);
       }
     } else {
-      // Auto-layout in grid / hierarchy if no saved positions exist
       const initial: Record<string, { x: number; y: number }> = {};
-      const containerWidth = isCompact ? 600 : 800;
       const startX = 60;
       const startY = 50;
 
       members.forEach((m, idx) => {
-        // Layout in rows of 3
         const row = Math.floor(idx / 3);
         const col = idx % 3;
         initial[m.id] = {
@@ -92,7 +98,7 @@ export default function InteractiveFamilyTreeCanvas({
     }
   }, [members, isCompact]);
 
-  // 2. Load connections from server & local override
+  // 2. Load connections from server & LocalStorage
   useEffect(() => {
     const savedConnections = localStorage.getItem("family_tree_connections_v1");
     if (savedConnections) {
@@ -104,7 +110,6 @@ export default function InteractiveFamilyTreeCanvas({
 
     if (serverRelationships.length > 0 && members.length > 0) {
       const mapped: Connection[] = serverRelationships.map((r) => {
-        // Find member matching names or fallback to ids
         const fromMember = members.find((m) => `${m.firstName} ${m.lastName}`.trim() === r.from) || members[0];
         const toMember = members.find((m) => `${m.firstName} ${m.lastName}`.trim() === r.to) || members[1] || members[0];
         return {
@@ -116,7 +121,6 @@ export default function InteractiveFamilyTreeCanvas({
       });
       setConnections(mapped);
     } else if (members.length >= 2) {
-      // Default connection preview between first 2 members
       setConnections([
         {
           id: "conn_default_1",
@@ -128,7 +132,7 @@ export default function InteractiveFamilyTreeCanvas({
     }
   }, [serverRelationships, members]);
 
-  // Save positions to LocalStorage
+  // Save Layout
   const saveLayout = () => {
     localStorage.setItem("family_tree_positions_v1", JSON.stringify(nodePositions));
     localStorage.setItem("family_tree_connections_v1", JSON.stringify(connections));
@@ -136,7 +140,7 @@ export default function InteractiveFamilyTreeCanvas({
     setTimeout(() => setSavedToast(false), 2500);
   };
 
-  // Reset positions
+  // Reset Layout
   const resetLayout = () => {
     localStorage.removeItem("family_tree_positions_v1");
     localStorage.removeItem("family_tree_connections_v1");
@@ -152,6 +156,7 @@ export default function InteractiveFamilyTreeCanvas({
       };
     });
     setNodePositions(initial);
+    setZoomLevel(100);
     if (members.length >= 2) {
       setConnections([{ id: "conn_1", fromId: members[0].id, toId: members[1].id, type: "Parent-Child" }]);
     } else {
@@ -159,10 +164,14 @@ export default function InteractiveFamilyTreeCanvas({
     }
   };
 
-  // Drag handlers
-  const handlePointerDown = (e: React.PointerEvent, memberId: string) => {
+  // Zoom Handlers
+  const handleZoomIn = () => setZoomLevel((z) => Math.min(z + 15, 180));
+  const handleZoomOut = () => setZoomLevel((z) => Math.max(z - 15, 60));
+  const handleResetZoom = () => setZoomLevel(100);
+
+  // Pointer Down (Node move or Link selection)
+  const handleNodePointerDown = (e: React.PointerEvent, memberId: string) => {
     if (activeTool === "LINK") {
-      // Handle Link Connection Mode
       if (!selectedSourceId) {
         setSelectedSourceId(memberId);
       } else if (selectedSourceId !== memberId) {
@@ -174,42 +183,87 @@ export default function InteractiveFamilyTreeCanvas({
       return;
     }
 
-    // Move / Drag mode
+    // Drag move mode
     e.stopPropagation();
     (e.target as HTMLElement).setPointerCapture(e.pointerId);
 
     const canvasRect = canvasRef.current?.getBoundingClientRect();
     if (!canvasRect) return;
 
+    const scale = zoomLevel / 100;
     const currentPos = nodePositions[memberId] || { x: 50, y: 50 };
     setDraggingNodeId(memberId);
     setDragOffset({
-      x: e.clientX - canvasRect.left - currentPos.x,
-      y: e.clientY - canvasRect.top - currentPos.y,
+      x: (e.clientX - canvasRect.left) / scale - currentPos.x,
+      y: (e.clientY - canvasRect.top) / scale - currentPos.y,
     });
   };
 
-  const handlePointerMove = (e: React.PointerEvent) => {
-    if (!draggingNodeId || !canvasRef.current) return;
-
-    const canvasRect = canvasRef.current.getBoundingClientRect();
-    const newX = Math.max(10, Math.min(canvasRect.width - (isCompact ? 150 : 180), e.clientX - canvasRect.left - dragOffset.x));
-    const newY = Math.max(10, Math.min(canvasRect.height - 80, e.clientY - canvasRect.top - dragOffset.y));
-
-    setNodePositions((prev) => ({
-      ...prev,
-      [draggingNodeId]: { x: newX, y: newY },
-    }));
+  // Start Handle Drag-to-Connect
+  const handleHandlePointerDown = (e: React.PointerEvent, memberId: string) => {
+    e.stopPropagation();
+    setLinkingFromId(memberId);
+    const canvasRect = canvasRef.current?.getBoundingClientRect();
+    if (canvasRect) {
+      const scale = zoomLevel / 100;
+      setLinkingCursor({
+        x: (e.clientX - canvasRect.left) / scale,
+        y: (e.clientY - canvasRect.top) / scale,
+      });
+    }
   };
 
-  const handlePointerUp = (e: React.PointerEvent) => {
+  // Pointer Move (Node drag or Handle rubberband line)
+  const handleCanvasPointerMove = (e: React.PointerEvent) => {
+    if (!canvasRef.current) return;
+    const canvasRect = canvasRef.current.getBoundingClientRect();
+    const scale = zoomLevel / 100;
+
+    const currentX = (e.clientX - canvasRect.left) / scale;
+    const currentY = (e.clientY - canvasRect.top) / scale;
+
+    if (linkingFromId) {
+      setLinkingCursor({ x: currentX, y: currentY });
+      return;
+    }
+
+    if (draggingNodeId) {
+      const nodeW = isCompact ? 150 : 180;
+      const newX = Math.max(10, Math.min(canvasRect.width / scale - nodeW, currentX - dragOffset.x));
+      const newY = Math.max(10, Math.min(canvasRect.height / scale - 80, currentY - dragOffset.y));
+
+      setNodePositions((prev) => ({
+        ...prev,
+        [draggingNodeId]: { x: newX, y: newY },
+      }));
+    }
+  };
+
+  // Pointer Up (Drop node or Drop connector handle over target)
+  const handleCanvasPointerUp = (e: React.PointerEvent) => {
     if (draggingNodeId) {
       setDraggingNodeId(null);
       saveLayout();
     }
+
+    if (linkingFromId) {
+      // Find element under cursor
+      const elem = document.elementFromPoint(e.clientX, e.clientY);
+      const nodeElem = elem?.closest("[data-member-id]");
+      const targetId = nodeElem?.getAttribute("data-member-id");
+
+      if (targetId && targetId !== linkingFromId) {
+        setSelectedSourceId(linkingFromId);
+        setPendingTargetId(targetId);
+        setIsLinkModalOpen(true);
+      }
+
+      setLinkingFromId(null);
+      setLinkingCursor(null);
+    }
   };
 
-  // Confirm Link creation
+  // Confirm Relationship Link Creation
   const handleCreateLink = async () => {
     if (!selectedSourceId || !pendingTargetId) return;
 
@@ -242,7 +296,7 @@ export default function InteractiveFamilyTreeCanvas({
     setIsLinkModalOpen(false);
   };
 
-  // Remove connection link
+  // Delete Link
   const handleDeleteConnection = (connId: string) => {
     const updated = connections.filter((c) => c.id !== connId);
     setConnections(updated);
@@ -288,6 +342,36 @@ export default function InteractiveFamilyTreeCanvas({
             <Link2 className="h-3.5 w-3.5" />
             <span>Connect Links</span>
           </button>
+
+          {/* Zoom Controls */}
+          <div className="flex items-center gap-1 pl-2 border-l border-slate-200">
+            <button
+              type="button"
+              onClick={handleZoomIn}
+              className="p-1.5 rounded-lg border border-slate-200 bg-slate-50 hover:bg-slate-100 text-slate-700 font-bold text-xs flex items-center gap-1 cursor-pointer"
+              title="Zoom In (+)"
+            >
+              <ZoomIn className="h-3.5 w-3.5" />
+            </button>
+
+            <button
+              type="button"
+              onClick={handleZoomOut}
+              className="p-1.5 rounded-lg border border-slate-200 bg-slate-50 hover:bg-slate-100 text-slate-700 font-bold text-xs flex items-center gap-1 cursor-pointer"
+              title="Zoom Out (-)"
+            >
+              <ZoomOut className="h-3.5 w-3.5" />
+            </button>
+
+            <button
+              type="button"
+              onClick={handleResetZoom}
+              className="px-2 py-1 rounded-lg border border-slate-200 bg-slate-50 hover:bg-slate-100 text-slate-600 font-extrabold text-[11px] cursor-pointer"
+              title="Reset Zoom"
+            >
+              {zoomLevel}%
+            </button>
+          </div>
         </div>
 
         {/* Action Controls */}
@@ -325,9 +409,7 @@ export default function InteractiveFamilyTreeCanvas({
           <div className="flex items-center gap-2">
             <Link2 className="h-4 w-4 text-indigo-600 animate-bounce" />
             <span>
-              {selectedSourceId
-                ? "Step 2: Now click target relative node to connect line link!"
-                : "Step 1: Click first relative node to start link connection."}
+              Drag connector handles or click relative cards to connect lines like each other!
             </span>
           </div>
           {selectedSourceId && (
@@ -345,8 +427,8 @@ export default function InteractiveFamilyTreeCanvas({
       {/* 2D Interactive Canvas Surface */}
       <div
         ref={canvasRef}
-        onPointerMove={handlePointerMove}
-        onPointerUp={handlePointerUp}
+        onPointerMove={handleCanvasPointerMove}
+        onPointerUp={handleCanvasPointerUp}
         className={`relative w-full ${
           isCompact ? "h-[320px]" : "h-[540px]"
         } rounded-3xl bg-slate-50 border border-slate-200/90 shadow-inner overflow-hidden select-none touch-none bg-[radial-gradient(#e2e8f0_1px,transparent_1px)] [background-size:16px_16px]`}
@@ -364,9 +446,18 @@ export default function InteractiveFamilyTreeCanvas({
             </p>
           </div>
         ) : (
-          <>
+          <div
+            style={{
+              transform: `scale(${zoomLevel / 100})`,
+              transformOrigin: "0 0",
+              width: `${100 * (100 / zoomLevel)}%`,
+              height: `${100 * (100 / zoomLevel)}%`,
+            }}
+            className="absolute inset-0 transition-transform duration-100"
+          >
             {/* SVG Connecting Lines Layer */}
             <svg className="absolute inset-0 w-full h-full pointer-events-none z-0">
+              {/* Existing Relationship Lines */}
               {connections.map((conn) => {
                 const posA = nodePositions[conn.fromId];
                 const posB = nodePositions[conn.toId];
@@ -377,13 +468,11 @@ export default function InteractiveFamilyTreeCanvas({
                 const x2 = posB.x + nodeWidth / 2;
                 const y2 = posB.y + nodeHeight / 2;
 
-                // Bezier curve path
                 const midY = (y1 + y2) / 2;
                 const pathD = `M ${x1} ${y1} C ${x1} ${midY}, ${x2} ${midY}, ${x2} ${y2}`;
 
                 return (
                   <g key={conn.id} className="group">
-                    {/* Shadow line */}
                     <path
                       d={pathD}
                       fill="none"
@@ -391,7 +480,6 @@ export default function InteractiveFamilyTreeCanvas({
                       strokeWidth={isCompact ? 3 : 4}
                       strokeLinecap="round"
                     />
-                    {/* Active line */}
                     <path
                       d={pathD}
                       fill="none"
@@ -400,7 +488,6 @@ export default function InteractiveFamilyTreeCanvas({
                       strokeDasharray="6 4"
                       className="animate-[dash_15s_linear_infinite]"
                     />
-                    {/* Connection label badge at midpoint */}
                     <foreignObject
                       x={(x1 + x2) / 2 - 35}
                       y={(y1 + y2) / 2 - 12}
@@ -414,6 +501,19 @@ export default function InteractiveFamilyTreeCanvas({
                   </g>
                 );
               })}
+
+              {/* Rubberband line during connector handle drag */}
+              {linkingFromId && linkingCursor && nodePositions[linkingFromId] && (
+                <path
+                  d={`M ${nodePositions[linkingFromId].x + nodeWidth / 2} ${
+                    nodePositions[linkingFromId].y + nodeHeight / 2
+                  } L ${linkingCursor.x} ${linkingCursor.y}`}
+                  fill="none"
+                  stroke="#4f46e5"
+                  strokeWidth="3"
+                  strokeDasharray="4 4"
+                />
+              )}
             </svg>
 
             {/* Draggable Relative Nodes */}
@@ -425,7 +525,8 @@ export default function InteractiveFamilyTreeCanvas({
               return (
                 <div
                   key={m.id}
-                  onPointerDown={(e) => handlePointerDown(e, m.id)}
+                  data-member-id={m.id}
+                  onPointerDown={(e) => handleNodePointerDown(e, m.id)}
                   style={{
                     transform: `translate3d(${pos.x}px, ${pos.y}px, 0)`,
                   }}
@@ -439,6 +540,15 @@ export default function InteractiveFamilyTreeCanvas({
                       : "border-slate-200/90 shadow-md hover:shadow-lg hover:border-indigo-300"
                   }`}
                 >
+                  {/* Connector Handle Dots on Top & Bottom for Direct Linking */}
+                  <div
+                    onPointerDown={(e) => handleHandlePointerDown(e, m.id)}
+                    className="absolute -top-2.5 left-1/2 -translate-x-1/2 h-5 w-5 bg-indigo-600 border-2 border-white rounded-full flex items-center justify-center cursor-crosshair shadow-md hover:scale-125 transition-transform z-20"
+                    title="Drag handle to link with relative"
+                  >
+                    <div className="h-1.5 w-1.5 bg-white rounded-full" />
+                  </div>
+
                   <div className="flex items-center gap-2.5">
                     <div
                       className={`h-9 w-9 rounded-full font-bold text-sm flex items-center justify-center shrink-0 shadow-sm ${
@@ -459,17 +569,17 @@ export default function InteractiveFamilyTreeCanvas({
                     </div>
                   </div>
 
-                  {/* Connect handle indicator in Link Mode */}
-                  {activeTool === "LINK" && (
-                    <div className="mt-2 pt-1 border-t border-slate-100 flex items-center justify-between text-[10px] font-bold text-indigo-600">
-                      <span>{isSelectedSource ? "Selected Source" : "Click to Link"}</span>
-                      <Link2 className="h-3 w-3" />
-                    </div>
-                  )}
+                  <div
+                    onPointerDown={(e) => handleHandlePointerDown(e, m.id)}
+                    className="absolute -bottom-2.5 left-1/2 -translate-x-1/2 h-5 w-5 bg-indigo-600 border-2 border-white rounded-full flex items-center justify-center cursor-crosshair shadow-md hover:scale-125 transition-transform z-20"
+                    title="Drag handle to link with relative"
+                  >
+                    <div className="h-1.5 w-1.5 bg-white rounded-full" />
+                  </div>
                 </div>
               );
             })}
-          </>
+          </div>
         )}
       </div>
 
