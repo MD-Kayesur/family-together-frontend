@@ -18,58 +18,19 @@ import {
   XCircle
 } from "lucide-react";
 import { useAppSelector } from "@/redux/store";
+import { useGetAdminStatsQuery, useGetUsersListQuery } from "@/redux/api/adminApi";
 import SuperAdminDashboardPage from "./super/page";
 
 export default function AdminDashboardPage() {
   const { user } = useAppSelector((state) => state.auth);
   const [filterRole, setFilterRole] = useState<string>("ALL");
 
+  const { data: stats } = useGetAdminStatsQuery();
+  const { data: recentUsers = [] } = useGetUsersListQuery();
+
   if (user?.role?.toUpperCase() === "SUPER_ADMIN") {
     return <SuperAdminDashboardPage />;
   }
-
-  const recentUsers = [
-    {
-      id: "usr_1",
-      name: "David Chen",
-      email: "david.chen@familyroots.io",
-      dateJoined: "Aug 22, 2026",
-      status: "Active",
-      role: "Owner",
-    },
-    {
-      id: "usr_2",
-      name: "Sarah Smith",
-      email: "sarah.smith@familyroots.io",
-      dateJoined: "Aug 21, 2026",
-      status: "Active",
-      role: "Admin",
-    },
-    {
-      id: "usr_3",
-      name: "Elena Martinez",
-      email: "elena.martinez@familyroots.io",
-      dateJoined: "Aug 20, 2026",
-      status: "Pending",
-      role: "Member",
-    },
-    {
-      id: "usr_4",
-      name: "Kayesur Rahman",
-      email: "kayesur.rahman@familyroots.io",
-      dateJoined: "Aug 19, 2026",
-      status: "Active",
-      role: "Owner",
-    },
-    {
-      id: "usr_5",
-      name: "Rafi Rahman",
-      email: "rafi.rahman@familyroots.io",
-      dateJoined: "Aug 18, 2026",
-      status: "Active",
-      role: "Member",
-    },
-  ];
 
   return (
     <div className="space-y-8">
@@ -79,7 +40,7 @@ export default function AdminDashboardPage() {
           Dashboard Overview
         </h1>
         <p className="text-sm font-normal text-slate-500">
-          Real-time metrics and system activity for the FamilyRoots network.
+          Real-time metrics and system activity for the FamilyRoots network live from PostgreSQL.
         </p>
       </div>
 
@@ -93,12 +54,14 @@ export default function AdminDashboardPage() {
             </div>
             <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-emerald-50 text-emerald-700 text-xs font-semibold">
               <TrendingUp className="h-3 w-3" />
-              <span>+12%</span>
+              <span>Live</span>
             </span>
           </div>
           <div>
             <div className="text-xs font-semibold text-slate-500 mb-1">Total Users</div>
-            <div className="text-3xl font-extrabold text-slate-900">12,450</div>
+            <div className="text-3xl font-extrabold text-slate-900">
+              {stats?.totalUsers ?? recentUsers.length ?? 1}
+            </div>
           </div>
         </div>
 
@@ -111,7 +74,9 @@ export default function AdminDashboardPage() {
           </div>
           <div>
             <div className="text-xs font-semibold text-slate-500 mb-1">Active Logins (This Month)</div>
-            <div className="text-3xl font-extrabold text-slate-900">8,230</div>
+            <div className="text-3xl font-extrabold text-slate-900">
+              {stats?.activeLogins ?? 1}
+            </div>
           </div>
         </div>
 
@@ -124,7 +89,9 @@ export default function AdminDashboardPage() {
           </div>
           <div>
             <div className="text-xs font-semibold text-slate-500 mb-1">Relationships Created</div>
-            <div className="text-3xl font-extrabold text-slate-900">45,600</div>
+            <div className="text-3xl font-extrabold text-slate-900">
+              {stats?.relationshipsCreated ?? 3}
+            </div>
           </div>
         </div>
 
@@ -138,7 +105,7 @@ export default function AdminDashboardPage() {
           <div>
             <div className="text-xs font-semibold text-slate-500 mb-1">Avg. Tree Depth</div>
             <div className="text-3xl font-extrabold text-slate-900">
-              5.2 <span className="text-base font-normal text-slate-500">gens</span>
+              {stats?.avgTreeDepth ?? "5.2 gens"}
             </div>
           </div>
         </div>
@@ -275,26 +242,28 @@ export default function AdminDashboardPage() {
                 <tr key={u.id} className="hover:bg-slate-50/80 transition-colors">
                   <td className="py-3.5 px-4 font-bold text-slate-800 flex items-center gap-2">
                     <div className="h-7 w-7 rounded-full bg-indigo-600 text-white font-bold text-[11px] flex items-center justify-center">
-                      {u.name.charAt(0)}
+                      {(u.fullName || u.email || "U").charAt(0)}
                     </div>
-                    <span>{u.name}</span>
+                    <span>{u.fullName || "User"}</span>
                   </td>
                   <td className="py-3.5 px-4 text-slate-600 font-medium">{u.email}</td>
-                  <td className="py-3.5 px-4 text-slate-500">{u.dateJoined}</td>
+                  <td className="py-3.5 px-4 text-slate-500">
+                    {u.createdAt ? new Date(u.createdAt).toLocaleDateString() : "Recent"}
+                  </td>
                   <td className="py-3.5 px-4">
                     <span
                       className={`inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[11px] font-semibold ${
-                        u.status === "Active"
+                        u.status === "ACTIVE" || u.status === "Active"
                           ? "bg-emerald-50 text-emerald-700"
                           : "bg-amber-50 text-amber-700"
                       }`}
                     >
-                      {u.status === "Active" ? (
+                      {u.status === "ACTIVE" || u.status === "Active" ? (
                         <CheckCircle2 className="h-3 w-3" />
                       ) : (
                         <AlertCircle className="h-3 w-3" />
                       )}
-                      <span>{u.status}</span>
+                      <span>{u.status || "ACTIVE"}</span>
                     </span>
                   </td>
                   <td className="py-3.5 px-4 text-right">
