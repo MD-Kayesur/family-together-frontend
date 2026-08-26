@@ -225,7 +225,7 @@ export default function DashboardPage() {
         </header>
 
         {/* Main Dashboard Content */}
-        <main className="flex-1 p-8 space-y-8 max-w-7xl w-full">
+        <main className="flex-1 p-8 space-y-8 w-full max-w-full">
           {/* Header Title Section */}
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
             <div className="space-y-1.5">
@@ -329,116 +329,117 @@ export default function DashboardPage() {
             </div>
           </div>
 
-          {/* Middle Section (Tree Overview + Action Required/Activity) */}
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-            {/* Family Tree Overview (2 Columns) */}
-            <div className="lg:col-span-2 p-6 rounded-2xl bg-white border border-slate-200/80 shadow-sm flex flex-col justify-between space-y-6">
+          {/* FULL WIDTH Section 1: Family Tree Overview 2D Canvas */}
+          <div className="p-6 rounded-2xl bg-white border border-slate-200/80 shadow-sm space-y-6 w-full">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-2">
+                <TreePine className="h-5 w-5 text-indigo-600" />
+                <h2 className="font-bold text-xl text-slate-900">Family Tree Overview</h2>
+              </div>
+              <Link
+                href="/dashboard/tree"
+                className="text-xs font-bold text-indigo-600 hover:text-indigo-800 transition-colors inline-flex items-center gap-1"
+              >
+                <span>Open Full Tree Canvas</span>
+                <ExternalLink className="h-3.5 w-3.5" />
+              </Link>
+            </div>
+
+            {/* Dynamic Full Screen Viewport 2D Canvas */}
+            <InteractiveFamilyTreeCanvas />
+          </div>
+
+          {/* LOWER SECTION UNDER THE CANVAS: Action Required & Recent Activity Side by Side */}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6 pt-4">
+            {/* Action Required Card */}
+            <div className="p-6 rounded-2xl bg-rose-50/40 border border-rose-200/80 space-y-4">
+              <div className="flex items-center gap-2 text-rose-700">
+                <UserPlus className="h-5 w-5" />
+                <h3 className="font-extrabold text-base">Action Required</h3>
+              </div>
+
+              <div className="text-[11px] font-bold text-slate-500 tracking-wider uppercase">
+                PENDING JOIN REQUESTS ({pendingRequests.length})
+              </div>
+
+              {pendingRequests.length > 0 ? (
+                pendingRequests.map((req) => (
+                  <div
+                    key={req.id}
+                    className="p-4 rounded-xl bg-white border border-slate-200 shadow-sm flex items-center justify-between gap-3"
+                  >
+                    <div className="flex items-center gap-3">
+                      <div className="h-9 w-9 rounded-full bg-slate-100 text-slate-700 font-bold text-xs flex items-center justify-center shrink-0">
+                        {req.name.charAt(0)}
+                      </div>
+                      <div className="space-y-0.5">
+                        <div className="font-bold text-xs text-slate-900">{req.name}</div>
+                        <div className="text-[11px] text-slate-400">{req.note || req.email}</div>
+                      </div>
+                    </div>
+
+                    <div className="flex items-center gap-1.5">
+                      <button
+                        type="button"
+                        onClick={() => handleReject(req.id)}
+                        className="p-1.5 rounded-lg border border-slate-200 hover:bg-rose-50 text-slate-500 hover:text-rose-600 transition-colors cursor-pointer"
+                        aria-label="Decline"
+                      >
+                        <X className="h-4 w-4" />
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => handleApprove(req.id)}
+                        className="p-1.5 rounded-lg bg-indigo-50 border border-indigo-200 hover:bg-indigo-600 hover:text-white text-indigo-600 transition-colors cursor-pointer"
+                        aria-label="Approve"
+                      >
+                        <Check className="h-4 w-4" />
+                      </button>
+                    </div>
+                  </div>
+                ))
+              ) : (
+                <div className="text-xs text-slate-500 italic p-3 bg-white/70 rounded-xl border border-rose-100">
+                  No pending join requests.
+                </div>
+              )}
+            </div>
+
+            {/* Recent Activity Card */}
+            <div className="p-6 rounded-2xl bg-white border border-slate-200/80 shadow-sm space-y-4">
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-2">
-                  <TreePine className="h-5 w-5 text-indigo-600" />
-                  <h2 className="font-bold text-xl text-slate-900">Family Tree Overview</h2>
+                  <Clock className="h-5 w-5 text-indigo-600" />
+                  <h3 className="font-extrabold text-base text-slate-900">Recent Activity</h3>
                 </div>
                 <Link
-                  href="/dashboard/tree"
-                  className="text-xs font-bold text-indigo-600 hover:text-indigo-800 transition-colors inline-flex items-center gap-1"
+                  href="/dashboard/activity"
+                  className="text-xs font-bold text-indigo-600 hover:text-indigo-800 transition-colors"
                 >
-                  <span>Open Full Tree</span>
-                  <ExternalLink className="h-3.5 w-3.5" />
+                  View All
                 </Link>
               </div>
 
-              {/* Dynamic Interactive 2D Canvas */}
-              <InteractiveFamilyTreeCanvas isCompact />
-            </div>
-
-            {/* Right Stacked Column (Action Required + Recent Activity) */}
-            <div className="space-y-6">
-              {/* Action Required Card */}
-              <div className="p-5 rounded-2xl bg-rose-50/40 border border-rose-200/80 space-y-4">
-                <div className="flex items-center gap-2 text-rose-700">
-                  <UserPlus className="h-4 w-4" />
-                  <h3 className="font-bold text-sm">Action Required</h3>
-                </div>
-
-                <div className="text-[11px] font-bold text-slate-400 tracking-wider uppercase">
-                  PENDING JOIN REQUESTS ({pendingRequests.length})
-                </div>
-
-                {pendingRequests.length > 0 ? (
-                  pendingRequests.map((req) => (
-                    <div
-                      key={req.id}
-                      className="p-3.5 rounded-xl bg-white border border-slate-200 shadow-sm flex items-center justify-between gap-3"
-                    >
-                      <div className="flex items-center gap-3">
-                        <div className="h-9 w-9 rounded-full bg-slate-100 text-slate-700 font-bold text-xs flex items-center justify-center shrink-0">
-                          {req.name.charAt(0)}
-                        </div>
-                        <div className="space-y-0.5">
-                          <div className="font-bold text-xs text-slate-900">{req.name}</div>
-                          <div className="text-[11px] text-slate-400">{req.note || req.email}</div>
-                        </div>
+              <div className="space-y-4 pt-1">
+                {activityLogs.length > 0 ? (
+                  activityLogs.map((log) => (
+                    <div key={log.id} className="flex items-start gap-3">
+                      <div className="h-8 w-8 rounded-full bg-indigo-50 text-indigo-600 flex items-center justify-center shrink-0 mt-0.5">
+                        <Clock className="h-4 w-4" />
                       </div>
-
-                      <div className="flex items-center gap-1.5">
-                        <button
-                          type="button"
-                          onClick={() => handleReject(req.id)}
-                          className="p-1.5 rounded-lg border border-slate-200 hover:bg-rose-50 text-slate-500 hover:text-rose-600 transition-colors cursor-pointer"
-                          aria-label="Decline"
-                        >
-                          <X className="h-4 w-4" />
-                        </button>
-                        <button
-                          type="button"
-                          onClick={() => handleApprove(req.id)}
-                          className="p-1.5 rounded-lg bg-indigo-50 border border-indigo-200 hover:bg-indigo-600 hover:text-white text-indigo-600 transition-colors cursor-pointer"
-                          aria-label="Approve"
-                        >
-                          <Check className="h-4 w-4" />
-                        </button>
+                      <div className="space-y-0.5">
+                        <p className="text-xs font-semibold text-slate-800">{log.title}</p>
+                        <span className="text-[10px] text-slate-400 font-medium">
+                          {new Date(log.timestamp).toLocaleDateString()}
+                        </span>
                       </div>
                     </div>
                   ))
                 ) : (
-                  <div className="text-xs text-slate-400 italic">No pending join requests.</div>
-                )}
-              </div>
-
-              {/* Recent Activity Card */}
-              <div className="p-5 rounded-2xl bg-white border border-slate-200/80 shadow-sm space-y-4">
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-2">
-                    <Clock className="h-4 w-4 text-indigo-600" />
-                    <h3 className="font-bold text-sm text-slate-900">Recent Activity</h3>
+                  <div className="text-xs text-slate-400 italic p-3 bg-slate-50 rounded-xl">
+                    No recent activities logged.
                   </div>
-                  <Link
-                    href="/dashboard/activity"
-                    className="text-xs font-bold text-indigo-600 hover:text-indigo-800 transition-colors"
-                  >
-                    View All
-                  </Link>
-                </div>
-
-                <div className="space-y-4 pt-1">
-                  {activityLogs.length > 0 ? (
-                    activityLogs.map((log) => (
-                      <div key={log.id} className="flex items-start gap-3">
-                        <div className="h-7 w-7 rounded-full bg-indigo-50 text-indigo-600 flex items-center justify-center shrink-0 mt-0.5">
-                          <Clock className="h-3.5 w-3.5" />
-                        </div>
-                        <div className="space-y-0.5">
-                          <p className="text-xs font-semibold text-slate-800">{log.title}</p>
-                          <span className="text-[10px] text-slate-400 font-medium">
-                            {new Date(log.timestamp).toLocaleDateString()}
-                          </span>
-                        </div>
-                      </div>
-                    ))
-                  ) : (
-                    <div className="text-xs text-slate-400 italic">No recent activities logged.</div>
-                  )}
-                </div>
+                )}
               </div>
             </div>
           </div>
