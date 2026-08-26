@@ -94,16 +94,16 @@ export default function DashboardPage() {
   const familyName = user.fullName.split(" ").slice(-1)[0] || "Rahman";
 
   const sidebarLinks = [
-    { name: "Dashboard", href: "/dashboard", icon: LayoutDashboard, badge: null },
-    { name: "My Family", href: "/dashboard/family", icon: Users, badge: null },
-    { name: "Family Tree", href: "/dashboard/tree", icon: TreePine, badge: null },
-    { name: "Members", href: "/dashboard/members", icon: UserCheck, badge: null },
-    { name: "Relationships", href: "/dashboard/relationships", icon: Heart, badge: null },
-    { name: "Memories", href: "/dashboard/memories", icon: ImageIcon, badge: null },
-    { name: "Events", href: "/dashboard/events", icon: Calendar, badge: null },
-    { name: "Documents", href: "/dashboard/documents", icon: FolderLock, badge: null },
-    { name: "Invitations", href: "/dashboard/invitations", icon: Mail, badge: "2" },
-    { name: "Settings", href: "/dashboard/settings", icon: Settings, badge: null },
+    { name: "Dashboard", href: "/owner-dashboard", icon: LayoutDashboard, badge: null },
+    { name: "My Family", href: "/owner-dashboard/family", icon: Users, badge: null },
+    { name: "Family Tree", href: "/owner-dashboard/tree", icon: TreePine, badge: null },
+    { name: "Members", href: "/owner-dashboard/members", icon: UserCheck, badge: null },
+    { name: "Relationships", href: "/owner-dashboard/relationships", icon: Heart, badge: null },
+    { name: "Memories", href: "/owner-dashboard/memories", icon: ImageIcon, badge: null },
+    { name: "Events", href: "/owner-dashboard/events", icon: Calendar, badge: null },
+    { name: "Documents", href: "/owner-dashboard/documents", icon: FolderLock, badge: null },
+    { name: "Invitations", href: "/owner-dashboard/invitations", icon: Mail, badge: "2" },
+    { name: "Settings", href: "/owner-dashboard/settings", icon: Settings, badge: null },
   ];
 
   const handleApprove = async (id: string) => {
@@ -183,7 +183,7 @@ export default function DashboardPage() {
           </Link>
 
           <Link
-            href="/dashboard/profile"
+            href="/owner-dashboard/profile"
             className="flex items-center gap-3 px-3.5 py-2 rounded-xl text-xs font-medium text-slate-600 hover:bg-slate-100 transition-all"
           >
             <UserCheck className="h-4 w-4 text-slate-400" />
@@ -319,7 +319,7 @@ export default function DashboardPage() {
                   {sanctuaryData?.stats?.pendingInvites ?? pendingRequests.length}
                 </span>
                 <Link
-                  href="/dashboard/invitations"
+                  href="/owner-dashboard/invitations"
                   className="text-xs font-bold text-slate-600 hover:text-indigo-600 inline-flex items-center gap-1"
                 >
                   <span>Review</span>
@@ -337,7 +337,7 @@ export default function DashboardPage() {
                 <h2 className="font-bold text-xl text-slate-900">Family Tree Overview</h2>
               </div>
               <Link
-                href="/dashboard/tree"
+                href="/owner-dashboard/tree"
                 className="text-xs font-bold text-indigo-600 hover:text-indigo-800 transition-colors inline-flex items-center gap-1"
               >
                 <span>Open Full Tree Canvas</span>
@@ -413,7 +413,7 @@ export default function DashboardPage() {
                   <h3 className="font-extrabold text-base text-slate-900">Recent Activity</h3>
                 </div>
                 <Link
-                  href="/dashboard/activity"
+                  href="/owner-dashboard/activity"
                   className="text-xs font-bold text-indigo-600 hover:text-indigo-800 transition-colors"
                 >
                   View All

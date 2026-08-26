@@ -10,24 +10,24 @@ export type UserRole =
 
 /**
  * Returns the target dashboard URL route for a given user role.
- * - SUPER_ADMIN & ADMIN -> /admin (System Control Center)
- * - OWNER, MEMBER, VIEWER, USER, NULL -> /dashboard (Family Sanctuary Dashboard)
+ * - SUPER_ADMIN & ADMIN -> /admin-dashboard (System Control Center)
+ * - OWNER, MEMBER, VIEWER, USER, NULL -> /owner-dashboard (Family Sanctuary Dashboard)
  */
 export function getDashboardRouteByRole(role?: string | null): string {
-  if (!role) return "/dashboard";
+  if (!role) return "/owner-dashboard";
 
   const normalizedRole = role.toUpperCase().trim();
   switch (normalizedRole) {
     case "SUPER_ADMIN":
     case "ADMIN":
-      return "/admin";
+      return "/admin-dashboard";
     case "OWNER":
     case "MEMBER":
     case "VIEWER":
     case "USER":
     case "NULL":
     default:
-      return "/dashboard";
+      return "/owner-dashboard";
   }
 }
 
@@ -35,7 +35,7 @@ export function getDashboardRouteByRole(role?: string | null): string {
  * Returns a human-friendly display label for the dashboard button based on the user's role.
  */
 export function getDashboardLabelByRole(role?: string | null): string {
-  if (!role) return "Dashboard";
+  if (!role) return "Owner Dashboard";
 
   const normalizedRole = role.toUpperCase().trim();
   switch (normalizedRole) {
@@ -53,6 +53,6 @@ export function getDashboardLabelByRole(role?: string | null): string {
       return "User Dashboard";
     case "NULL":
     default:
-      return "Dashboard";
+      return "Owner Dashboard";
   }
 }

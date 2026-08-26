@@ -202,7 +202,7 @@ export default function AdminDashboardPage() {
 
           <div className="pt-2 text-center border-t border-slate-100">
             <Link
-              href="/admin/users"
+              href="/admin-dashboard/users"
               className="text-xs font-bold text-indigo-600 hover:text-indigo-800 transition-colors inline-flex items-center gap-1"
             >
               <span>View All Families</span>

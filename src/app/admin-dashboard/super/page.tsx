@@ -136,7 +136,7 @@ export default function SuperAdminDashboardPage() {
               <h2 className="font-bold text-xl text-slate-900">Privileged Access Management</h2>
             </div>
             <Link
-              href="/admin/users"
+              href="/admin-dashboard/users"
               className="text-xs font-bold text-indigo-600 hover:text-indigo-800 transition-colors"
             >
               View All
