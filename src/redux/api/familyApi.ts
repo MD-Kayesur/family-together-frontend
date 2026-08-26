@@ -78,6 +78,8 @@ export interface ActivityRecord {
   title: string;
   timestamp: string;
   type: string;
+  description?: string;
+  user?: string;
 }
 
 export const familyApi = baseApi.injectEndpoints({
