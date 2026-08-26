@@ -456,7 +456,7 @@ export default function InteractiveFamilyTreeCanvas({
             ? "w-full h-[380px]"
             : isFullScreen
             ? "w-screen h-screen fixed inset-0 z-50 rounded-none border-none"
-            : "w-full h-screen min-h-screen"
+            : "w-full h-[85vh] min-h-[600px] lg:h-[calc(100vh-150px)]"
         } rounded-3xl bg-slate-50 border border-slate-200/90 shadow-inner overflow-hidden select-none touch-none bg-[radial-gradient(#e2e8f0_1px,transparent_1px)] [background-size:16px_16px]`}
       >
         {isLoadingMembers ? (
