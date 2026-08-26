@@ -45,11 +45,11 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
   }
 
   const navItems = [
-    { name: "Dashboard", href: "/admin", icon: LayoutDashboard },
-    { name: "User Management", href: "/admin/users", icon: Users },
-    { name: "Activity Monitor", href: "/admin/activity", icon: Activity },
-    { name: "Network Analytics", href: "/admin/analytics", icon: Network },
-    { name: "System Settings", href: "/admin/settings", icon: Settings },
+    { name: "Dashboard", href: "/admin-dashboard", icon: LayoutDashboard },
+    { name: "User Management", href: "/admin-dashboard/users", icon: Users },
+    { name: "Activity Monitor", href: "/admin-dashboard/activity", icon: Activity },
+    { name: "Network Analytics", href: "/admin-dashboard/analytics", icon: Network },
+    { name: "System Settings", href: "/admin-dashboard/settings", icon: Settings },
   ];
 
   return (
@@ -58,7 +58,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
       <aside className="w-64 bg-indigo-50/50 border-r border-indigo-100 flex flex-col justify-between p-6 shrink-0">
         <div className="space-y-8">
           {/* Brand Logo */}
-          <Link href="/admin" className="flex items-center gap-3 group">
+          <Link href="/admin-dashboard" className="flex items-center gap-3 group">
             <div className="h-10 w-10 rounded-xl bg-indigo-600 flex items-center justify-center text-white shadow-lg shadow-indigo-600/30 group-hover:scale-105 transition-all">
               <TreePine className="h-5 w-5 stroke-[2.5]" />
             </div>
@@ -171,7 +171,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
 
             {/* Settings Gear */}
             <Link
-              href="/admin/settings"
+              href="/admin-dashboard/settings"
               className="p-2 rounded-full hover:bg-slate-100 text-slate-600 transition-colors"
               aria-label="Settings"
             >

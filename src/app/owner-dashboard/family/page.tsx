@@ -36,7 +36,7 @@ export default function MyFamilyPage() {
 
           <div className="flex flex-wrap gap-4 pt-2">
             <Link
-              href="/dashboard/members"
+              href="/owner-dashboard/members"
               className="bg-white text-indigo-900 px-5 py-2.5 rounded-xl font-bold text-xs hover:bg-indigo-50 transition-all shadow-md flex items-center gap-2"
             >
               <Users className="h-4 w-4" />
@@ -44,7 +44,7 @@ export default function MyFamilyPage() {
             </Link>
 
             <Link
-              href="/dashboard/tree"
+              href="/owner-dashboard/tree"
               className="bg-indigo-700/80 text-white border border-indigo-500/50 px-5 py-2.5 rounded-xl font-bold text-xs hover:bg-indigo-600 transition-all flex items-center gap-2"
             >
               <span>Explore Family Tree</span>

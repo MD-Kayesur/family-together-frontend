@@ -57,16 +57,16 @@ export default function SanctuaryDashboardWrapper({
   }
 
   const sidebarLinks = [
-    { name: "Dashboard", href: "/dashboard", icon: LayoutDashboard, badge: null },
-    { name: "My Family", href: "/dashboard/family", icon: Users, badge: null },
-    { name: "Family Tree", href: "/dashboard/tree", icon: TreePine, badge: null },
-    { name: "Members", href: "/dashboard/members", icon: UserCheck, badge: null },
-    { name: "Relationships", href: "/dashboard/relationships", icon: Heart, badge: null },
-    { name: "Memories", href: "/dashboard/memories", icon: ImageIcon, badge: null },
-    { name: "Events", href: "/dashboard/events", icon: Calendar, badge: null },
-    { name: "Documents", href: "/dashboard/documents", icon: FolderLock, badge: null },
-    { name: "Invitations", href: "/dashboard/invitations", icon: Mail, badge: "2" },
-    { name: "Settings", href: "/dashboard/settings", icon: Settings, badge: null },
+    { name: "Dashboard", href: "/owner-dashboard", icon: LayoutDashboard, badge: null },
+    { name: "My Family", href: "/owner-dashboard/family", icon: Users, badge: null },
+    { name: "Family Tree", href: "/owner-dashboard/tree", icon: TreePine, badge: null },
+    { name: "Members", href: "/owner-dashboard/members", icon: UserCheck, badge: null },
+    { name: "Relationships", href: "/owner-dashboard/relationships", icon: Heart, badge: null },
+    { name: "Memories", href: "/owner-dashboard/memories", icon: ImageIcon, badge: null },
+    { name: "Events", href: "/owner-dashboard/events", icon: Calendar, badge: null },
+    { name: "Documents", href: "/owner-dashboard/documents", icon: FolderLock, badge: null },
+    { name: "Invitations", href: "/owner-dashboard/invitations", icon: Mail, badge: "2" },
+    { name: "Settings", href: "/owner-dashboard/settings", icon: Settings, badge: null },
   ];
 
   return (
@@ -132,9 +132,9 @@ export default function SanctuaryDashboardWrapper({
           </Link>
 
           <Link
-            href="/dashboard/profile"
+            href="/owner-dashboard/profile"
             className={`flex items-center gap-3 px-3.5 py-2 rounded-xl text-xs font-medium transition-all ${
-              pathname === "/dashboard/profile" ? "bg-indigo-600 text-white font-semibold" : "text-slate-600 hover:bg-slate-100"
+              pathname === "/owner-dashboard/profile" ? "bg-indigo-600 text-white font-semibold" : "text-slate-600 hover:bg-slate-100"
             }`}
           >
             <UserCheck className="h-4 w-4" />

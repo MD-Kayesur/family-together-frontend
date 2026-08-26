@@ -66,16 +66,16 @@ export default function ViewerDashboardPage() {
   const familyName = user.fullName.split(" ").slice(-1)[0] || "Rahman";
 
   const sidebarLinks = [
-    { name: "Dashboard", href: "/dashboard", icon: LayoutDashboard, badge: null },
-    { name: "My Family", href: "/dashboard/family", icon: Users, badge: null },
-    { name: "Family Tree", href: "/dashboard/tree", icon: TreePine, badge: null },
-    { name: "Members", href: "/dashboard/members", icon: UserCheck, badge: null },
-    { name: "Relationships", href: "/dashboard/relationships", icon: Heart, badge: null },
-    { name: "Memories", href: "/dashboard/memories", icon: ImageIcon, badge: null },
-    { name: "Events", href: "/dashboard/events", icon: Calendar, badge: null },
-    { name: "Documents", href: "/dashboard/documents", icon: FolderLock, badge: null },
-    { name: "Invitations", href: "/dashboard/invitations", icon: Mail, badge: null },
-    { name: "Settings", href: "/dashboard/settings", icon: Settings, badge: null },
+    { name: "Dashboard", href: "/owner-dashboard", icon: LayoutDashboard, badge: null },
+    { name: "My Family", href: "/owner-dashboard/family", icon: Users, badge: null },
+    { name: "Family Tree", href: "/owner-dashboard/tree", icon: TreePine, badge: null },
+    { name: "Members", href: "/owner-dashboard/members", icon: UserCheck, badge: null },
+    { name: "Relationships", href: "/owner-dashboard/relationships", icon: Heart, badge: null },
+    { name: "Memories", href: "/owner-dashboard/memories", icon: ImageIcon, badge: null },
+    { name: "Events", href: "/owner-dashboard/events", icon: Calendar, badge: null },
+    { name: "Documents", href: "/owner-dashboard/documents", icon: FolderLock, badge: null },
+    { name: "Invitations", href: "/owner-dashboard/invitations", icon: Mail, badge: null },
+    { name: "Settings", href: "/owner-dashboard/settings", icon: Settings, badge: null },
   ];
 
   return (
@@ -102,7 +102,7 @@ export default function ViewerDashboardPage() {
           <nav className="space-y-1">
             {sidebarLinks.map((item) => {
               const Icon = item.icon;
-              const isActive = pathname === item.href || (item.name === "Dashboard" && pathname === "/dashboard/viewer");
+              const isActive = pathname === item.href || (item.name === "Dashboard" && pathname === "/owner-dashboard/viewer");
               return (
                 <Link
                   key={item.name}
@@ -134,7 +134,7 @@ export default function ViewerDashboardPage() {
           </Link>
 
           <Link
-            href="/dashboard/profile"
+            href="/owner-dashboard/profile"
             className="flex items-center gap-3 px-3.5 py-2 rounded-xl text-xs font-medium text-slate-600 hover:bg-slate-100 transition-all"
           >
             <UserCheck className="h-4 w-4 text-slate-400" />
@@ -255,7 +255,7 @@ export default function ViewerDashboardPage() {
                   {memories[0]?.description || "Shared by Amina Rahman • A wonderful weekend celebrating with extended family."}
                 </p>
                 <Link
-                  href="/dashboard/memories"
+                  href="/owner-dashboard/memories"
                   className="inline-flex items-center gap-2 text-xs font-bold text-white hover:text-indigo-300 transition-colors pt-1"
                 >
                   <span>View Gallery</span>
@@ -271,7 +271,7 @@ export default function ViewerDashboardPage() {
                 <div className="flex items-center justify-between">
                   <h3 className="font-bold text-sm text-slate-900">Lineage Preview</h3>
                   <Link
-                    href="/dashboard/tree"
+                    href="/owner-dashboard/tree"
                     className="text-xs font-bold text-indigo-600 hover:text-indigo-800 transition-colors"
                   >
                     Explore Tree
@@ -362,7 +362,7 @@ export default function ViewerDashboardPage() {
 
                 <div className="pt-2 text-center border-t border-slate-100">
                   <Link
-                    href="/dashboard/events"
+                    href="/owner-dashboard/events"
                     className="text-xs font-bold text-indigo-600 hover:text-indigo-800 transition-colors"
                   >
                     View Full Calendar
@@ -377,7 +377,7 @@ export default function ViewerDashboardPage() {
             <div className="flex items-center justify-between">
               <h2 className="font-bold text-lg text-slate-900">Key Family Members</h2>
               <Link
-                href="/dashboard/members"
+                href="/owner-dashboard/members"
                 className="text-xs font-bold text-indigo-600 hover:text-indigo-800 transition-colors inline-flex items-center gap-1"
               >
                 <span>View Directory</span>
@@ -406,7 +406,7 @@ export default function ViewerDashboardPage() {
               ))}
 
               <Link
-                href="/dashboard/members"
+                href="/owner-dashboard/members"
                 className="p-4 rounded-xl bg-indigo-50/50 border border-indigo-100 flex flex-col items-center text-center justify-center space-y-1 cursor-pointer hover:bg-indigo-100/50 transition-colors"
               >
                 <span className="text-xl font-extrabold text-indigo-600">+{members.length}</span>
