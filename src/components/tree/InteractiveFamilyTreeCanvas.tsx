@@ -107,7 +107,9 @@ export default function InteractiveFamilyTreeCanvas({
       try {
         setConnections(JSON.parse(savedConnections));
         return;
-      } catch (e) {}
+      } catch (e) {
+        console.error("Failed to parse stored connections", e);
+      }
     }
 
     if (serverRelationships.length > 0 && members.length > 0) {
@@ -290,7 +292,9 @@ export default function InteractiveFamilyTreeCanvas({
           toPersonId: toM.id,
           typeCode: relType,
         }).unwrap();
-      } catch (err) {}
+      } catch (err) {
+        console.error("Failed to post relationship link to backend", err);
+      }
     }
 
     setSelectedSourceId(null);
