@@ -88,6 +88,17 @@ export const familyApi = baseApi.injectEndpoints({
       query: () => "/family/sanctuary",
       providesTags: ["Sanctuary"],
     }),
+    updateFamilyDetails: builder.mutation<
+      any,
+      { name?: string; description?: string }
+    >({
+      query: (body) => ({
+        url: "/family/update",
+        method: "PATCH",
+        body,
+      }),
+      invalidatesTags: ["Sanctuary"],
+    }),
     getMembers: builder.query<FamilyMemberRecord[], void>({
       query: () => "/family/members",
       providesTags: ["Members"],
@@ -249,6 +260,7 @@ export const familyApi = baseApi.injectEndpoints({
 
 export const {
   useGetSanctuaryQuery,
+  useUpdateFamilyDetailsMutation,
   useGetMembersQuery,
   useAddMemberMutation,
   useUpdateMemberMutation,
