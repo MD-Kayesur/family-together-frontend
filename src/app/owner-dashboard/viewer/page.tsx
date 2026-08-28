@@ -34,6 +34,7 @@ import {
   useGetEventsQuery,
   useGetMembersQuery,
 } from "@/redux/api/familyApi";
+import UserNavbarAvatarMenu from "@/components/dashboard/UserNavbarAvatarMenu";
 
 export default function ViewerDashboardPage() {
   const pathname = usePathname();
@@ -123,35 +124,10 @@ export default function ViewerDashboardPage() {
           </nav>
         </div>
 
-        {/* Sidebar Footer */}
-        <div className="space-y-1 pt-4 border-t border-slate-100">
-          <Link
-            href="/support"
-            className="flex items-center gap-3 px-3.5 py-2 rounded-xl text-xs font-medium text-slate-600 hover:bg-slate-100 transition-all"
-          >
-            <HelpCircle className="h-4 w-4 text-slate-400" />
-            <span>Help & Support</span>
-          </Link>
-
-          <Link
-            href="/owner-dashboard/profile"
-            className="flex items-center gap-3 px-3.5 py-2 rounded-xl text-xs font-medium text-slate-600 hover:bg-slate-100 transition-all"
-          >
-            <UserCheck className="h-4 w-4 text-slate-400" />
-            <span>User Profile</span>
-          </Link>
-
-          <button
-            type="button"
-            onClick={async () => {
-              await logout();
-              router.push("/signin");
-            }}
-            className="w-full flex items-center gap-3 px-3.5 py-2 rounded-xl text-xs font-medium text-rose-600 hover:bg-rose-50 transition-all text-left cursor-pointer"
-          >
-            <LogOut className="h-4 w-4 text-rose-500" />
-            <span>Logout</span>
-          </button>
+        {/* Clean Sidebar Footer */}
+        <div className="pt-4 border-t border-slate-100 flex items-center justify-between text-[11px] font-bold text-slate-400">
+          <span>FamilyRoots Guest Sanctuary</span>
+          <span className="h-2 w-2 rounded-full bg-indigo-500" />
         </div>
       </aside>
 
@@ -178,10 +154,8 @@ export default function ViewerDashboardPage() {
               <span className="absolute top-1.5 right-1.5 h-2 w-2 rounded-full bg-rose-500 ring-2 ring-white" />
             </button>
 
-            <div className="flex items-center gap-2 pl-2 border-l border-slate-200">
-              <div className="h-8 w-8 rounded-full bg-indigo-600 text-white font-bold text-xs flex items-center justify-center shadow-sm">
-                {user.fullName.charAt(0)}
-              </div>
+            <div className="pl-2 border-l border-slate-200">
+              <UserNavbarAvatarMenu />
             </div>
           </div>
         </header>

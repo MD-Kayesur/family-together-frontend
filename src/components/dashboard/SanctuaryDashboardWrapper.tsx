@@ -14,13 +14,11 @@ import {
   FolderLock,
   Mail,
   Settings,
-  HelpCircle,
-  LogOut,
   Bell,
-  Search
+  Search,
 } from "lucide-react";
 import { useAppSelector } from "@/redux/store";
-import { useLogoutMutation } from "@/redux/api/authApi";
+import UserNavbarAvatarMenu from "@/components/dashboard/UserNavbarAvatarMenu";
 
 interface SanctuaryDashboardWrapperProps {
   children: React.ReactNode;
@@ -36,7 +34,6 @@ export default function SanctuaryDashboardWrapper({
   const pathname = usePathname();
   const router = useRouter();
   const { user, isAuthenticated } = useAppSelector((state) => state.auth);
-  const [logout] = useLogoutMutation();
 
   // Route Protection: Redirect unauthenticated users to Sign In
   useEffect(() => {
@@ -119,39 +116,10 @@ export default function SanctuaryDashboardWrapper({
           </nav>
         </div>
 
-        {/* Sidebar Footer */}
-        <div className="space-y-1 pt-4 border-t border-slate-100">
-          <Link
-            href="/support"
-            className={`flex items-center gap-3 px-3.5 py-2 rounded-xl text-xs font-medium transition-all ${
-              pathname === "/support" ? "bg-indigo-600 text-white font-semibold" : "text-slate-600 hover:bg-slate-100"
-            }`}
-          >
-            <HelpCircle className="h-4 w-4" />
-            <span>Help & Support</span>
-          </Link>
-
-          <Link
-            href="/owner-dashboard/profile"
-            className={`flex items-center gap-3 px-3.5 py-2 rounded-xl text-xs font-medium transition-all ${
-              pathname === "/owner-dashboard/profile" ? "bg-indigo-600 text-white font-semibold" : "text-slate-600 hover:bg-slate-100"
-            }`}
-          >
-            <UserCheck className="h-4 w-4" />
-            <span>User Profile</span>
-          </Link>
-
-          <button
-            type="button"
-            onClick={async () => {
-              await logout();
-              router.push("/signin");
-            }}
-            className="w-full flex items-center gap-3 px-3.5 py-2 rounded-xl text-xs font-medium text-rose-600 hover:bg-rose-50 transition-all text-left cursor-pointer"
-          >
-            <LogOut className="h-4 w-4 text-rose-500" />
-            <span>Logout</span>
-          </button>
+        {/* Clean Sidebar Footer */}
+        <div className="pt-4 border-t border-slate-100 flex items-center justify-between text-[11px] font-bold text-slate-400">
+          <span>FamilyRoots Sanctuary</span>
+          <span className="h-2 w-2 rounded-full bg-emerald-500" />
         </div>
       </aside>
 
@@ -178,10 +146,8 @@ export default function SanctuaryDashboardWrapper({
               <span className="absolute top-1.5 right-1.5 h-2 w-2 rounded-full bg-rose-500 ring-2 ring-white" />
             </button>
 
-            <div className="flex items-center gap-2 pl-2 border-l border-slate-200">
-              <div className="h-8 w-8 rounded-full bg-indigo-600 text-white font-bold text-xs flex items-center justify-center shadow-sm">
-                {user.fullName.charAt(0)}
-              </div>
+            <div className="pl-2 border-l border-slate-200">
+              <UserNavbarAvatarMenu />
             </div>
           </div>
         </header>
