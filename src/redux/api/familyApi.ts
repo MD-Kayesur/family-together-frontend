@@ -34,6 +34,7 @@ export interface MemoryRecord {
   description?: string;
   sharedBy?: string;
   photoCount?: number;
+  mediaUrl?: string;
   createdAt?: string;
 }
 
