@@ -153,7 +153,17 @@ export const familyApi = baseApi.injectEndpoints({
     }),
     addMemory: builder.mutation<
       MemoryRecord,
-      { title: string; description?: string; sharedBy?: string }
+      {
+        title: string;
+        description?: string;
+        sharedBy?: string;
+        date?: string;
+        location?: string;
+        category?: string;
+        mediaUrl?: string;
+        taggedMembers?: string;
+        privacy?: string;
+      }
     >({
       query: (body) => ({
         url: "/family/memories",
