@@ -6,6 +6,7 @@ import {
   useGetDocumentsQuery,
   useAddDocumentMutation,
   useDeleteDocumentMutation,
+  DocumentRecord,
 } from "@/redux/api/familyApi";
 import {
   FolderLock,
@@ -18,7 +19,9 @@ import {
   Upload,
   FileCheck,
   FileCode,
+  Eye,
 } from "lucide-react";
+import PdfViewportModal from "@/components/modals/PdfViewportModal";
 
 export default function DocumentsPage() {
   const { data: documents = [], isLoading } = useGetDocumentsQuery();
@@ -32,16 +35,18 @@ export default function DocumentsPage() {
   const [isUploading, setIsUploading] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
+  // PDF Viewport Modal State
+  const [selectedDocForViewer, setSelectedDocForViewer] = useState<DocumentRecord | null>(null);
+  const [isPdfModalOpen, setIsPdfModalOpen] = useState(false);
+
   // Handle PDF / File Selection
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files[0]) {
       const file = e.target.files[0];
       setSelectedFile(file);
-      // Auto fill title if blank
       if (!docName.trim()) {
         setDocName(file.name.replace(/\.[^/.]+$/, ""));
       }
-      // Calculate file size
       const sizeMb = (file.size / (1024 * 1024)).toFixed(1);
       setFileSizeStr(`${sizeMb} MB`);
     }
@@ -80,6 +85,11 @@ export default function DocumentsPage() {
     }
   };
 
+  const handleOpenPdfViewer = (doc: DocumentRecord) => {
+    setSelectedDocForViewer(doc);
+    setIsPdfModalOpen(true);
+  };
+
   return (
     <SanctuaryDashboardWrapper
       title="Legacy Documents Vault"
@@ -97,7 +107,7 @@ export default function DocumentsPage() {
                 {documents.length} Encrypted Vault Documents
               </h3>
               <p className="text-xs text-slate-500 font-medium">
-                256-bit AES Encrypted • PostgreSQL Protected Storage
+                256-bit AES Encrypted • Click any document card to view PDF in viewport
               </p>
             </div>
           </div>
@@ -238,15 +248,16 @@ export default function DocumentsPage() {
             {documents.map((doc) => (
               <div
                 key={doc.id}
-                className="bg-white border border-slate-200/80 rounded-3xl p-6 shadow-sm flex flex-col justify-between space-y-4 hover:shadow-lg transition-all"
+                className="bg-white border border-slate-200/80 rounded-3xl p-6 shadow-sm flex flex-col justify-between space-y-4 hover:shadow-xl transition-all cursor-pointer group"
+                onClick={() => handleOpenPdfViewer(doc)}
               >
                 <div className="flex items-start justify-between gap-3">
                   <div className="flex items-start gap-3">
-                    <div className="h-12 w-12 rounded-2xl bg-indigo-50 text-indigo-600 flex items-center justify-center shrink-0 shadow-sm">
+                    <div className="h-12 w-12 rounded-2xl bg-indigo-50 group-hover:bg-indigo-600 text-indigo-600 group-hover:text-white flex items-center justify-center shrink-0 shadow-sm transition-colors">
                       <FileText className="h-6 w-6" />
                     </div>
                     <div>
-                      <h4 className="font-bold text-slate-900 text-xs leading-snug break-all">
+                      <h4 className="font-bold text-slate-900 group-hover:text-indigo-600 transition-colors text-xs leading-snug break-all">
                         {doc.name}
                       </h4>
                       <span className="text-[10px] font-semibold text-slate-400">
@@ -257,7 +268,10 @@ export default function DocumentsPage() {
 
                   <button
                     type="button"
-                    onClick={() => handleDelete(doc.id, doc.name)}
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      handleDelete(doc.id, doc.name);
+                    }}
                     className="p-1 text-slate-400 hover:text-rose-600 transition-colors"
                     title="Delete document"
                   >
@@ -271,12 +285,15 @@ export default function DocumentsPage() {
                   </span>
                   <button
                     type="button"
-                    onClick={() => alert(`Downloading encrypted PDF: ${doc.name}`)}
-                    className="p-2 rounded-xl text-slate-600 hover:text-indigo-600 bg-slate-50 hover:bg-indigo-50 transition-colors flex items-center gap-1 text-xs font-bold"
-                    title="Download File"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      handleOpenPdfViewer(doc);
+                    }}
+                    className="px-3 py-1.5 rounded-xl text-indigo-600 bg-indigo-50 hover:bg-indigo-100 font-bold transition-colors flex items-center gap-1.5 text-xs cursor-pointer shadow-sm"
+                    title="View PDF in Viewport"
                   >
-                    <Download className="h-4 w-4" />
-                    <span>Download</span>
+                    <Eye className="h-4 w-4" />
+                    <span>View PDF</span>
                   </button>
                 </div>
               </div>
@@ -284,6 +301,13 @@ export default function DocumentsPage() {
           </div>
         )}
       </div>
+
+      {/* PDF Viewport Modal */}
+      <PdfViewportModal
+        isOpen={isPdfModalOpen}
+        onClose={() => setIsPdfModalOpen(false)}
+        document={selectedDocForViewer}
+      />
     </SanctuaryDashboardWrapper>
   );
 }
