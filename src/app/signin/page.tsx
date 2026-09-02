@@ -1,20 +1,22 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, Suspense } from "react";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { useSignInMutation, useForgotPasswordMutation } from "@/redux/api/authApi";
 import { useAppSelector } from "@/redux/store";
 import { getDashboardRouteByRole } from "@/lib/utils/roleUtils";
 
-export default function SignInPage() {
+function SignInContent() {
   const router = useRouter();
+  const searchParams = useSearchParams();
   const { user, isAuthenticated } = useAppSelector((state) => state.auth);
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [errorMsg, setErrorMsg] = useState("");
   const [successMsg, setSuccessMsg] = useState("");
+  const [needsVerification, setNeedsVerification] = useState(false);
 
   const [signIn, { isLoading: isSigningIn }] = useSignInMutation();
   const [forgotPassword] = useForgotPasswordMutation();
@@ -25,10 +27,22 @@ export default function SignInPage() {
     }
   }, [isAuthenticated, user, router]);
 
+  useEffect(() => {
+    const verified = searchParams.get("verified");
+    const paramEmail = searchParams.get("email");
+    if (paramEmail) {
+      setEmail(paramEmail);
+    }
+    if (verified === "true") {
+      setSuccessMsg("Email verified successfully! Please enter your password to sign in.");
+    }
+  }, [searchParams]);
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setErrorMsg("");
     setSuccessMsg("");
+    setNeedsVerification(false);
 
     if (!email || !email.includes("@")) {
       setErrorMsg("Please enter a valid email address.");
@@ -48,6 +62,9 @@ export default function SignInPage() {
         router.push(target);
       }, 800);
     } catch (err: any) {
+      if (err?.data?.requiresEmailVerification) {
+        setNeedsVerification(true);
+      }
       const message = err?.data?.message
         ? Array.isArray(err.data.message)
           ? err.data.message.join(", ")
@@ -120,9 +137,22 @@ export default function SignInPage() {
 
           {/* Alert messages */}
           {errorMsg && (
-            <div className="mb-4 p-3 rounded-lg bg-red-50 border border-red-200 text-red-700 text-xs font-medium flex items-center gap-2">
-              <span className="material-symbols-outlined text-[18px]">info</span>
-              <span>{errorMsg}</span>
+            <div className="mb-4 p-3.5 rounded-xl bg-red-50 border border-red-200 text-red-700 text-xs font-medium space-y-2">
+              <div className="flex items-center gap-2">
+                <span className="material-symbols-outlined text-[18px]">info</span>
+                <span>{errorMsg}</span>
+              </div>
+              {needsVerification && (
+                <div className="pt-1 border-t border-red-200/60">
+                  <Link
+                    href={`/signup?verifyEmail=${encodeURIComponent(email)}`}
+                    className="inline-flex items-center gap-1 font-semibold text-primary hover:underline underline-offset-2"
+                  >
+                    <span>Enter 6-digit verification code now</span>
+                    <span className="material-symbols-outlined text-[16px]">arrow_forward</span>
+                  </Link>
+                </div>
+              )}
             </div>
           )}
 
@@ -253,5 +283,19 @@ export default function SignInPage() {
         </div>
       </div>
     </main>
+  );
+}
+
+export default function SignInPage() {
+  return (
+    <Suspense
+      fallback={
+        <div className="min-h-screen flex items-center justify-center bg-background">
+          <div className="h-8 w-8 border-2 border-primary border-t-transparent rounded-full animate-spin" />
+        </div>
+      }
+    >
+      <SignInContent />
+    </Suspense>
   );
 }

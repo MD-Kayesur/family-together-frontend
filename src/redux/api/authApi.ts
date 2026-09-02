@@ -14,6 +14,23 @@ export interface SignInRequest {
   password: string;
 }
 
+export interface VerifyEmailRequest {
+  email: string;
+  code: string;
+}
+
+export interface ResendVerificationRequest {
+  email: string;
+}
+
+export interface SignUpResponse {
+  message: string;
+  userId?: string;
+  email?: string;
+  verificationCode?: string;
+  user?: User;
+}
+
 export interface AuthResponse {
   accessToken?: string;
   refreshToken?: string;
@@ -48,13 +65,33 @@ export const authApi = baseApi.injectEndpoints({
       invalidatesTags: ["User", "Auth"],
     }),
 
-    signUp: builder.mutation<AuthResponse, SignUpRequest>({
+    signUp: builder.mutation<SignUpResponse, SignUpRequest>({
       query: (userData) => ({
         url: "/auth/signup",
         method: "POST",
         body: userData,
       }),
       invalidatesTags: ["User"],
+    }),
+
+    verifyEmail: builder.mutation<{ message: string }, VerifyEmailRequest>({
+      query: (body) => ({
+        url: "/auth/verify-email",
+        method: "POST",
+        body,
+      }),
+      invalidatesTags: ["User", "Auth"],
+    }),
+
+    resendVerification: builder.mutation<
+      { message: string; verificationCode?: string },
+      ResendVerificationRequest
+    >({
+      query: (body) => ({
+        url: "/auth/resend-verification",
+        method: "POST",
+        body,
+      }),
     }),
 
     getProfile: builder.query<User, void>({
@@ -90,6 +127,8 @@ export const authApi = baseApi.injectEndpoints({
 export const {
   useSignInMutation,
   useSignUpMutation,
+  useVerifyEmailMutation,
+  useResendVerificationMutation,
   useGetProfileQuery,
   useForgotPasswordMutation,
   useLogoutMutation,
