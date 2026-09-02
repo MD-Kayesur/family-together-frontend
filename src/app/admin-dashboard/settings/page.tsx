@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState } from "react";
+<<<<<<< HEAD
 import {
   Settings,
   Shield,
@@ -16,10 +17,14 @@ import {
   Copy,
   Check,
 } from "lucide-react";
+=======
+import { Settings, Shield, Server, Database, Save, CheckCircle2 } from "lucide-react";
+>>>>>>> b36a47bb3e2e75eeae2080b97085c73043fc76d3
 
 export default function AdminSettingsPage() {
   const [saved, setSaved] = useState(false);
 
+<<<<<<< HEAD
   // 2FA Admin State
   const [is2FAEnabled, setIs2FAEnabled] = useState(true);
   const [twoFAMethod, setTwoFAMethod] = useState("TOTP");
@@ -62,6 +67,14 @@ export default function AdminSettingsPage() {
         <h1 className="text-3xl font-extrabold text-slate-900 tracking-tight">System Settings</h1>
         <p className="text-sm text-slate-500 font-normal">
           Configure security policies, 2FA authentication, database connections, and system options.
+=======
+  return (
+    <div className="space-y-8">
+      <div className="space-y-1">
+        <h1 className="text-3xl font-extrabold text-slate-900 tracking-tight">System Settings</h1>
+        <p className="text-sm text-slate-500 font-normal">
+          Configure security policies, database connections, and system-wide options.
+>>>>>>> b36a47bb3e2e75eeae2080b97085c73043fc76d3
         </p>
       </div>
 
@@ -73,7 +86,10 @@ export default function AdminSettingsPage() {
       )}
 
       <div className="space-y-6 max-w-3xl">
+<<<<<<< HEAD
         {/* Security & Token Expiry */}
+=======
+>>>>>>> b36a47bb3e2e75eeae2080b97085c73043fc76d3
         <div className="p-6 rounded-2xl bg-white border border-slate-200 shadow-sm space-y-4">
           <h2 className="font-bold text-lg text-slate-800 flex items-center gap-2">
             <Shield className="h-5 w-5 text-indigo-600" />
@@ -101,6 +117,7 @@ export default function AdminSettingsPage() {
           </div>
         </div>
 
+<<<<<<< HEAD
         {/* Admin 2FA Security Section */}
         <div className="p-6 rounded-2xl bg-white border border-slate-200 shadow-sm space-y-4">
           <div className="flex items-center justify-between border-b border-slate-100 pb-3">
@@ -187,6 +204,8 @@ export default function AdminSettingsPage() {
         </div>
 
         {/* Database Connection */}
+=======
+>>>>>>> b36a47bb3e2e75eeae2080b97085c73043fc76d3
         <div className="p-6 rounded-2xl bg-white border border-slate-200 shadow-sm space-y-4">
           <h2 className="font-bold text-lg text-slate-800 flex items-center gap-2">
             <Database className="h-5 w-5 text-emerald-600" />
@@ -215,6 +234,7 @@ export default function AdminSettingsPage() {
           className="px-6 py-3 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white font-bold text-xs shadow-md shadow-indigo-600/20 transition-all inline-flex items-center gap-2 cursor-pointer"
         >
           <Save className="h-4 w-4" />
+<<<<<<< HEAD
           <span>Save System Settings</span>
         </button>
       </div>
@@ -330,6 +350,11 @@ export default function AdminSettingsPage() {
           </div>
         </div>
       )}
+=======
+          <span>Save Changes</span>
+        </button>
+      </div>
+>>>>>>> b36a47bb3e2e75eeae2080b97085c73043fc76d3
     </div>
   );
 }
