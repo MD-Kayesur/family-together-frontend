@@ -3,14 +3,20 @@
 import React, { useState } from "react";
 import SanctuaryDashboardWrapper from "@/components/dashboard/SanctuaryDashboardWrapper";
 import { useGetMemoriesQuery } from "@/redux/api/familyApi";
+<<<<<<< HEAD
 import { Image as ImageIcon, Plus, Heart, Sparkles, Loader2, SlidersHorizontal } from "lucide-react";
 import AddMemoryModal from "@/components/modals/AddMemoryModal";
 import MediaSliderCarousel from "@/components/memories/MediaSliderCarousel";
 import MediaLightboxModal from "@/components/modals/MediaLightboxModal";
+=======
+import { Image as ImageIcon, Plus, Heart, Sparkles, Loader2 } from "lucide-react";
+import AddMemoryModal from "@/components/modals/AddMemoryModal";
+>>>>>>> b36a47bb3e2e75eeae2080b97085c73043fc76d3
 
 export default function MemoriesPage() {
   const { data: memories = [], isLoading } = useGetMemoriesQuery();
   const [isAddMemoryOpen, setIsAddMemoryOpen] = useState(false);
+<<<<<<< HEAD
   const [isLightboxOpen, setIsLightboxOpen] = useState(false);
   const [lightboxIndex, setLightboxIndex] = useState(0);
 
@@ -25,12 +31,15 @@ export default function MemoriesPage() {
     setLightboxIndex(index);
     setIsLightboxOpen(true);
   };
+=======
+>>>>>>> b36a47bb3e2e75eeae2080b97085c73043fc76d3
 
   return (
     <SanctuaryDashboardWrapper
       title="Family Memories Vault"
       subtitle="Shared media gallery, milestone stories, and photo archives stored in PostgreSQL."
     >
+<<<<<<< HEAD
       <div className="space-y-8 pb-12">
         {/* Action Header */}
         <div className="flex flex-wrap items-center justify-between gap-4 p-5 rounded-2xl bg-white border border-slate-200/80 shadow-sm">
@@ -44,18 +53,33 @@ export default function MemoriesPage() {
                 {memories.length} Memories & Milestone Media Items Preserved
               </p>
             </div>
+=======
+      <div className="space-y-6">
+        {/* Action Header */}
+        <div className="flex items-center justify-between p-4 rounded-2xl bg-white border border-slate-200/80 shadow-sm">
+          <div className="flex items-center gap-2">
+            <ImageIcon className="h-5 w-5 text-purple-600" />
+            <span className="font-bold text-xs text-slate-800">
+              {memories.length} Memories Archived
+            </span>
+>>>>>>> b36a47bb3e2e75eeae2080b97085c73043fc76d3
           </div>
 
           <button
             type="button"
             onClick={() => setIsAddMemoryOpen(true)}
+<<<<<<< HEAD
             className="px-4 py-2.5 rounded-xl bg-purple-600 hover:bg-purple-700 text-white font-bold text-xs shadow-md shadow-purple-600/25 flex items-center gap-2 cursor-pointer transition-all hover:scale-[1.02]"
+=======
+            className="px-4 py-2 rounded-xl bg-purple-600 hover:bg-purple-700 text-white font-bold text-xs shadow-md shadow-purple-600/25 flex items-center gap-2 cursor-pointer transition-all hover:scale-[1.02]"
+>>>>>>> b36a47bb3e2e75eeae2080b97085c73043fc76d3
           >
             <Plus className="h-4 w-4" />
             <span>Upload Memory</span>
           </button>
         </div>
 
+<<<<<<< HEAD
         {/* 1. Featured Media Slider Carousel Section */}
         {!isLoading && memories.length > 0 && (
           <div className="p-6 rounded-3xl bg-slate-900 text-white shadow-xl space-y-4">
@@ -151,6 +175,63 @@ export default function MemoriesPage() {
         currentIndex={lightboxIndex}
         onNavigate={(newIdx) => setLightboxIndex(newIdx)}
       />
+=======
+        {/* Memories Grid */}
+        {isLoading ? (
+          <div className="p-12 text-center flex items-center justify-center gap-3 text-slate-500 text-sm">
+            <Loader2 className="h-5 w-5 animate-spin text-purple-600" />
+            <span>Loading family memories from database...</span>
+          </div>
+        ) : memories.length === 0 ? (
+          <div className="p-12 text-center bg-white rounded-3xl border border-slate-200/80 space-y-3">
+            <ImageIcon className="h-10 w-10 text-slate-300 mx-auto" />
+            <h3 className="font-bold text-base text-slate-800">No memories uploaded yet</h3>
+            <p className="text-xs text-slate-500 max-w-sm mx-auto">
+              Preserve your first family photo or story in your private sanctuary archive.
+            </p>
+            <button
+              type="button"
+              onClick={() => setIsAddMemoryOpen(true)}
+              className="px-4 py-2 rounded-xl bg-purple-600 text-white font-bold text-xs shadow-md"
+            >
+              + Upload Memory
+            </button>
+          </div>
+        ) : (
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {memories.map((mem) => (
+              <div
+                key={mem.id}
+                className="bg-white border border-slate-200/80 rounded-3xl p-6 shadow-sm flex flex-col justify-between space-y-4 hover:shadow-md transition-all group"
+              >
+                <div className="h-44 rounded-2xl bg-gradient-to-tr from-purple-100 via-indigo-50 to-amber-50 flex items-center justify-center text-4xl shadow-inner relative overflow-hidden">
+                  <span className="group-hover:scale-110 transition-transform">📸</span>
+                  <span className="absolute top-3 right-3 bg-white/90 backdrop-blur-md px-2.5 py-1 rounded-full text-[10px] font-bold text-slate-700 shadow-sm">
+                    {mem.photoCount || 1} photos
+                  </span>
+                </div>
+
+                <div className="space-y-1.5">
+                  <h4 className="font-extrabold text-slate-900 text-base leading-tight">
+                    {mem.title}
+                  </h4>
+                  <p className="text-xs text-slate-600 leading-relaxed">
+                    {mem.description || "No description provided."}
+                  </p>
+                </div>
+
+                <div className="pt-3 border-t border-slate-100 text-[11px] font-medium text-slate-400 flex items-center justify-between">
+                  <span>Shared by {mem.sharedBy || "Family Member"}</span>
+                  <Heart className="h-4 w-4 text-rose-500 fill-rose-500" />
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
+      </div>
+
+      <AddMemoryModal isOpen={isAddMemoryOpen} onClose={() => setIsAddMemoryOpen(false)} />
+>>>>>>> b36a47bb3e2e75eeae2080b97085c73043fc76d3
     </SanctuaryDashboardWrapper>
   );
 }
