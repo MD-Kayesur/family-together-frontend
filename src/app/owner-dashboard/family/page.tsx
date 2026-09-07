@@ -1,6 +1,5 @@
 "use client";
 
-<<<<<<< HEAD
 import React, { useState } from "react";
 import SanctuaryDashboardWrapper from "@/components/dashboard/SanctuaryDashboardWrapper";
 import {
@@ -28,10 +27,12 @@ import {
   Loader2,
   X,
   Check,
+  ExternalLink,
 } from "lucide-react";
 import Link from "next/link";
 import AddMemberModal from "@/components/modals/AddMemberModal";
 import AddMemoryModal from "@/components/modals/AddMemoryModal";
+import InteractiveFamilyTreeCanvas from "@/components/tree/InteractiveFamilyTreeCanvas";
 
 export default function MyFamilyPage() {
   const { data: sanctuaryData, isLoading: isLoadingSanctuary } = useGetSanctuaryQuery();
@@ -93,21 +94,10 @@ export default function MyFamilyPage() {
       alert("Failed to update family details.");
     }
   };
-=======
-import React from "react";
-import SanctuaryDashboardWrapper from "@/components/dashboard/SanctuaryDashboardWrapper";
-import { useGetSanctuaryQuery } from "@/redux/api/familyApi";
-import { Users, ShieldCheck, Heart, Calendar, ArrowRight } from "lucide-react";
-import Link from "next/link";
-
-export default function MyFamilyPage() {
-  const { data: sanctuaryData, isLoading } = useGetSanctuaryQuery();
->>>>>>> b36a47bb3e2e75eeae2080b97085c73043fc76d3
 
   return (
     <SanctuaryDashboardWrapper
       title="My Family Sanctuary"
-<<<<<<< HEAD
       subtitle="Central lineage hub for managing your family network, member records, and legacy stats."
     >
       <div className="space-y-8 pb-12">
@@ -170,50 +160,10 @@ export default function MyFamilyPage() {
               <TreePine className="h-4 w-4" />
               <span>Explore 2D Canvas</span>
               <ArrowRight className="h-3.5 w-3.5" />
-=======
-      subtitle="Overview of your family sanctuary network, member statistics, and heritage details."
-    >
-      <div className="space-y-8">
-        {/* Main Family Banner */}
-        <div className="p-8 rounded-3xl bg-gradient-to-r from-indigo-900 via-indigo-800 to-purple-900 text-white shadow-xl relative overflow-hidden space-y-4">
-          <div className="flex items-center gap-3">
-            <span className="px-3 py-1 rounded-full text-xs font-bold bg-white/20 backdrop-blur-md uppercase tracking-wider">
-              Primary Sanctuary
-            </span>
-            <span className="text-xs text-indigo-200 font-semibold flex items-center gap-1">
-              <ShieldCheck className="h-4 w-4 text-emerald-400" /> Private & Secured
-            </span>
-          </div>
-
-          <h2 className="text-3xl sm:text-4xl font-extrabold tracking-tight">
-            {sanctuaryData?.family?.name || "The Rahman Family"}
-          </h2>
-          <p className="text-sm text-indigo-100 max-w-3xl leading-relaxed">
-            {sanctuaryData?.family?.description ||
-              "Established in roots of resilience and growth. Dedicated to preserving our shared history, celebrating current milestones, and connecting generations across the globe."}
-          </p>
-
-          <div className="flex flex-wrap gap-4 pt-2">
-            <Link
-              href="/owner-dashboard/members"
-              className="bg-white text-indigo-900 px-5 py-2.5 rounded-xl font-bold text-xs hover:bg-indigo-50 transition-all shadow-md flex items-center gap-2"
-            >
-              <Users className="h-4 w-4" />
-              <span>View All Members ({sanctuaryData?.stats?.totalMembers ?? 42})</span>
-            </Link>
-
-            <Link
-              href="/owner-dashboard/tree"
-              className="bg-indigo-700/80 text-white border border-indigo-500/50 px-5 py-2.5 rounded-xl font-bold text-xs hover:bg-indigo-600 transition-all flex items-center gap-2"
-            >
-              <span>Explore Family Tree</span>
-              <ArrowRight className="h-4 w-4" />
->>>>>>> b36a47bb3e2e75eeae2080b97085c73043fc76d3
             </Link>
           </div>
         </div>
 
-<<<<<<< HEAD
         {/* 2. Key Stats Grid */}
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
           <div className="p-5 rounded-2xl bg-white border border-slate-200/80 shadow-sm space-y-2">
@@ -272,7 +222,27 @@ export default function MyFamilyPage() {
           </div>
         </div>
 
-        {/* 3. Ancestral Lineage & Heritage Cards */}
+        {/* 3. Interactive Family Tree 2D Canvas Overview */}
+        <div className="p-6 rounded-2xl bg-white border border-slate-200/80 shadow-sm space-y-6 w-full">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-2">
+              <TreePine className="h-5 w-5 text-indigo-600" />
+              <h2 className="font-bold text-xl text-slate-900">Family Tree Overview</h2>
+            </div>
+            <Link
+              href="/owner-dashboard/tree"
+              className="text-xs font-bold text-indigo-600 hover:text-indigo-800 transition-colors inline-flex items-center gap-1"
+            >
+              <span>Open Full Tree Canvas</span>
+              <ExternalLink className="h-3.5 w-3.5" />
+            </Link>
+          </div>
+
+          {/* Dynamic Full Screen Viewport 2D Canvas */}
+          <InteractiveFamilyTreeCanvas />
+        </div>
+
+        {/* 4. Ancestral Lineage & Heritage Cards */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
           <div className="p-6 rounded-2xl bg-white border border-slate-200/80 shadow-sm space-y-3">
             <div className="flex items-center gap-2">
@@ -446,44 +416,6 @@ export default function MyFamilyPage() {
       {/* Modals */}
       <AddMemberModal isOpen={isAddMemberOpen} onClose={() => setIsAddMemberOpen(false)} />
       <AddMemoryModal isOpen={isAddMemoryOpen} onClose={() => setIsAddMemoryOpen(false)} />
-=======
-        {/* Stats Grid */}
-        <div className="grid grid-cols-1 sm:grid-cols-3 gap-6">
-          <div className="p-6 rounded-2xl bg-white border border-slate-200/80 shadow-sm space-y-2">
-            <div className="flex items-center justify-between">
-              <span className="text-xs font-bold text-slate-500">Total Members</span>
-              <Users className="h-5 w-5 text-indigo-600" />
-            </div>
-            <span className="text-3xl font-extrabold text-slate-900">
-              {sanctuaryData?.stats?.totalMembers ?? 42}
-            </span>
-            <p className="text-xs text-slate-500">Fetched live from PostgreSQL</p>
-          </div>
-
-          <div className="p-6 rounded-2xl bg-white border border-slate-200/80 shadow-sm space-y-2">
-            <div className="flex items-center justify-between">
-              <span className="text-xs font-bold text-slate-500">Relationships</span>
-              <Heart className="h-5 w-5 text-rose-600" />
-            </div>
-            <span className="text-3xl font-extrabold text-slate-900">
-              {sanctuaryData?.stats?.relationships ?? 86}
-            </span>
-            <p className="text-xs text-slate-500">Biological & Marital Nodes</p>
-          </div>
-
-          <div className="p-6 rounded-2xl bg-white border border-slate-200/80 shadow-sm space-y-2">
-            <div className="flex items-center justify-between">
-              <span className="text-xs font-bold text-slate-500">Memories Archived</span>
-              <Calendar className="h-5 w-5 text-emerald-600" />
-            </div>
-            <span className="text-3xl font-extrabold text-slate-900">
-              {sanctuaryData?.stats?.totalMemories ?? 45}
-            </span>
-            <p className="text-xs text-slate-500">Photos & Historical Vaults</p>
-          </div>
-        </div>
-      </div>
->>>>>>> b36a47bb3e2e75eeae2080b97085c73043fc76d3
     </SanctuaryDashboardWrapper>
   );
 }

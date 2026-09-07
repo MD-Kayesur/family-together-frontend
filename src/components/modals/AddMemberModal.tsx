@@ -15,6 +15,9 @@ import {
   Heart,
   FileText,
   Building,
+  KeyRound,
+  Mail,
+  ShieldCheck,
 } from "lucide-react";
 import { useAddMemberMutation } from "@/redux/api/familyApi";
 
@@ -36,6 +39,10 @@ export default function AddMemberModal({ isOpen, onClose }: AddMemberModalProps)
   const [dob, setDob] = useState("");
   const [birthplace, setBirthplace] = useState("");
   const [dateOfPassing, setDateOfPassing] = useState("");
+
+  // Platform User Account & Login Credentials
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
 
   // Professional & Residence Details
   const [occupation, setOccupation] = useState("");
@@ -68,6 +75,8 @@ export default function AddMemberModal({ isOpen, onClose }: AddMemberModalProps)
         lastName: lastName.trim(),
         middleName: middleName.trim(),
         nickname: nickname.trim(),
+        email: email.trim() || undefined,
+        password: password.trim() || undefined,
         gender,
         isDeceased,
         dob,
@@ -80,13 +89,19 @@ export default function AddMemberModal({ isOpen, onClose }: AddMemberModalProps)
         bio: bio.trim(),
       }).unwrap();
 
-      setSuccessMsg("Family member profile & recognition details saved to PostgreSQL Database!");
+      setSuccessMsg(
+        email.trim()
+          ? `Member added! Active login account created for ${email.trim()} with password "${password.trim() || 'Family@123'}".`
+          : "Family member profile & recognition details saved to PostgreSQL Database!"
+      );
       setTimeout(() => {
         // Reset form
         setFirstName("");
         setMiddleName("");
         setLastName("");
         setNickname("");
+        setEmail("");
+        setPassword("");
         setGender("MALE");
         setIsDeceased(false);
         setDob("");
@@ -99,7 +114,7 @@ export default function AddMemberModal({ isOpen, onClose }: AddMemberModalProps)
         setBio("");
         setSuccessMsg("");
         onClose();
-      }, 1200);
+      }, 1500);
     } catch (err: any) {
       setErrorMsg(err?.data?.message || "Failed to add family member.");
     }
@@ -373,6 +388,58 @@ export default function AddMemberModal({ isOpen, onClose }: AddMemberModalProps)
                 onChange={(e) => setBio(e.target.value)}
                 className="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 dark:border-stone-700 bg-slate-50 dark:bg-stone-800 text-slate-800 dark:text-white focus:ring-2 focus:ring-indigo-500 focus:outline-none font-medium resize-none"
               />
+            </div>
+          </div>
+
+          {/* Section 4: Platform Login Credentials & User Dashboard Access */}
+          <div className="space-y-3 pt-2 border-t border-slate-100 dark:border-stone-800">
+            <div className="flex items-center justify-between">
+              <h3 className="font-bold text-slate-900 dark:text-white text-xs uppercase tracking-wider text-indigo-600 flex items-center gap-1.5">
+                <KeyRound className="h-4 w-4" />
+                <span>4. Platform Login & User Dashboard Access</span>
+              </h3>
+              <span className="text-[10px] font-bold text-emerald-600 bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-200 dark:border-emerald-800 px-2 py-0.5 rounded-full flex items-center gap-1">
+                <ShieldCheck className="h-3 w-3" />
+                Active USER Role
+              </span>
+            </div>
+
+            <p className="text-[11px] text-slate-500 dark:text-slate-400">
+              Provide a Gmail / email address to automatically create an active user login. This member will be able to log in directly to explore their family tree and change their credentials.
+            </p>
+
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              <div>
+                <label className="block font-bold text-slate-700 dark:text-slate-200 mb-1">
+                  Member Email (Gmail)
+                </label>
+                <div className="relative">
+                  <Mail className="h-4 w-4 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2" />
+                  <input
+                    type="email"
+                    placeholder="e.g. member@gmail.com"
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
+                    className="w-full pl-9 pr-3.5 py-2.5 rounded-xl border border-slate-200 dark:border-stone-700 bg-slate-50 dark:bg-stone-800 text-slate-800 dark:text-white focus:ring-2 focus:ring-indigo-500 focus:outline-none font-medium"
+                  />
+                </div>
+              </div>
+
+              <div>
+                <label className="block font-bold text-slate-700 dark:text-slate-200 mb-1">
+                  Initial Password
+                </label>
+                <div className="relative">
+                  <KeyRound className="h-4 w-4 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2" />
+                  <input
+                    type="text"
+                    placeholder="e.g. Family@123 (Defaults if blank)"
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
+                    className="w-full pl-9 pr-3.5 py-2.5 rounded-xl border border-slate-200 dark:border-stone-700 bg-slate-50 dark:bg-stone-800 text-slate-800 dark:text-white focus:ring-2 focus:ring-indigo-500 focus:outline-none font-medium"
+                  />
+                </div>
+              </div>
             </div>
           </div>
 

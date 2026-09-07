@@ -6,7 +6,6 @@ import {
   useGetSanctuaryQuery,
   useUpdateSanctuarySettingsMutation,
 } from "@/redux/api/familyApi";
-<<<<<<< HEAD
 import {
   Settings,
   Shield,
@@ -25,9 +24,6 @@ import {
   ShieldCheck,
   RefreshCw,
 } from "lucide-react";
-=======
-import { Settings, Shield, Bell, Lock, Save, Sparkles, Loader2 } from "lucide-react";
->>>>>>> b36a47bb3e2e75eeae2080b97085c73043fc76d3
 
 export default function SettingsPage() {
   const { data: sanctuaryData, isLoading } = useGetSanctuaryQuery();
@@ -39,7 +35,6 @@ export default function SettingsPage() {
   const [emailAlerts, setEmailAlerts] = useState(true);
   const [savedMsg, setSavedMsg] = useState("");
 
-<<<<<<< HEAD
   // 2FA State & Modals
   const [is2FAEnabled, setIs2FAEnabled] = useState(false);
   const [twoFAMethod, setTwoFAMethod] = useState("TOTP");
@@ -61,8 +56,6 @@ export default function SettingsPage() {
     "H5J9-2K33",
   ];
 
-=======
->>>>>>> b36a47bb3e2e75eeae2080b97085c73043fc76d3
   useEffect(() => {
     if (sanctuaryData?.family) {
       setSanctuaryName(sanctuaryData.family.name || "The Rahman Family");
@@ -81,7 +74,6 @@ export default function SettingsPage() {
     }
   };
 
-<<<<<<< HEAD
   const handleVerify2FACode = (e: React.FormEvent) => {
     e.preventDefault();
     setVerificationError("");
@@ -106,12 +98,6 @@ export default function SettingsPage() {
     <SanctuaryDashboardWrapper
       title="Sanctuary Settings & Security"
       subtitle="Configure global family access rules, two-factor authentication (2FA), and notification preferences."
-=======
-  return (
-    <SanctuaryDashboardWrapper
-      title="Sanctuary Settings & Privacy"
-      subtitle="Configure global family access rules, privacy visibility, and notification preferences live in PostgreSQL."
->>>>>>> b36a47bb3e2e75eeae2080b97085c73043fc76d3
     >
       {isLoading ? (
         <div className="p-12 text-center flex items-center justify-center gap-3 text-slate-500 text-sm bg-white rounded-3xl border border-slate-200/80">
@@ -119,11 +105,7 @@ export default function SettingsPage() {
           <span>Loading sanctuary configuration...</span>
         </div>
       ) : (
-<<<<<<< HEAD
         <form onSubmit={handleSave} className="space-y-6 max-w-4xl pb-12">
-=======
-        <form onSubmit={handleSave} className="space-y-6 max-w-4xl">
->>>>>>> b36a47bb3e2e75eeae2080b97085c73043fc76d3
           {savedMsg && (
             <div className="p-4 rounded-2xl bg-emerald-50 border border-emerald-200 text-emerald-700 text-xs font-bold flex items-center gap-2">
               <Sparkles className="h-4 w-4" />
@@ -131,11 +113,7 @@ export default function SettingsPage() {
             </div>
           )}
 
-<<<<<<< HEAD
           {/* 1. General Settings */}
-=======
-          {/* General Settings */}
->>>>>>> b36a47bb3e2e75eeae2080b97085c73043fc76d3
           <div className="p-6 rounded-3xl bg-white border border-slate-200/80 shadow-sm space-y-4">
             <h3 className="font-extrabold text-slate-900 text-base flex items-center gap-2">
               <Settings className="h-5 w-5 text-indigo-600" />
@@ -160,11 +138,7 @@ export default function SettingsPage() {
                   rows={3}
                   value={description}
                   onChange={(e) => setDescription(e.target.value)}
-<<<<<<< HEAD
                   className="w-full max-w-md px-3.5 py-2.5 rounded-xl border border-slate-200 bg-slate-50 text-slate-800 focus:ring-2 focus:ring-indigo-500 focus:outline-none font-medium resize-none"
-=======
-                  className="w-full max-w-md px-3.5 py-2.5 rounded-xl border border-slate-200 bg-slate-50 text-slate-800 focus:ring-2 focus:ring-indigo-500 focus:outline-none font-medium"
->>>>>>> b36a47bb3e2e75eeae2080b97085c73043fc76d3
                 />
               </div>
 
@@ -183,7 +157,6 @@ export default function SettingsPage() {
             </div>
           </div>
 
-<<<<<<< HEAD
           {/* 2. Two-Factor Authentication (2FA) Security Section */}
           <div className="p-6 rounded-3xl bg-white border border-slate-200/80 shadow-sm space-y-5">
             <div className="flex flex-wrap items-center justify-between gap-3 border-b border-slate-100 pb-4">
@@ -319,9 +292,6 @@ export default function SettingsPage() {
           </div>
 
           {/* 3. Notification Preferences */}
-=======
-          {/* Notification Preferences */}
->>>>>>> b36a47bb3e2e75eeae2080b97085c73043fc76d3
           <div className="p-6 rounded-3xl bg-white border border-slate-200/80 shadow-sm space-y-4">
             <h3 className="font-extrabold text-slate-900 text-base flex items-center gap-2">
               <Bell className="h-5 w-5 text-purple-600" />
@@ -342,10 +312,7 @@ export default function SettingsPage() {
             </div>
           </div>
 
-<<<<<<< HEAD
           {/* Submit Button */}
-=======
->>>>>>> b36a47bb3e2e75eeae2080b97085c73043fc76d3
           <button
             type="submit"
             disabled={isSaving}
@@ -356,7 +323,6 @@ export default function SettingsPage() {
           </button>
         </form>
       )}
-<<<<<<< HEAD
 
       {/* 2FA Setup Modal */}
       {isSetup2FAModalOpen && (
@@ -486,9 +452,3 @@ export default function SettingsPage() {
     </SanctuaryDashboardWrapper>
   );
 }
-=======
-    </SanctuaryDashboardWrapper>
-  );
-}
-
->>>>>>> b36a47bb3e2e75eeae2080b97085c73043fc76d3

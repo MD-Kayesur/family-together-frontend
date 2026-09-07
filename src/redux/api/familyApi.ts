@@ -109,6 +109,8 @@ export const familyApi = baseApi.injectEndpoints({
       {
         firstName: string;
         lastName: string;
+        email?: string;
+        password?: string;
         gender?: string;
         bio?: string;
         middleName?: string;

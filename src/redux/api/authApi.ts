@@ -1,5 +1,5 @@
 import { baseApi } from "./baseApi";
-import { setCredentials, logout, User } from "../slices/authSlice";
+import { setCredentials, logout, updateUser, User } from "../slices/authSlice";
 
 export interface SignUpRequest {
   email: string;
@@ -21,6 +21,18 @@ export interface VerifyEmailRequest {
 
 export interface ResendVerificationRequest {
   email: string;
+}
+
+export interface UpdateProfileRequest {
+  fullName?: string;
+  email?: string;
+  phoneNumber?: string;
+  bio?: string;
+}
+
+export interface ChangePasswordRequest {
+  oldPassword: string;
+  newPassword: string;
 }
 
 export interface SignUpResponse {
@@ -121,6 +133,39 @@ export const authApi = baseApi.injectEndpoints({
       },
       invalidatesTags: ["User", "Auth"],
     }),
+
+    updateProfile: builder.mutation<
+      { message: string; user: User },
+      UpdateProfileRequest
+    >({
+      query: (body) => ({
+        url: "/auth/profile",
+        method: "PATCH",
+        body,
+      }),
+      async onQueryStarted(_, { dispatch, queryFulfilled }) {
+        try {
+          const { data } = await queryFulfilled;
+          if (data?.user) {
+            dispatch(updateUser(data.user));
+          }
+        } catch {
+          // Handled in component
+        }
+      },
+      invalidatesTags: ["User"],
+    }),
+
+    changePassword: builder.mutation<
+      { message: string },
+      ChangePasswordRequest
+    >({
+      query: (body) => ({
+        url: "/auth/change-password",
+        method: "POST",
+        body,
+      }),
+    }),
   }),
 });
 
@@ -132,4 +177,6 @@ export const {
   useGetProfileQuery,
   useForgotPasswordMutation,
   useLogoutMutation,
+  useUpdateProfileMutation,
+  useChangePasswordMutation,
 } = authApi;

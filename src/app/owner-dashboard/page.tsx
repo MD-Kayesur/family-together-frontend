@@ -26,7 +26,13 @@ import {
   Clock,
   Bell,
   Sparkles,
-  ArrowRight
+  ArrowRight,
+  BarChart3,
+  TrendingUp,
+  PieChart,
+  Layers,
+  ChevronDown,
+  ShieldCheck,
 } from "lucide-react";
 import { useAppSelector } from "@/redux/store";
 import { useLogoutMutation } from "@/redux/api/authApi";
@@ -41,7 +47,6 @@ import ViewerDashboardPage from "./viewer/page";
 import UserNavbarAvatarMenu from "@/components/dashboard/UserNavbarAvatarMenu";
 import AddMemberModal from "@/components/modals/AddMemberModal";
 import AddMemoryModal from "@/components/modals/AddMemoryModal";
-import InteractiveFamilyTreeCanvas from "@/components/tree/InteractiveFamilyTreeCanvas";
 
 export default function DashboardPage() {
   const pathname = usePathname();
@@ -93,6 +98,25 @@ export default function DashboardPage() {
   }
 
   const familyName = user.fullName.split(" ").slice(-1)[0] || "Rahman";
+
+  const [timeRange, setTimeRange] = useState<"6M" | "1Y" | "ALL">("6M");
+
+  const totalMembersCount = members.length || 7;
+  const maleCount = members.filter((m) => m.gender === "MALE").length || 4;
+  const femaleCount = members.filter((m) => m.gender === "FEMALE").length || 3;
+  const malePct = Math.round((maleCount / totalMembersCount) * 100);
+  const femalePct = 100 - malePct;
+
+  const monthlyGrowth = [
+    { month: "Feb", count: 2, height: "30%" },
+    { month: "Mar", count: 3, height: "45%" },
+    { month: "Apr", count: 2, height: "30%" },
+    { month: "May", count: 4, height: "60%" },
+    { month: "Jun", count: 4, height: "60%" },
+    { month: "Jul", count: 5, height: "75%" },
+    { month: "Aug", count: 6, height: "90%" },
+    { month: "Sep", count: totalMembersCount, height: "100%", isCurrent: true },
+  ];
 
   const sidebarLinks = [
     { name: "Dashboard", href: "/owner-dashboard", icon: LayoutDashboard, badge: null },
@@ -173,42 +197,10 @@ export default function DashboardPage() {
           </nav>
         </div>
 
-<<<<<<< HEAD
         {/* Clean Sidebar Footer */}
         <div className="pt-4 border-t border-slate-100 flex items-center justify-between text-[11px] font-bold text-slate-400">
           <span>FamilyRoots Sanctuary</span>
           <span className="h-2 w-2 rounded-full bg-emerald-500" />
-=======
-        {/* Sidebar Footer */}
-        <div className="space-y-1 pt-4 border-t border-slate-100">
-          <Link
-            href="/support"
-            className="flex items-center gap-3 px-3.5 py-2 rounded-xl text-xs font-medium text-slate-600 hover:bg-slate-100 transition-all"
-          >
-            <HelpCircle className="h-4 w-4 text-slate-400" />
-            <span>Help & Support</span>
-          </Link>
-
-          <Link
-            href="/owner-dashboard/profile"
-            className="flex items-center gap-3 px-3.5 py-2 rounded-xl text-xs font-medium text-slate-600 hover:bg-slate-100 transition-all"
-          >
-            <UserCheck className="h-4 w-4 text-slate-400" />
-            <span>User Profile</span>
-          </Link>
-
-          <button
-            type="button"
-            onClick={async () => {
-              await logout();
-              router.push("/signin");
-            }}
-            className="w-full flex items-center gap-3 px-3.5 py-2 rounded-xl text-xs font-medium text-rose-600 hover:bg-rose-50 transition-all text-left cursor-pointer"
-          >
-            <LogOut className="h-4 w-4 text-rose-500" />
-            <span>Logout</span>
-          </button>
->>>>>>> b36a47bb3e2e75eeae2080b97085c73043fc76d3
         </div>
       </aside>
 
@@ -335,24 +327,350 @@ export default function DashboardPage() {
             </div>
           </div>
 
-          {/* FULL WIDTH Section 1: Family Tree Overview 2D Canvas */}
-          <div className="p-6 rounded-2xl bg-white border border-slate-200/80 shadow-sm space-y-6 w-full">
-            <div className="flex items-center justify-between">
-              <div className="flex items-center gap-2">
-                <TreePine className="h-5 w-5 text-indigo-600" />
-                <h2 className="font-bold text-xl text-slate-900">Family Tree Overview</h2>
+          {/* CHARTS & ANALYTICS SECTION */}
+          <div className="space-y-6">
+            {/* Header with Quick Time Range Selector */}
+            <div className="flex flex-wrap items-center justify-between gap-3 pt-2">
+              <div className="flex items-center gap-2.5">
+                <div className="h-9 w-9 rounded-xl bg-indigo-600 flex items-center justify-center text-white shadow-md shadow-indigo-600/30">
+                  <BarChart3 className="h-5 w-5" />
+                </div>
+                <div>
+                  <h2 className="font-extrabold text-xl text-slate-900 tracking-tight">
+                    Sanctuary Growth & Lineage Analytics
+                  </h2>
+                  <p className="text-xs text-slate-500 font-medium">
+                    Real-time member additions, generational balance, and tree distribution
+                  </p>
+                </div>
               </div>
-              <Link
-                href="/owner-dashboard/tree"
-                className="text-xs font-bold text-indigo-600 hover:text-indigo-800 transition-colors inline-flex items-center gap-1"
-              >
-                <span>Open Full Tree Canvas</span>
-                <ExternalLink className="h-3.5 w-3.5" />
-              </Link>
+
+              {/* Time Range Filter Buttons */}
+              <div className="flex items-center gap-1.5 p-1 bg-slate-100/80 rounded-xl border border-slate-200/60 text-xs font-bold">
+                <button
+                  type="button"
+                  onClick={() => setTimeRange("6M")}
+                  className={`px-3 py-1.5 rounded-lg transition-all cursor-pointer ${
+                    timeRange === "6M"
+                      ? "bg-white text-indigo-600 shadow-sm font-extrabold"
+                      : "text-slate-600 hover:text-slate-900"
+                  }`}
+                >
+                  Last 6 Months
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setTimeRange("1Y")}
+                  className={`px-3 py-1.5 rounded-lg transition-all cursor-pointer ${
+                    timeRange === "1Y"
+                      ? "bg-white text-indigo-600 shadow-sm font-extrabold"
+                      : "text-slate-600 hover:text-slate-900"
+                  }`}
+                >
+                  This Year
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setTimeRange("ALL")}
+                  className={`px-3 py-1.5 rounded-lg transition-all cursor-pointer ${
+                    timeRange === "ALL"
+                      ? "bg-white text-indigo-600 shadow-sm font-extrabold"
+                      : "text-slate-600 hover:text-slate-900"
+                  }`}
+                >
+                  All Time
+                </button>
+              </div>
             </div>
 
-            {/* Dynamic Full Screen Viewport 2D Canvas */}
-            <InteractiveFamilyTreeCanvas />
+            {/* Grid 1: Lineage Additions Bar Chart (2 Cols) + Generational Breakdown (1 Col) */}
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+              {/* Chart 1: Lineage Growth Trends (2 Columns) */}
+              <div className="lg:col-span-2 p-6 rounded-2xl bg-white border border-slate-200/80 shadow-sm flex flex-col justify-between space-y-6">
+                <div className="flex items-center justify-between">
+                  <div className="space-y-1">
+                    <div className="flex items-center gap-2 text-indigo-600 text-xs font-extrabold uppercase tracking-wider">
+                      <TrendingUp className="h-4 w-4" />
+                      <span>Monthly Member Additions</span>
+                    </div>
+                    <div className="flex items-baseline gap-2">
+                      <span className="text-2xl font-black text-slate-900">
+                        +{totalMembersCount} Relatives Documented
+                      </span>
+                      <span className="text-xs font-bold text-emerald-600 bg-emerald-50 px-2 py-0.5 rounded-full">
+                        +28.4% vs last quarter
+                      </span>
+                    </div>
+                  </div>
+
+                  <Link
+                    href="/owner-dashboard/family"
+                    className="text-xs font-bold text-indigo-600 hover:text-indigo-800 transition-colors inline-flex items-center gap-1"
+                  >
+                    <span>View Family Hub</span>
+                    <ArrowRight className="h-3.5 w-3.5" />
+                  </Link>
+                </div>
+
+                {/* Interactive Bar Chart Visualization */}
+                <div className="h-56 flex items-end justify-between gap-3 pt-6 px-2 border-t border-slate-100">
+                  {monthlyGrowth.map((item, idx) => (
+                    <div key={idx} className="flex-1 flex flex-col items-center gap-2 group relative">
+                      {/* Tooltip on Hover */}
+                      <div className="absolute -top-9 opacity-0 group-hover:opacity-100 transition-opacity bg-slate-900 text-white text-[10px] font-bold px-2 py-1 rounded-md shadow-md whitespace-nowrap pointer-events-none z-20">
+                        {item.count} added in {item.month}
+                      </div>
+
+                      {/* Bar Container */}
+                      <div className="w-full bg-slate-100/70 rounded-t-xl h-44 flex items-end p-1">
+                        <div
+                          style={{ height: item.height }}
+                          className={`w-full rounded-t-lg transition-all duration-500 ${
+                            item.isCurrent
+                              ? "bg-indigo-600 shadow-md shadow-indigo-600/30 group-hover:bg-indigo-500"
+                              : "bg-indigo-200/80 hover:bg-indigo-300"
+                          }`}
+                        />
+                      </div>
+
+                      {/* Month Label */}
+                      <span
+                        className={`text-[11px] font-bold ${
+                          item.isCurrent ? "text-indigo-600 font-extrabold" : "text-slate-400"
+                        }`}
+                      >
+                        {item.month}
+                      </span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              {/* Chart 2: Generational Hierarchy Breakdown (1 Column) */}
+              <div className="p-6 rounded-2xl bg-white border border-slate-200/80 shadow-sm flex flex-col justify-between space-y-6">
+                <div className="space-y-1">
+                  <div className="flex items-center gap-2 text-indigo-600 text-xs font-extrabold uppercase tracking-wider">
+                    <Layers className="h-4 w-4" />
+                    <span>Generations Distribution</span>
+                  </div>
+                  <h3 className="font-extrabold text-base text-slate-900">
+                    3 Active Generations
+                  </h3>
+                  <p className="text-xs text-slate-400 font-medium">Spanning patriarchs to grandchildren</p>
+                </div>
+
+                {/* Progress Bars for Generations */}
+                <div className="space-y-4 border-t border-slate-100 pt-4">
+                  {/* Gen 1 */}
+                  <div className="space-y-1.5">
+                    <div className="flex justify-between text-xs font-bold">
+                      <span className="text-slate-700">1st Gen (Patriarchs & Matriarchs)</span>
+                      <span className="text-indigo-600">2 members (20%)</span>
+                    </div>
+                    <div className="w-full bg-slate-100 rounded-full h-2.5 overflow-hidden">
+                      <div className="bg-indigo-600 h-2.5 rounded-full" style={{ width: "20%" }} />
+                    </div>
+                  </div>
+
+                  {/* Gen 2 */}
+                  <div className="space-y-1.5">
+                    <div className="flex justify-between text-xs font-bold">
+                      <span className="text-slate-700">2nd Gen (Parents, Aunts & Uncles)</span>
+                      <span className="text-emerald-600">4 members (50%)</span>
+                    </div>
+                    <div className="w-full bg-slate-100 rounded-full h-2.5 overflow-hidden">
+                      <div className="bg-emerald-500 h-2.5 rounded-full" style={{ width: "50%" }} />
+                    </div>
+                  </div>
+
+                  {/* Gen 3 */}
+                  <div className="space-y-1.5">
+                    <div className="flex justify-between text-xs font-bold">
+                      <span className="text-slate-700">3rd Gen (Children & Cousins)</span>
+                      <span className="text-purple-600">3 members (30%)</span>
+                    </div>
+                    <div className="w-full bg-slate-100 rounded-full h-2.5 overflow-hidden">
+                      <div className="bg-purple-500 h-2.5 rounded-full" style={{ width: "30%" }} />
+                    </div>
+                  </div>
+                </div>
+
+                <div className="pt-3 border-t border-slate-100 flex items-center justify-between text-[11px] font-semibold text-slate-400">
+                  <span>Deepest Lineage Depth</span>
+                  <span className="font-extrabold text-slate-700">3 Generations</span>
+                </div>
+              </div>
+            </div>
+
+            {/* Grid 2: Demographics Ratio Cards */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
+              {/* Gender Balance */}
+              <div className="p-6 rounded-2xl bg-white border border-slate-200/80 shadow-sm space-y-4">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-2 text-indigo-600 text-xs font-extrabold uppercase tracking-wider">
+                    <Users className="h-4 w-4" />
+                    <span>Gender Demographics</span>
+                  </div>
+                  <span className="text-xs font-bold text-slate-500">{totalMembersCount} total</span>
+                </div>
+
+                <div className="space-y-2">
+                  <div className="w-full bg-slate-100 rounded-full h-3 overflow-hidden flex">
+                    <div
+                      className="bg-indigo-600 h-3"
+                      style={{ width: `${malePct}%` }}
+                      title={`Male: ${malePct}%`}
+                    />
+                    <div
+                      className="bg-rose-500 h-3"
+                      style={{ width: `${femalePct}%` }}
+                      title={`Female: ${femalePct}%`}
+                    />
+                  </div>
+
+                  <div className="flex items-center justify-between text-xs font-bold pt-1">
+                    <div className="flex items-center gap-2 text-indigo-700">
+                      <span className="h-2.5 w-2.5 rounded-full bg-indigo-600" />
+                      <span>Male: {maleCount} ({malePct}%)</span>
+                    </div>
+                    <div className="flex items-center gap-2 text-rose-700">
+                      <span className="h-2.5 w-2.5 rounded-full bg-rose-500" />
+                      <span>Female: {femaleCount} ({femalePct}%)</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              {/* Relationship Types Breakdown */}
+              <div className="p-6 rounded-2xl bg-white border border-slate-200/80 shadow-sm space-y-4">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-2 text-indigo-600 text-xs font-extrabold uppercase tracking-wider">
+                    <Heart className="h-4 w-4" />
+                    <span>Lineage Connections Breakdown</span>
+                  </div>
+                  <span className="text-xs font-bold text-emerald-600">Active Sanctuary</span>
+                </div>
+
+                <div className="grid grid-cols-3 gap-3 text-center">
+                  <div className="p-3 rounded-xl bg-indigo-50/70 border border-indigo-100 space-y-1">
+                    <div className="font-extrabold text-indigo-900 text-base">65%</div>
+                    <div className="text-[10px] font-bold text-indigo-600 uppercase">Direct Bloodline</div>
+                  </div>
+                  <div className="p-3 rounded-xl bg-emerald-50/70 border border-emerald-100 space-y-1">
+                    <div className="font-extrabold text-emerald-900 text-base">25%</div>
+                    <div className="text-[10px] font-bold text-emerald-600 uppercase">Spousal Ties</div>
+                  </div>
+                  <div className="p-3 rounded-xl bg-purple-50/70 border border-purple-100 space-y-1">
+                    <div className="font-extrabold text-purple-900 text-base">10%</div>
+                    <div className="text-[10px] font-bold text-purple-600 uppercase">In-Laws/Adopted</div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* Grid 3: Recent Family Records & Member Summary Table */}
+            <div className="p-6 rounded-2xl bg-white border border-slate-200/80 shadow-sm space-y-5">
+              <div className="flex flex-wrap items-center justify-between gap-3">
+                <div>
+                  <h3 className="font-extrabold text-slate-900 text-lg">
+                    Recent Lineage & Member Records
+                  </h3>
+                  <p className="text-xs text-slate-500 font-medium">
+                    Family relatives and node profiles recorded in your sanctuary
+                  </p>
+                </div>
+
+                <div className="flex items-center gap-3">
+                  <Link
+                    href="/owner-dashboard/family"
+                    className="text-xs font-bold text-indigo-600 hover:text-indigo-800 transition-colors inline-flex items-center gap-1"
+                  >
+                    <span>Open Full 2D Canvas in My Family</span>
+                    <ExternalLink className="h-3.5 w-3.5" />
+                  </Link>
+                  <button
+                    type="button"
+                    onClick={() => setIsAddMemberOpen(true)}
+                    className="px-3.5 py-1.5 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white font-bold text-xs shadow-sm transition-all flex items-center gap-1.5 cursor-pointer"
+                  >
+                    <Plus className="h-3.5 w-3.5" />
+                    <span>Add Member</span>
+                  </button>
+                </div>
+              </div>
+
+              {/* Members Table */}
+              <div className="overflow-x-auto border border-slate-100 rounded-xl">
+                <table className="w-full text-left text-xs">
+                  <thead className="bg-slate-50 text-slate-400 font-bold uppercase text-[10px] tracking-wider border-b border-slate-100">
+                    <tr>
+                      <th className="py-3 px-4">Member Name</th>
+                      <th className="py-3 px-4">Generation</th>
+                      <th className="py-3 px-4">Gender</th>
+                      <th className="py-3 px-4">Sanctuary Role</th>
+                      <th className="py-3 px-4">Status</th>
+                      <th className="py-3 px-4 text-right">Lineage View</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-slate-100 font-medium text-slate-700">
+                    {members.slice(0, 5).map((m: any, idx: number) => (
+                      <tr key={m.id || idx} className="hover:bg-slate-50/70 transition-colors">
+                        <td className="py-3.5 px-4">
+                          <div className="flex items-center gap-3">
+                            <div
+                              className={`h-8 w-8 rounded-full flex items-center justify-center font-bold text-xs ${
+                                m.gender === "FEMALE"
+                                  ? "bg-rose-100 text-rose-700"
+                                  : "bg-indigo-100 text-indigo-700"
+                              }`}
+                            >
+                              {m.firstName ? m.firstName.charAt(0) : "R"}
+                            </div>
+                            <div>
+                              <p className="font-extrabold text-slate-900 text-xs">
+                                {m.firstName} {m.lastName}
+                              </p>
+                              <p className="text-[10px] text-slate-400 line-clamp-1">{m.bio || "Family relative"}</p>
+                            </div>
+                          </div>
+                        </td>
+                        <td className="py-3.5 px-4 font-bold text-indigo-600">
+                          {idx === 0 ? "Gen 1 (Patriarch)" : idx < 3 ? "Gen 2 (Core)" : "Gen 3 (Youth)"}
+                        </td>
+                        <td className="py-3.5 px-4">
+                          <span
+                            className={`px-2 py-0.5 rounded-md text-[10px] font-bold ${
+                              m.gender === "FEMALE"
+                                ? "bg-rose-50 text-rose-700 border border-rose-200"
+                                : "bg-indigo-50 text-indigo-700 border border-indigo-200"
+                            }`}
+                          >
+                            {m.gender || "Unspecified"}
+                          </span>
+                        </td>
+                        <td className="py-3.5 px-4 text-slate-600 font-semibold">
+                          {idx === 0 ? "Sanctuary Owner" : "Active Relative"}
+                        </td>
+                        <td className="py-3.5 px-4">
+                          <span className="inline-flex items-center gap-1 text-emerald-600 font-bold text-[11px]">
+                            <ShieldCheck className="h-3.5 w-3.5" />
+                            Verified Living
+                          </span>
+                        </td>
+                        <td className="py-3.5 px-4 text-right">
+                          <Link
+                            href="/owner-dashboard/family"
+                            className="font-bold text-indigo-600 hover:text-indigo-800 hover:underline"
+                          >
+                            View in Tree →
+                          </Link>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            </div>
           </div>
 
           {/* LOWER SECTION UNDER THE CANVAS: Action Required & Recent Activity Side by Side */}
