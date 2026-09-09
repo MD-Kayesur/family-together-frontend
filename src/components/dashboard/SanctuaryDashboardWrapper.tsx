@@ -23,7 +23,7 @@ import { getDashboardRouteByRole } from "@/lib/utils/roleUtils";
 
 interface SanctuaryDashboardWrapperProps {
   children: React.ReactNode;
-  title: string;
+  title?: string;
   subtitle?: string;
 }
 
@@ -155,10 +155,12 @@ export default function SanctuaryDashboardWrapper({
 
         {/* Content Container */}
         <main className="flex-1 p-8 space-y-6 w-full max-w-full">
-          <div className="space-y-1">
-            <h1 className="text-3xl font-extrabold text-slate-900 tracking-tight">{title}</h1>
-            {subtitle && <p className="text-sm text-slate-500 font-normal">{subtitle}</p>}
-          </div>
+          {title && (
+            <div className="space-y-1">
+              <h1 className="text-3xl font-extrabold text-slate-900 tracking-tight">{title}</h1>
+              {subtitle && <p className="text-sm text-slate-500 font-normal">{subtitle}</p>}
+            </div>
+          )}
 
           {children}
         </main>
