@@ -8,16 +8,9 @@ import {
   Image as ImageIcon,
   Calendar,
   Users,
-  Heart,
-  Mail,
   ArrowRight,
-  Shield,
   Sparkles,
-  Search,
-  Bell,
   CheckCircle,
-  HelpCircle,
-  FolderLock
 } from "lucide-react";
 import { useAppSelector } from "@/redux/store";
 import {
@@ -25,7 +18,7 @@ import {
   useGetEventsQuery,
   useGetMembersQuery,
 } from "@/redux/api/familyApi";
-import UserNavbarAvatarMenu from "@/components/dashboard/UserNavbarAvatarMenu";
+import SanctuaryDashboardWrapper from "@/components/dashboard/SanctuaryDashboardWrapper";
 
 export default function UserDashboardPage() {
   const router = useRouter();
@@ -56,74 +49,8 @@ export default function UserDashboardPage() {
   const userInitial = user.fullName ? user.fullName.charAt(0).toUpperCase() : "U";
 
   return (
-    <div className="min-h-screen flex flex-col bg-slate-50/70 font-sans text-slate-800 antialiased">
-      {/* Top Navigation Bar */}
-      <header className="h-16 bg-white border-b border-slate-200/80 px-6 sm:px-10 flex items-center justify-between sticky top-0 z-40 shadow-xs">
-        <div className="flex items-center gap-8">
-          <Link href="/" className="flex items-center gap-3 group">
-            <div className="h-9 w-9 rounded-xl bg-indigo-600 flex items-center justify-center text-white shadow-md shadow-indigo-600/30 group-hover:scale-105 transition-all">
-              <TreePine className="h-5 w-5 stroke-[2.5]" />
-            </div>
-            <div className="flex flex-col">
-              <span className="font-extrabold text-lg text-indigo-950 tracking-tight leading-none">
-                FamilyRoots
-              </span>
-              <span className="text-[10px] font-bold text-indigo-600 tracking-widest uppercase mt-0.5">
-                Member Portal
-              </span>
-            </div>
-          </Link>
-
-          {/* Quick Nav Links */}
-          <nav className="hidden md:flex items-center gap-1">
-            <Link
-              href="/user-dashboard"
-              className="px-3.5 py-1.5 rounded-lg text-xs font-semibold bg-indigo-50 text-indigo-600"
-            >
-              Dashboard
-            </Link>
-            <Link
-              href="/owner-dashboard/tree"
-              className="px-3.5 py-1.5 rounded-lg text-xs font-medium text-slate-600 hover:text-slate-900 hover:bg-slate-100 transition-colors"
-            >
-              Family Tree
-            </Link>
-            <Link
-              href="/owner-dashboard/memories"
-              className="px-3.5 py-1.5 rounded-lg text-xs font-medium text-slate-600 hover:text-slate-900 hover:bg-slate-100 transition-colors"
-            >
-              Memories
-            </Link>
-            <Link
-              href="/owner-dashboard/events"
-              className="px-3.5 py-1.5 rounded-lg text-xs font-medium text-slate-600 hover:text-slate-900 hover:bg-slate-100 transition-colors"
-            >
-              Events
-            </Link>
-            <Link
-              href="/support"
-              className="px-3.5 py-1.5 rounded-lg text-xs font-medium text-slate-600 hover:text-slate-900 hover:bg-slate-100 transition-colors"
-            >
-              Help & Support
-            </Link>
-          </nav>
-        </div>
-
-        {/* Right Action Icons */}
-        <div className="flex items-center gap-3">
-          <Link
-            href="/support"
-            className="p-2 rounded-full hover:bg-slate-100 text-slate-500 hover:text-slate-800 transition-colors cursor-pointer"
-            title="Help"
-          >
-            <HelpCircle className="h-4 w-4" />
-          </Link>
-          <UserNavbarAvatarMenu />
-        </div>
-      </header>
-
-      {/* Main Container */}
-      <main className="flex-1 max-w-7xl w-full mx-auto p-6 sm:p-10 space-y-8">
+    <SanctuaryDashboardWrapper>
+      <div className="space-y-8 w-full max-w-full">
         {/* Welcome Hero Card */}
         <div className="relative overflow-hidden rounded-3xl bg-linear-to-r from-indigo-900 via-indigo-800 to-slate-900 text-white p-8 sm:p-10 shadow-xl shadow-indigo-950/10">
           <div className="absolute -right-10 -bottom-10 opacity-10 pointer-events-none">
@@ -390,7 +317,7 @@ export default function UserDashboardPage() {
 
               <div className="pt-2">
                 <Link
-                  href="/owner-dashboard/profile"
+                  href="/user-dashboard/profile"
                   className="w-full flex items-center justify-center py-2 px-3 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 font-semibold text-xs transition-colors"
                 >
                   Edit Profile Settings
@@ -417,7 +344,7 @@ export default function UserDashboardPage() {
             </div>
           </div>
         </div>
-      </main>
-    </div>
+      </div>
+    </SanctuaryDashboardWrapper>
   );
 }
