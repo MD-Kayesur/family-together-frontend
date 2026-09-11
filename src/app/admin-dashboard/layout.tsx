@@ -19,6 +19,7 @@ import {
 } from "lucide-react";
 import { useAppSelector } from "@/redux/store";
 import { useLogoutMutation } from "@/redux/api/authApi";
+import ThemeToggle from "@/components/theme/ThemeToggle";
 
 export default function AdminLayout({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
@@ -133,53 +134,56 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
       {/* Main Area */}
       <div className="flex-1 flex flex-col min-w-0">
         {/* Top Header Bar */}
-        <header className="h-16 bg-white border-b border-slate-200 px-8 flex items-center justify-between sticky top-0 z-40">
+        <header className="h-16 bg-white dark:bg-slate-900 border-b border-slate-200 dark:border-slate-800 px-8 flex items-center justify-between sticky top-0 z-40 transition-colors duration-200">
           <div className="flex items-center gap-3">
-            <h1 className="font-bold text-lg text-slate-800">Admin Control Center</h1>
+            <h1 className="font-bold text-lg text-slate-800 dark:text-white">Admin Control Center</h1>
             {user.role?.toUpperCase() === "SUPER_ADMIN" && (
-              <span className="px-2.5 py-0.5 rounded text-[10px] font-extrabold bg-rose-100 text-rose-600 uppercase tracking-wider">
+              <span className="px-2.5 py-0.5 rounded text-[10px] font-extrabold bg-rose-100 dark:bg-rose-950/60 text-rose-600 dark:text-rose-400 uppercase tracking-wider">
                 SUPER ADMIN
               </span>
             )}
             {user.role?.toUpperCase() === "ADMIN" && (
-              <span className="px-2.5 py-0.5 rounded text-[10px] font-extrabold bg-indigo-100 text-indigo-600 uppercase tracking-wider">
+              <span className="px-2.5 py-0.5 rounded text-[10px] font-extrabold bg-indigo-100 dark:bg-indigo-950/60 text-indigo-600 dark:text-indigo-400 uppercase tracking-wider">
                 ADMIN
               </span>
             )}
           </div>
 
-          <div className="flex items-center gap-4">
+          <div className="flex items-center gap-3">
             {/* Search Input */}
             <div className="relative w-64">
-              <Search className="h-4 w-4 absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
+              <Search className="h-4 w-4 absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 dark:text-slate-500" />
               <input
                 type="text"
                 placeholder="Search logs, users..."
-                className="w-full pl-9 pr-4 py-1.5 bg-slate-100 border border-slate-200 rounded-full text-xs text-slate-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 placeholder:text-slate-400 transition-all"
+                className="w-full pl-9 pr-4 py-1.5 bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-full text-xs text-slate-700 dark:text-slate-200 focus:outline-none focus:ring-2 focus:ring-indigo-500 placeholder:text-slate-400 dark:placeholder:text-slate-500 transition-all"
               />
             </div>
+
+            {/* Theme Toggle Button (Sun & Moon) */}
+            <ThemeToggle />
 
             {/* Notification Bell */}
             <button
               type="button"
-              className="relative p-2 rounded-full hover:bg-slate-100 text-slate-600 transition-colors cursor-pointer"
+              className="relative p-2 rounded-full hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-600 dark:text-slate-300 transition-colors cursor-pointer"
               aria-label="Notifications"
             >
               <Bell className="h-5 w-5" />
-              <span className="absolute top-1.5 right-1.5 h-2 w-2 rounded-full bg-rose-500 ring-2 ring-white" />
+              <span className="absolute top-1.5 right-1.5 h-2 w-2 rounded-full bg-rose-500 ring-2 ring-white dark:ring-slate-900" />
             </button>
 
             {/* Settings Gear */}
             <Link
               href="/admin-dashboard/settings"
-              className="p-2 rounded-full hover:bg-slate-100 text-slate-600 transition-colors"
+              className="p-2 rounded-full hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-600 dark:text-slate-300 transition-colors"
               aria-label="Settings"
             >
               <Settings className="h-5 w-5" />
             </Link>
 
             {/* User Profile Avatar Pill */}
-            <div className="flex items-center gap-2 pl-2 border-l border-slate-200">
+            <div className="flex items-center gap-2 pl-2 border-l border-slate-200 dark:border-slate-700">
               <div className="h-8 w-8 rounded-full bg-indigo-600 text-white font-bold text-xs flex items-center justify-center shadow-sm">
                 {user.fullName.charAt(0)}
               </div>

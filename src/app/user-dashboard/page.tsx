@@ -100,20 +100,20 @@ export default function UserDashboardPage() {
           {/* Card 1: Family Tree */}
           <Link
             href="/owner-dashboard/tree"
-            className="group p-6 rounded-2xl bg-white border border-slate-200/80 hover:border-indigo-300 hover:shadow-lg hover:shadow-indigo-500/10 transition-all flex flex-col justify-between"
+            className="group p-6 rounded-2xl bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 hover:border-indigo-300 dark:hover:border-indigo-500/50 hover:shadow-lg hover:shadow-indigo-500/10 transition-all flex flex-col justify-between"
           >
             <div className="space-y-3">
-              <div className="h-11 w-11 rounded-xl bg-emerald-50 text-emerald-600 flex items-center justify-center group-hover:scale-105 transition-transform">
+              <div className="h-11 w-11 rounded-xl bg-emerald-50 dark:bg-emerald-950/50 text-emerald-600 dark:text-emerald-400 flex items-center justify-center group-hover:scale-105 transition-transform">
                 <TreePine className="h-5 w-5" />
               </div>
-              <h3 className="font-bold text-slate-900 text-sm group-hover:text-indigo-600 transition-colors">
+              <h3 className="font-bold text-slate-900 dark:text-white text-sm group-hover:text-indigo-600 dark:group-hover:text-indigo-400 transition-colors">
                 Interactive Family Tree
               </h3>
-              <p className="text-xs text-slate-500 leading-relaxed">
+              <p className="text-xs text-slate-500 dark:text-slate-400 leading-relaxed">
                 Visualize multi-generational family connections, ancestors, and descendants in an interactive canvas.
               </p>
             </div>
-            <div className="mt-4 pt-3 border-t border-slate-100 flex items-center justify-between text-xs font-semibold text-indigo-600">
+            <div className="mt-4 pt-3 border-t border-slate-100 dark:border-slate-800 flex items-center justify-between text-xs font-semibold text-indigo-600 dark:text-indigo-400">
               <span>View Canvas</span>
               <ArrowRight className="h-3.5 w-3.5 group-hover:translate-x-1 transition-transform" />
             </div>
@@ -122,20 +122,20 @@ export default function UserDashboardPage() {
           {/* Card 2: Memories */}
           <Link
             href="/owner-dashboard/memories"
-            className="group p-6 rounded-2xl bg-white border border-slate-200/80 hover:border-indigo-300 hover:shadow-lg hover:shadow-indigo-500/10 transition-all flex flex-col justify-between"
+            className="group p-6 rounded-2xl bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 hover:border-indigo-300 dark:hover:border-indigo-500/50 hover:shadow-lg hover:shadow-indigo-500/10 transition-all flex flex-col justify-between"
           >
             <div className="space-y-3">
-              <div className="h-11 w-11 rounded-xl bg-indigo-50 text-indigo-600 flex items-center justify-center group-hover:scale-105 transition-transform">
+              <div className="h-11 w-11 rounded-xl bg-indigo-50 dark:bg-indigo-950/50 text-indigo-600 dark:text-indigo-400 flex items-center justify-center group-hover:scale-105 transition-transform">
                 <ImageIcon className="h-5 w-5" />
               </div>
-              <h3 className="font-bold text-slate-900 text-sm group-hover:text-indigo-600 transition-colors">
+              <h3 className="font-bold text-slate-900 dark:text-white text-sm group-hover:text-indigo-600 dark:group-hover:text-indigo-400 transition-colors">
                 Memory Vault & Photos
               </h3>
-              <p className="text-xs text-slate-500 leading-relaxed">
+              <p className="text-xs text-slate-500 dark:text-slate-400 leading-relaxed">
                 Cherish timeless family photos, audio stories, heirloom snapshots, and milestone memories.
               </p>
             </div>
-            <div className="mt-4 pt-3 border-t border-slate-100 flex items-center justify-between text-xs font-semibold text-indigo-600">
+            <div className="mt-4 pt-3 border-t border-slate-100 dark:border-slate-800 flex items-center justify-between text-xs font-semibold text-indigo-600 dark:text-indigo-400">
               <span>{memories.length} Memories Saved</span>
               <ArrowRight className="h-3.5 w-3.5 group-hover:translate-x-1 transition-transform" />
             </div>
@@ -144,20 +144,20 @@ export default function UserDashboardPage() {
           {/* Card 3: Events */}
           <Link
             href="/owner-dashboard/events"
-            className="group p-6 rounded-2xl bg-white border border-slate-200/80 hover:border-indigo-300 hover:shadow-lg hover:shadow-indigo-500/10 transition-all flex flex-col justify-between"
+            className="group p-6 rounded-2xl bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 hover:border-indigo-300 dark:hover:border-indigo-500/50 hover:shadow-lg hover:shadow-indigo-500/10 transition-all flex flex-col justify-between"
           >
             <div className="space-y-3">
-              <div className="h-11 w-11 rounded-xl bg-amber-50 text-amber-600 flex items-center justify-center group-hover:scale-105 transition-transform">
+              <div className="h-11 w-11 rounded-xl bg-amber-50 dark:bg-amber-950/50 text-amber-600 dark:text-amber-400 flex items-center justify-center group-hover:scale-105 transition-transform">
                 <Calendar className="h-5 w-5" />
               </div>
-              <h3 className="font-bold text-slate-900 text-sm group-hover:text-indigo-600 transition-colors">
+              <h3 className="font-bold text-slate-900 dark:text-white text-sm group-hover:text-indigo-600 dark:group-hover:text-indigo-400 transition-colors">
                 Family Events & Dates
               </h3>
-              <p className="text-xs text-slate-500 leading-relaxed">
+              <p className="text-xs text-slate-500 dark:text-slate-400 leading-relaxed">
                 Stay updated on upcoming birthdays, anniversaries, weddings, and family reunions.
               </p>
             </div>
-            <div className="mt-4 pt-3 border-t border-slate-100 flex items-center justify-between text-xs font-semibold text-indigo-600">
+            <div className="mt-4 pt-3 border-t border-slate-100 dark:border-slate-800 flex items-center justify-between text-xs font-semibold text-indigo-600 dark:text-indigo-400">
               <span>{events.length} Upcoming Events</span>
               <ArrowRight className="h-3.5 w-3.5 group-hover:translate-x-1 transition-transform" />
             </div>
@@ -166,20 +166,20 @@ export default function UserDashboardPage() {
           {/* Card 4: Members */}
           <Link
             href="/owner-dashboard/members"
-            className="group p-6 rounded-2xl bg-white border border-slate-200/80 hover:border-indigo-300 hover:shadow-lg hover:shadow-indigo-500/10 transition-all flex flex-col justify-between"
+            className="group p-6 rounded-2xl bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 hover:border-indigo-300 dark:hover:border-indigo-500/50 hover:shadow-lg hover:shadow-indigo-500/10 transition-all flex flex-col justify-between"
           >
             <div className="space-y-3">
-              <div className="h-11 w-11 rounded-xl bg-purple-50 text-purple-600 flex items-center justify-center group-hover:scale-105 transition-transform">
+              <div className="h-11 w-11 rounded-xl bg-purple-50 dark:bg-purple-950/50 text-purple-600 dark:text-purple-400 flex items-center justify-center group-hover:scale-105 transition-transform">
                 <Users className="h-5 w-5" />
               </div>
-              <h3 className="font-bold text-slate-900 text-sm group-hover:text-indigo-600 transition-colors">
+              <h3 className="font-bold text-slate-900 dark:text-white text-sm group-hover:text-indigo-600 dark:group-hover:text-indigo-400 transition-colors">
                 Family Directory
               </h3>
-              <p className="text-xs text-slate-500 leading-relaxed">
+              <p className="text-xs text-slate-500 dark:text-slate-400 leading-relaxed">
                 View connected relatives, their generations, relationships, and profiles in your family directory.
               </p>
             </div>
-            <div className="mt-4 pt-3 border-t border-slate-100 flex items-center justify-between text-xs font-semibold text-indigo-600">
+            <div className="mt-4 pt-3 border-t border-slate-100 dark:border-slate-800 flex items-center justify-between text-xs font-semibold text-indigo-600 dark:text-indigo-400">
               <span>{members.length} Members Listed</span>
               <ArrowRight className="h-3.5 w-3.5 group-hover:translate-x-1 transition-transform" />
             </div>
@@ -190,15 +190,15 @@ export default function UserDashboardPage() {
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
           {/* Left Column (2 Cols): Highlights */}
           <div className="lg:col-span-2 space-y-6">
-            <div className="bg-white rounded-2xl border border-slate-200/80 p-6 shadow-xs">
+            <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200/80 dark:border-slate-800 p-6 shadow-xs">
               <div className="flex items-center justify-between mb-4">
                 <div>
-                  <h2 className="font-bold text-base text-slate-900">Recent Memories</h2>
-                  <p className="text-xs text-slate-500">Photographs and stories shared by family members</p>
+                  <h2 className="font-bold text-base text-slate-900 dark:text-white">Recent Memories</h2>
+                  <p className="text-xs text-slate-500 dark:text-slate-400">Photographs and stories shared by family members</p>
                 </div>
                 <Link
                   href="/owner-dashboard/memories"
-                  className="text-xs font-semibold text-indigo-600 hover:text-indigo-800 transition-colors"
+                  className="text-xs font-semibold text-indigo-600 dark:text-indigo-400 hover:text-indigo-800 dark:hover:text-indigo-300 transition-colors"
                 >
                   View All →
                 </Link>
@@ -209,22 +209,22 @@ export default function UserDashboardPage() {
                   {memories.slice(0, 4).map((memory: any) => (
                     <div
                       key={memory.id}
-                      className="p-4 rounded-xl bg-slate-50 border border-slate-100 hover:border-slate-200 transition-all space-y-2"
+                      className="p-4 rounded-xl bg-slate-50 dark:bg-slate-800/60 border border-slate-100 dark:border-slate-800 hover:border-slate-200 dark:hover:border-slate-700 transition-all space-y-2"
                     >
-                      <div className="flex items-center gap-2 text-xs text-slate-400">
+                      <div className="flex items-center gap-2 text-xs text-slate-400 dark:text-slate-500">
                         <Calendar className="h-3.5 w-3.5" />
                         <span>{new Date(memory.createdAt).toLocaleDateString()}</span>
                       </div>
-                      <h4 className="font-bold text-slate-800 text-sm line-clamp-1">{memory.title}</h4>
-                      <p className="text-xs text-slate-600 line-clamp-2">{memory.description || "No description provided."}</p>
+                      <h4 className="font-bold text-slate-800 dark:text-slate-200 text-sm line-clamp-1">{memory.title}</h4>
+                      <p className="text-xs text-slate-600 dark:text-slate-400 line-clamp-2">{memory.description || "No description provided."}</p>
                     </div>
                   ))}
                 </div>
               ) : (
-                <div className="text-center py-10 px-4 bg-slate-50 rounded-xl border border-dashed border-slate-200">
-                  <ImageIcon className="h-8 w-8 text-slate-300 mx-auto mb-2" />
-                  <p className="text-xs font-semibold text-slate-600">No memories shared yet</p>
-                  <p className="text-[11px] text-slate-400 mt-1">
+                <div className="text-center py-10 px-4 bg-slate-50 dark:bg-slate-800/40 rounded-xl border border-dashed border-slate-200 dark:border-slate-800">
+                  <ImageIcon className="h-8 w-8 text-slate-300 dark:text-slate-600 mx-auto mb-2" />
+                  <p className="text-xs font-semibold text-slate-600 dark:text-slate-300">No memories shared yet</p>
+                  <p className="text-[11px] text-slate-400 dark:text-slate-500 mt-1">
                     Memories added by your family sanctuary will appear here.
                   </p>
                 </div>
@@ -232,15 +232,15 @@ export default function UserDashboardPage() {
             </div>
 
             {/* Upcoming Gatherings */}
-            <div className="bg-white rounded-2xl border border-slate-200/80 p-6 shadow-xs">
+            <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200/80 dark:border-slate-800 p-6 shadow-xs">
               <div className="flex items-center justify-between mb-4">
                 <div>
-                  <h2 className="font-bold text-base text-slate-900">Upcoming Gatherings</h2>
-                  <p className="text-xs text-slate-500">Upcoming celebrations and anniversaries</p>
+                  <h2 className="font-bold text-base text-slate-900 dark:text-white">Upcoming Gatherings</h2>
+                  <p className="text-xs text-slate-500 dark:text-slate-400">Upcoming celebrations and anniversaries</p>
                 </div>
                 <Link
                   href="/owner-dashboard/events"
-                  className="text-xs font-semibold text-indigo-600 hover:text-indigo-800 transition-colors"
+                  className="text-xs font-semibold text-indigo-600 dark:text-indigo-400 hover:text-indigo-800 dark:hover:text-indigo-300 transition-colors"
                 >
                   Calendar →
                 </Link>
@@ -251,29 +251,29 @@ export default function UserDashboardPage() {
                   {events.slice(0, 3).map((event: any) => (
                     <div
                       key={event.id}
-                      className="flex items-center justify-between p-3.5 rounded-xl bg-slate-50 border border-slate-100"
+                      className="flex items-center justify-between p-3.5 rounded-xl bg-slate-50 dark:bg-slate-800/60 border border-slate-100 dark:border-slate-800"
                     >
                       <div className="flex items-center gap-3">
-                        <div className="h-10 w-10 rounded-lg bg-amber-100 text-amber-700 flex flex-col items-center justify-center font-bold leading-none">
+                        <div className="h-10 w-10 rounded-lg bg-amber-100 dark:bg-amber-950/60 text-amber-700 dark:text-amber-300 flex flex-col items-center justify-center font-bold leading-none">
                           <span className="text-xs">{new Date(event.startDate || event.createdAt).toLocaleDateString("en-US", { month: "short" })}</span>
                           <span className="text-sm">{new Date(event.startDate || event.createdAt).getDate()}</span>
                         </div>
                         <div>
-                          <p className="font-bold text-xs text-slate-900">{event.title}</p>
-                          <p className="text-[11px] text-slate-500">{event.location || "Family Virtual Gathering"}</p>
+                          <p className="font-bold text-xs text-slate-900 dark:text-white">{event.title}</p>
+                          <p className="text-[11px] text-slate-500 dark:text-slate-400">{event.location || "Family Virtual Gathering"}</p>
                         </div>
                       </div>
-                      <span className="text-xs px-2.5 py-1 rounded-full bg-slate-200/60 text-slate-700 font-medium">
+                      <span className="text-xs px-2.5 py-1 rounded-full bg-slate-200/60 dark:bg-slate-800 text-slate-700 dark:text-slate-300 font-medium">
                         {event.type || "Celebration"}
                       </span>
                     </div>
                   ))}
                 </div>
               ) : (
-                <div className="text-center py-8 px-4 bg-slate-50 rounded-xl border border-dashed border-slate-200">
-                  <Calendar className="h-8 w-8 text-slate-300 mx-auto mb-2" />
-                  <p className="text-xs font-semibold text-slate-600">No events scheduled</p>
-                  <p className="text-[11px] text-slate-400 mt-1">Check back later for family reunion announcements.</p>
+                <div className="text-center py-8 px-4 bg-slate-50 dark:bg-slate-800/40 rounded-xl border border-dashed border-slate-200 dark:border-slate-800">
+                  <Calendar className="h-8 w-8 text-slate-300 dark:text-slate-600 mx-auto mb-2" />
+                  <p className="text-xs font-semibold text-slate-600 dark:text-slate-300">No events scheduled</p>
+                  <p className="text-[11px] text-slate-400 dark:text-slate-500 mt-1">Check back later for family reunion announcements.</p>
                 </div>
               )}
             </div>
@@ -282,43 +282,43 @@ export default function UserDashboardPage() {
           {/* Right Column (1 Col): Account & Membership Info */}
           <div className="space-y-6">
             {/* User Profile Summary */}
-            <div className="bg-white rounded-2xl border border-slate-200/80 p-6 shadow-xs space-y-4">
-              <h3 className="font-bold text-sm text-slate-900">Your Account Details</h3>
+            <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200/80 dark:border-slate-800 p-6 shadow-xs space-y-4">
+              <h3 className="font-bold text-sm text-slate-900 dark:text-white">Your Account Details</h3>
 
-              <div className="flex items-center gap-3 pb-4 border-b border-slate-100">
+              <div className="flex items-center gap-3 pb-4 border-b border-slate-100 dark:border-slate-800">
                 <div className="h-12 w-12 rounded-full bg-indigo-600 text-white font-bold text-base flex items-center justify-center shadow-md shadow-indigo-600/20">
                   {userInitial}
                 </div>
                 <div>
-                  <h4 className="font-bold text-sm text-slate-900">{user.fullName}</h4>
-                  <p className="text-xs text-slate-500">{user.email}</p>
+                  <h4 className="font-bold text-sm text-slate-900 dark:text-white">{user.fullName}</h4>
+                  <p className="text-xs text-slate-500 dark:text-slate-400">{user.email}</p>
                 </div>
               </div>
 
               <div className="space-y-2.5 text-xs">
                 <div className="flex items-center justify-between">
-                  <span className="text-slate-500">Role Status:</span>
-                  <span className="font-semibold px-2 py-0.5 rounded-md bg-indigo-50 text-indigo-700 uppercase tracking-wide text-[10px]">
+                  <span className="text-slate-500 dark:text-slate-400">Role Status:</span>
+                  <span className="font-semibold px-2 py-0.5 rounded-md bg-indigo-50 dark:bg-indigo-950/60 text-indigo-700 dark:text-indigo-400 uppercase tracking-wide text-[10px]">
                     {user.role || "USER"}
                   </span>
                 </div>
                 <div className="flex items-center justify-between">
-                  <span className="text-slate-500">Email Verification:</span>
-                  <span className="font-semibold text-emerald-600 flex items-center gap-1 text-[11px]">
+                  <span className="text-slate-500 dark:text-slate-400">Email Verification:</span>
+                  <span className="font-semibold text-emerald-600 dark:text-emerald-400 flex items-center gap-1 text-[11px]">
                     <CheckCircle className="h-3.5 w-3.5" />
                     Verified
                   </span>
                 </div>
                 <div className="flex items-center justify-between">
-                  <span className="text-slate-500">Access Level:</span>
-                  <span className="font-medium text-slate-700">Member (View & Explore)</span>
+                  <span className="text-slate-500 dark:text-slate-400">Access Level:</span>
+                  <span className="font-medium text-slate-700 dark:text-slate-300">Member (View & Explore)</span>
                 </div>
               </div>
 
               <div className="pt-2">
                 <Link
                   href="/user-dashboard/profile"
-                  className="w-full flex items-center justify-center py-2 px-3 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 font-semibold text-xs transition-colors"
+                  className="w-full flex items-center justify-center py-2 px-3 rounded-xl bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 font-semibold text-xs transition-colors"
                 >
                   Edit Profile Settings
                 </Link>
@@ -326,17 +326,17 @@ export default function UserDashboardPage() {
             </div>
 
             {/* Start Your Own Sanctuary Banner */}
-            <div className="rounded-2xl bg-linear-to-br from-indigo-50 to-purple-50 border border-indigo-100 p-5 space-y-3">
+            <div className="rounded-2xl bg-linear-to-br from-indigo-50 to-purple-50 dark:from-indigo-950/40 dark:to-purple-950/40 border border-indigo-100 dark:border-indigo-900/40 p-5 space-y-3">
               <div className="h-8 w-8 rounded-lg bg-indigo-600 text-white flex items-center justify-center shadow-sm">
                 <Sparkles className="h-4 w-4" />
               </div>
-              <h4 className="font-bold text-xs text-indigo-950">Want to create your own family sanctuary?</h4>
-              <p className="text-[11px] text-indigo-900/70 leading-relaxed">
+              <h4 className="font-bold text-xs text-indigo-950 dark:text-indigo-200">Want to create your own family sanctuary?</h4>
+              <p className="text-[11px] text-indigo-900/70 dark:text-indigo-300/70 leading-relaxed">
                 If you are looking to become an Owner and manage your own family sanctuary, invite relatives, and configure administration settings, you can upgrade your account anytime.
               </p>
               <Link
                 href="/support"
-                className="inline-flex items-center gap-1.5 text-xs font-bold text-indigo-600 hover:text-indigo-800 transition-colors"
+                className="inline-flex items-center gap-1.5 text-xs font-bold text-indigo-600 dark:text-indigo-400 hover:text-indigo-800 dark:hover:text-indigo-300 transition-colors"
               >
                 <span>Learn more</span>
                 <ArrowRight className="h-3 w-3" />

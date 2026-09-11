@@ -1,5 +1,7 @@
 @import "tailwindcss";
 
+@custom-variant dark (&:where(.dark, .dark *));
+
 :root {
   --background: #f9f9ff;
   --foreground: #141b2b;
@@ -16,6 +18,19 @@
   --on-background: #141b2b;
   --outline: #777587;
   --outline-variant: #c7c4d8;
+}
+
+.dark {
+  --background: #090d16;
+  --foreground: #f1f5f9;
+  --surface: #0f172a;
+  --surface-container-high: #1e293b;
+  --surface-container-lowest: #020617;
+  --on-surface: #f8fafc;
+  --on-surface-variant: #94a3b8;
+  --on-background: #f8fafc;
+  --outline: #475569;
+  --outline-variant: #334155;
 }
 
 @theme inline {
