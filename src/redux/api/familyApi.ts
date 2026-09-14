@@ -104,9 +104,14 @@ export const familyApi = baseApi.injectEndpoints({
       query: () => "/family/members",
       providesTags: ["Members"],
     }),
+    searchMembers: builder.query<FamilyMemberRecord[], string>({
+      query: (q) => `/family/members/search?q=${encodeURIComponent(q)}`,
+      providesTags: ["Members"],
+    }),
     addMember: builder.mutation<
       FamilyMemberRecord,
       {
+        existingPersonId?: string;
         firstName: string;
         lastName: string;
         email?: string;
@@ -275,6 +280,7 @@ export const {
   useGetSanctuaryQuery,
   useUpdateFamilyDetailsMutation,
   useGetMembersQuery,
+  useSearchMembersQuery,
   useAddMemberMutation,
   useUpdateMemberMutation,
   useDeleteMemberMutation,
