@@ -8,6 +8,7 @@ import {
   useUpdateUserRoleMutation,
   useDeleteUserMutation,
 } from "@/redux/api/adminApi";
+import { useAppSelector } from "@/redux/store";
 import {
   Users,
   Search,
@@ -22,6 +23,7 @@ import {
 } from "lucide-react";
 
 export default function OwnerUsersPage() {
+  const { user: currentUser } = useAppSelector((state) => state.auth);
   const { data: usersList = [], isLoading } = useGetUsersListQuery();
   const [createUser, { isLoading: isCreating }] = useCreateUserMutation();
   const [updateUserRole] = useUpdateUserRoleMutation();
@@ -77,8 +79,8 @@ export default function OwnerUsersPage() {
   const handleRoleChange = async (id: string, newRole: string) => {
     try {
       await updateUserRole({ id, role: newRole }).unwrap();
-    } catch (err) {
-      alert("Failed to update user role.");
+    } catch (err: any) {
+      alert("Failed to update user role: " + (err?.data?.message || err?.message || "Unknown error"));
     }
   };
 
@@ -86,13 +88,18 @@ export default function OwnerUsersPage() {
     if (confirm(`Are you sure you want to permanently remove user account (${email})?`)) {
       try {
         await deleteUser(id).unwrap();
-      } catch (err) {
-        alert("Failed to remove user account.");
+      } catch (err: any) {
+        alert("Failed to remove user account: " + (err?.data?.message || err?.message || "Unknown error"));
       }
     }
   };
 
   const filteredUsers = usersList.filter((u) => {
+    // Exclude current logged in owner's account from the management list
+    if (currentUser && (u.id === currentUser.id || u.email === currentUser.email)) {
+      return false;
+    }
+
     const matchesSearch =
       (u.fullName || "").toLowerCase().includes(searchTerm.toLowerCase()) ||
       (u.email || "").toLowerCase().includes(searchTerm.toLowerCase());
