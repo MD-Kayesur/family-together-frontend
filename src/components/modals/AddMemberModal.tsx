@@ -18,8 +18,18 @@ import {
   KeyRound,
   Mail,
   ShieldCheck,
+  Eye,
+  UserCheck,
+  Info,
+  Link2,
+  CheckCircle2,
+  Search,
 } from "lucide-react";
-import { useAddMemberMutation } from "@/redux/api/familyApi";
+import {
+  useAddMemberMutation,
+  useGetMembersQuery,
+  FamilyMemberRecord,
+} from "@/redux/api/familyApi";
 
 interface AddMemberModalProps {
   isOpen: boolean;
@@ -27,6 +37,9 @@ interface AddMemberModalProps {
 }
 
 export default function AddMemberModal({ isOpen, onClose }: AddMemberModalProps) {
+  // Fetch existing members from database for real-time deduplication suggestions
+  const { data: existingMembers = [] } = useGetMembersQuery();
+
   // Primary Recognition Fields
   const [firstName, setFirstName] = useState("");
   const [middleName, setMiddleName] = useState("");
@@ -51,6 +64,10 @@ export default function AddMemberModal({ isOpen, onClose }: AddMemberModalProps)
   const [avatarUrl, setAvatarUrl] = useState("");
   const [bio, setBio] = useState("");
 
+  // Deduplication & Linking State
+  const [selectedLinkedMember, setSelectedLinkedMember] = useState<FamilyMemberRecord | null>(null);
+  const [previewMemberDetails, setPreviewMemberDetails] = useState<FamilyMemberRecord | null>(null);
+
   // Status Alerts
   const [errorMsg, setErrorMsg] = useState("");
   const [successMsg, setSuccessMsg] = useState("");
@@ -58,6 +75,42 @@ export default function AddMemberModal({ isOpen, onClose }: AddMemberModalProps)
   const [addMember, { isLoading }] = useAddMemberMutation();
 
   if (!isOpen) return null;
+
+  // Real-time suggestions filtering based on entered names
+  const queryStr = `${firstName} ${lastName} ${nickname}`.trim().toLowerCase();
+
+  const suggestedDuplicateMembers = queryStr.length >= 2
+    ? existingMembers.filter((m: any) => {
+        const fullName = `${m.firstName || ""} ${m.lastName || ""}`.toLowerCase();
+        const nick = (m.nickname || "").toLowerCase();
+        const em = (m.email || "").toLowerCase();
+        return (
+          fullName.includes(queryStr) ||
+          queryStr.split(" ").some((part) => part.length >= 2 && fullName.includes(part)) ||
+          (nick && nick.includes(queryStr)) ||
+          (em && em.includes(queryStr))
+        );
+      })
+    : [];
+
+  const handleSelectExistingMember = (member: FamilyMemberRecord) => {
+    setSelectedLinkedMember(member);
+    setFirstName(member.firstName || "");
+    setLastName(member.lastName || "");
+    if ((member as any).bio) setBio((member as any).bio);
+    if ((member as any).email) setEmail((member as any).email);
+    if ((member as any).photoUrl) setAvatarUrl((member as any).photoUrl);
+    setPreviewMemberDetails(null);
+  };
+
+  const handleClearLink = () => {
+    setSelectedLinkedMember(null);
+    setFirstName("");
+    setLastName("");
+    setEmail("");
+    setBio("");
+    setAvatarUrl("");
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -70,32 +123,44 @@ export default function AddMemberModal({ isOpen, onClose }: AddMemberModalProps)
     }
 
     try {
-      await addMember({
-        firstName: firstName.trim(),
-        lastName: lastName.trim(),
-        middleName: middleName.trim(),
-        nickname: nickname.trim(),
-        email: email.trim() || undefined,
-        password: password.trim() || undefined,
-        gender,
-        isDeceased,
-        dob,
-        birthplace: birthplace.trim(),
-        dateOfPassing: isDeceased ? dateOfPassing : undefined,
-        occupation: occupation.trim(),
-        location: location.trim(),
-        contactInfo: contactInfo.trim(),
-        avatarUrl: avatarUrl.trim(),
-        bio: bio.trim(),
-      }).unwrap();
+      if (selectedLinkedMember) {
+        await addMember({
+          existingPersonId: selectedLinkedMember.id,
+          firstName: firstName.trim(),
+          lastName: lastName.trim(),
+        }).unwrap();
 
-      setSuccessMsg(
-        email.trim()
-          ? `Member added! Active login account created for ${email.trim()} with password "${password.trim() || 'Family@123'}".`
-          : "Family member profile & recognition details saved to PostgreSQL Database!"
-      );
+        setSuccessMsg(
+          `Linked existing person profile "${selectedLinkedMember.firstName} ${selectedLinkedMember.lastName}" cleanly to family sanctuary. Duplicate entry prevented!`
+        );
+      } else {
+        await addMember({
+          firstName: firstName.trim(),
+          lastName: lastName.trim(),
+          middleName: middleName.trim(),
+          nickname: nickname.trim(),
+          email: email.trim() || undefined,
+          password: password.trim() || undefined,
+          gender,
+          isDeceased,
+          dob,
+          birthplace: birthplace.trim(),
+          dateOfPassing: isDeceased ? dateOfPassing : undefined,
+          occupation: occupation.trim(),
+          location: location.trim(),
+          contactInfo: contactInfo.trim(),
+          avatarUrl: avatarUrl.trim(),
+          bio: bio.trim(),
+        }).unwrap();
+
+        setSuccessMsg(
+          email.trim()
+            ? `Member added! Active login account created for ${email.trim()} with password "${password.trim() || "Family@123"}".`
+            : "Family member profile & recognition details saved to PostgreSQL Database!"
+        );
+      }
+
       setTimeout(() => {
-        // Reset form
         setFirstName("");
         setMiddleName("");
         setLastName("");
@@ -112,9 +177,10 @@ export default function AddMemberModal({ isOpen, onClose }: AddMemberModalProps)
         setContactInfo("");
         setAvatarUrl("");
         setBio("");
+        setSelectedLinkedMember(null);
         setSuccessMsg("");
         onClose();
-      }, 1500);
+      }, 1600);
     } catch (err: any) {
       setErrorMsg(err?.data?.message || "Failed to add family member.");
     }
@@ -162,10 +228,34 @@ export default function AddMemberModal({ isOpen, onClose }: AddMemberModalProps)
           </div>
         )}
 
+        {/* Banner: Linked Existing Member Active */}
+        {selectedLinkedMember && (
+          <div className="p-4 rounded-2xl bg-indigo-50 border border-indigo-200 text-indigo-900 text-xs font-medium flex items-center justify-between gap-3 shadow-sm">
+            <div className="flex items-center gap-2.5">
+              <CheckCircle2 className="h-5 w-5 text-indigo-600 shrink-0" />
+              <div>
+                <span className="font-extrabold text-indigo-950">
+                  Linked Existing Profile: {selectedLinkedMember.firstName} {selectedLinkedMember.lastName}
+                </span>
+                <p className="text-[11px] text-indigo-700 font-medium">
+                  Submitting will link this existing person to the sanctuary. No duplicate row will be created.
+                </p>
+              </div>
+            </div>
+            <button
+              type="button"
+              onClick={handleClearLink}
+              className="px-3 py-1.5 rounded-xl bg-white border border-indigo-200 text-indigo-700 hover:bg-indigo-100 font-bold text-[11px] cursor-pointer"
+            >
+              Clear Link
+            </button>
+          </div>
+        )}
+
         {/* Form Body */}
         <form onSubmit={handleSubmit} className="space-y-6 text-xs">
           {/* Section 1: Name & Personal Identification */}
-          <div className="space-y-3">
+          <div className="space-y-3 relative">
             <h3 className="font-bold text-slate-900 dark:text-white text-xs uppercase tracking-wider text-indigo-600 flex items-center gap-1.5">
               <User className="h-4 w-4" />
               <span>1. Personal Name & Identification</span>
@@ -214,6 +304,76 @@ export default function AddMemberModal({ isOpen, onClose }: AddMemberModalProps)
               </div>
             </div>
 
+            {/* Smart Suggestions Dropdown for Duplicate Prevention */}
+            {!selectedLinkedMember && suggestedDuplicateMembers.length > 0 && (
+              <div className="p-3 rounded-2xl bg-amber-50/90 dark:bg-stone-800 border border-amber-200 dark:border-amber-900/50 space-y-2 animate-fadeIn">
+                <div className="flex items-center justify-between text-[11px] font-bold text-amber-900 dark:text-amber-300">
+                  <div className="flex items-center gap-1.5">
+                    <Search className="h-3.5 w-3.5 text-amber-600" />
+                    <span>Matching existing members found in database ({suggestedDuplicateMembers.length}):</span>
+                  </div>
+                  <span className="text-[10px] text-amber-700 dark:text-amber-400 font-medium">
+                    Click <Eye className="h-3 w-3 inline text-indigo-600" /> to preview details or link to prevent duplicate
+                  </span>
+                </div>
+
+                <div className="space-y-1.5 max-h-40 overflow-y-auto pr-1">
+                  {suggestedDuplicateMembers.map((member: any) => (
+                    <div
+                      key={member.id}
+                      className="p-2 rounded-xl bg-white dark:bg-stone-900 border border-amber-200/80 dark:border-stone-700 flex items-center justify-between gap-2 shadow-xs hover:border-indigo-300 transition-all"
+                    >
+                      <div className="flex items-center gap-2.5">
+                        <div className="h-8 w-8 rounded-full bg-indigo-100 dark:bg-stone-800 text-indigo-700 dark:text-indigo-300 font-extrabold flex items-center justify-center text-xs overflow-hidden shrink-0">
+                          {member.photoUrl ? (
+                            <img src={member.photoUrl} alt="" className="w-full h-full object-cover" />
+                          ) : (
+                            `${member.firstName?.[0] || ""}${member.lastName?.[0] || ""}`
+                          )}
+                        </div>
+
+                        <div>
+                          <div className="font-extrabold text-slate-900 dark:text-white text-xs">
+                            {member.firstName} {member.lastName}
+                            {(member.nickname || (member as any).user?.email) && (
+                              <span className="text-[10px] text-slate-500 font-medium ml-1.5">
+                                ({member.nickname || (member as any).user?.email})
+                              </span>
+                            )}
+                          </div>
+                          <p className="text-[10px] text-slate-500 dark:text-slate-400 truncate max-w-xs">
+                            {member.bio || "Existing family record in database"}
+                          </p>
+                        </div>
+                      </div>
+
+                      <div className="flex items-center gap-1.5">
+                        {/* Info / Eye Icon to preview details */}
+                        <button
+                          type="button"
+                          onClick={() => setPreviewMemberDetails(member)}
+                          title="Preview full profile details"
+                          className="p-1.5 rounded-lg bg-slate-100 hover:bg-slate-200 dark:bg-stone-800 dark:hover:bg-stone-700 text-slate-700 dark:text-slate-300 transition-colors cursor-pointer"
+                        >
+                          <Eye className="h-4 w-4 text-indigo-600 dark:text-indigo-400" />
+                        </button>
+
+                        {/* Select & Link Existing Member */}
+                        <button
+                          type="button"
+                          onClick={() => handleSelectExistingMember(member)}
+                          className="px-2.5 py-1 rounded-lg bg-indigo-600 hover:bg-indigo-700 text-white font-bold text-[11px] flex items-center gap-1 shadow-xs cursor-pointer"
+                        >
+                          <Link2 className="h-3 w-3" />
+                          <span>Link Person</span>
+                        </button>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
               <div>
                 <label className="block font-bold text-slate-700 dark:text-slate-200 mb-1">
@@ -248,9 +408,21 @@ export default function AddMemberModal({ isOpen, onClose }: AddMemberModalProps)
           {/* Section 2: Vital Recognition & Demographics */}
           <div className="space-y-3 pt-2 border-t border-slate-100 dark:border-stone-800">
             <h3 className="font-bold text-slate-900 dark:text-white text-xs uppercase tracking-wider text-indigo-600 flex items-center gap-1.5">
-              <Calendar className="h-4 w-4" />
-              <span>2. Vital Birth & Life Status</span>
+              <Heart className="h-4 w-4" />
+              <span>2. Life Status & Demographics</span>
             </h3>
+
+            <div className="flex items-center gap-4 py-1">
+              <label className="flex items-center gap-2 cursor-pointer font-bold text-slate-700 dark:text-slate-300">
+                <input
+                  type="checkbox"
+                  checked={isDeceased}
+                  onChange={(e) => setIsDeceased(e.target.checked)}
+                  className="h-4 w-4 rounded border-slate-300 text-indigo-600 focus:ring-indigo-500"
+                />
+                <span>Is Deceased / Remembranced Relative</span>
+              </label>
+            </div>
 
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
               <div>
@@ -267,7 +439,7 @@ export default function AddMemberModal({ isOpen, onClose }: AddMemberModalProps)
 
               <div>
                 <label className="block font-bold text-slate-700 dark:text-slate-200 mb-1">
-                  Place of Birth / Hometown
+                  Birthplace / Homeland
                 </label>
                 <input
                   type="text"
@@ -279,56 +451,36 @@ export default function AddMemberModal({ isOpen, onClose }: AddMemberModalProps)
               </div>
             </div>
 
-            {/* Life Status Toggle */}
-            <div className="p-3 rounded-2xl bg-slate-50 dark:bg-stone-800/60 border border-slate-200 dark:border-stone-700 flex items-center justify-between">
-              <div className="flex items-center gap-2">
-                <Heart className={`h-4 w-4 ${isDeceased ? "text-slate-400" : "text-rose-500"}`} />
-                <span className="font-bold text-slate-800 dark:text-slate-200">
-                  {isDeceased ? "Person is Deceased" : "Person is Living"}
-                </span>
-              </div>
-
-              <label className="relative inline-flex items-center cursor-pointer">
-                <input
-                  type="checkbox"
-                  checked={isDeceased}
-                  onChange={(e) => setIsDeceased(e.target.checked)}
-                  className="sr-only peer"
-                />
-                <div className="w-9 h-5 bg-slate-300 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-slate-700" />
-              </label>
-            </div>
-
             {isDeceased && (
-              <div>
-                <label className="block font-bold text-slate-700 dark:text-slate-200 mb-1">
-                  Date of Passing
+              <div className="p-3 rounded-2xl bg-rose-50 dark:bg-rose-950/40 border border-rose-200 dark:border-rose-900/40 space-y-2">
+                <label className="block font-bold text-rose-800 dark:text-rose-300 mb-1">
+                  Date of Passing / Departure
                 </label>
                 <input
                   type="date"
                   value={dateOfPassing}
                   onChange={(e) => setDateOfPassing(e.target.value)}
-                  className="w-full max-w-sm px-3.5 py-2.5 rounded-xl border border-slate-200 dark:border-stone-700 bg-slate-50 dark:bg-stone-800 text-slate-800 dark:text-white focus:ring-2 focus:ring-indigo-500 focus:outline-none font-medium"
+                  className="w-full px-3.5 py-2.5 rounded-xl border border-rose-200 dark:border-rose-800 bg-white dark:bg-stone-900 text-slate-800 dark:text-white focus:ring-2 focus:ring-rose-500 focus:outline-none font-medium"
                 />
               </div>
             )}
           </div>
 
-          {/* Section 3: Occupation, Location & Recognition Photo */}
+          {/* Section 3: Professional & Contact Details */}
           <div className="space-y-3 pt-2 border-t border-slate-100 dark:border-stone-800">
             <h3 className="font-bold text-slate-900 dark:text-white text-xs uppercase tracking-wider text-indigo-600 flex items-center gap-1.5">
               <Briefcase className="h-4 w-4" />
-              <span>3. Occupation, Location & Profile Photo</span>
+              <span>3. Occupation, Contact & Bio</span>
             </h3>
 
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
               <div>
                 <label className="block font-bold text-slate-700 dark:text-slate-200 mb-1">
-                  Profession / Occupation
+                  Occupation / Profession
                 </label>
                 <input
                   type="text"
-                  placeholder="e.g. Civil Engineer, Professor"
+                  placeholder="e.g. Senior Civil Engineer"
                   value={occupation}
                   onChange={(e) => setOccupation(e.target.value)}
                   className="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 dark:border-stone-700 bg-slate-50 dark:bg-stone-800 text-slate-800 dark:text-white focus:ring-2 focus:ring-indigo-500 focus:outline-none font-medium"
@@ -337,11 +489,11 @@ export default function AddMemberModal({ isOpen, onClose }: AddMemberModalProps)
 
               <div>
                 <label className="block font-bold text-slate-700 dark:text-slate-200 mb-1">
-                  Current City / Country of Residence
+                  Current Residence / City
                 </label>
                 <input
                   type="text"
-                  placeholder="e.g. London, United Kingdom"
+                  placeholder="e.g. Toronto, Canada"
                   value={location}
                   onChange={(e) => setLocation(e.target.value)}
                   className="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 dark:border-stone-700 bg-slate-50 dark:bg-stone-800 text-slate-800 dark:text-white focus:ring-2 focus:ring-indigo-500 focus:outline-none font-medium"
@@ -349,54 +501,39 @@ export default function AddMemberModal({ isOpen, onClose }: AddMemberModalProps)
               </div>
             </div>
 
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-              <div>
-                <label className="block font-bold text-slate-700 dark:text-slate-200 mb-1">
-                  Contact Phone / Email
-                </label>
-                <input
-                  type="text"
-                  placeholder="e.g. +1 555-0192 / omar@gmail.com"
-                  value={contactInfo}
-                  onChange={(e) => setContactInfo(e.target.value)}
-                  className="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 dark:border-stone-700 bg-slate-50 dark:bg-stone-800 text-slate-800 dark:text-white focus:ring-2 focus:ring-indigo-500 focus:outline-none font-medium"
-                />
-              </div>
-
-              <div>
-                <label className="block font-bold text-slate-700 dark:text-slate-200 mb-1">
-                  Profile Photo URL
-                </label>
-                <input
-                  type="url"
-                  placeholder="https://images.unsplash.com/photo-..."
-                  value={avatarUrl}
-                  onChange={(e) => setAvatarUrl(e.target.value)}
-                  className="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 dark:border-stone-700 bg-slate-50 dark:bg-stone-800 text-slate-800 dark:text-white focus:ring-2 focus:ring-indigo-500 focus:outline-none font-medium"
-                />
-              </div>
+            <div>
+              <label className="block font-bold text-slate-700 dark:text-slate-200 mb-1">
+                Avatar Photo URL (Optional)
+              </label>
+              <input
+                type="url"
+                placeholder="e.g. https://images.unsplash.com/photo-..."
+                value={avatarUrl}
+                onChange={(e) => setAvatarUrl(e.target.value)}
+                className="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 dark:border-stone-700 bg-slate-50 dark:bg-stone-800 text-slate-800 dark:text-white focus:ring-2 focus:ring-indigo-500 focus:outline-none font-medium"
+              />
             </div>
 
             <div>
               <label className="block font-bold text-slate-700 dark:text-slate-200 mb-1">
-                Biography, Achievements & Distinction Notes
+                Biography / Life Summary Notes
               </label>
               <textarea
                 rows={3}
-                placeholder="Add biography, key achievements, historical details, or distinguishing features..."
+                placeholder="Write a brief life story, milestone memories, or family legacy notes..."
                 value={bio}
                 onChange={(e) => setBio(e.target.value)}
-                className="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 dark:border-stone-700 bg-slate-50 dark:bg-stone-800 text-slate-800 dark:text-white focus:ring-2 focus:ring-indigo-500 focus:outline-none font-medium resize-none"
+                className="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 dark:border-stone-700 bg-slate-50 dark:bg-stone-800 text-slate-800 dark:text-white focus:ring-2 focus:ring-indigo-500 focus:outline-none font-medium"
               />
             </div>
           </div>
 
-          {/* Section 4: Platform Login Credentials & User Dashboard Access */}
+          {/* Section 4: Login Credentials & User Account */}
           <div className="space-y-3 pt-2 border-t border-slate-100 dark:border-stone-800">
             <div className="flex items-center justify-between">
               <h3 className="font-bold text-slate-900 dark:text-white text-xs uppercase tracking-wider text-indigo-600 flex items-center gap-1.5">
                 <KeyRound className="h-4 w-4" />
-                <span>4. Platform Login & User Dashboard Access</span>
+                <span>4. Account Credentials & Login Access</span>
               </h3>
               <span className="text-[10px] font-bold text-emerald-600 bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-200 dark:border-emerald-800 px-2 py-0.5 rounded-full flex items-center gap-1">
                 <ShieldCheck className="h-3 w-3" />
@@ -405,7 +542,7 @@ export default function AddMemberModal({ isOpen, onClose }: AddMemberModalProps)
             </div>
 
             <p className="text-[11px] text-slate-500 dark:text-slate-400">
-              Provide a Gmail / email address to automatically create an active user login. This member will be able to log in directly to explore their family tree and change their credentials.
+              Provide an email address to automatically create an active user login. This member will be able to log in directly to explore their family tree and credentials.
             </p>
 
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
@@ -459,11 +596,94 @@ export default function AddMemberModal({ isOpen, onClose }: AddMemberModalProps)
               className="px-6 py-2.5 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white font-bold shadow-md shadow-indigo-600/25 transition-all inline-flex items-center gap-2 cursor-pointer disabled:opacity-50"
             >
               {isLoading && <Loader2 className="h-4 w-4 animate-spin" />}
-              <span>Save Member Profile</span>
+              <span>
+                {selectedLinkedMember
+                  ? `Link "${selectedLinkedMember.firstName}" (Prevent Duplicate)`
+                  : "Save Member Profile"}
+              </span>
             </button>
           </div>
         </form>
       </div>
+
+      {/* Member Details Preview Modal */}
+      {previewMemberDetails && (
+        <div className="fixed inset-0 z-60 flex items-center justify-center p-4 bg-slate-950/80 backdrop-blur-md animate-fadeIn">
+          <div className="bg-white dark:bg-stone-900 border border-slate-200 dark:border-stone-800 rounded-3xl w-full max-w-md shadow-2xl p-6 space-y-5 relative">
+            <div className="flex items-center justify-between border-b border-slate-100 dark:border-stone-800 pb-3">
+              <div className="flex items-center gap-2 text-indigo-600 font-extrabold text-sm">
+                <Info className="h-4 w-4" />
+                <span>Existing Member Profile Preview</span>
+              </div>
+              <button
+                type="button"
+                onClick={() => setPreviewMemberDetails(null)}
+                className="p-1 text-slate-400 hover:text-slate-600 rounded-full cursor-pointer"
+              >
+                <X className="h-5 w-5" />
+              </button>
+            </div>
+
+            <div className="text-center space-y-3">
+              <div className="h-20 w-20 rounded-full bg-indigo-100 dark:bg-stone-800 text-indigo-700 dark:text-indigo-300 font-extrabold flex items-center justify-center text-xl mx-auto overflow-hidden shadow-md border-2 border-indigo-500">
+                {previewMemberDetails.photoUrl ? (
+                  <img src={previewMemberDetails.photoUrl} alt="" className="w-full h-full object-cover" />
+                ) : (
+                  `${previewMemberDetails.firstName?.[0] || ""}${previewMemberDetails.lastName?.[0] || ""}`
+                )}
+              </div>
+
+              <div>
+                <h3 className="font-extrabold text-lg text-slate-900 dark:text-white">
+                  {previewMemberDetails.firstName} {previewMemberDetails.lastName}
+                </h3>
+                <p className="text-xs text-indigo-600 font-semibold">
+                  Gender: {previewMemberDetails.gender || "Not specified"}
+                </p>
+              </div>
+            </div>
+
+            <div className="bg-slate-50 dark:bg-stone-800/80 rounded-2xl p-4 space-y-2 text-xs text-slate-700 dark:text-slate-300 border border-slate-200/80 dark:border-stone-700">
+              <div className="flex justify-between border-b border-slate-200/60 dark:border-stone-700 pb-1.5">
+                <span className="font-bold text-slate-500">Database ID:</span>
+                <span className="font-mono text-[10px] text-slate-600">{previewMemberDetails.id}</span>
+              </div>
+
+              <div className="flex justify-between border-b border-slate-200/60 dark:border-stone-700 pb-1.5">
+                <span className="font-bold text-slate-500">Member Status:</span>
+                <span className="font-bold text-emerald-600">Active Sanctuary Relative</span>
+              </div>
+
+              {previewMemberDetails.bio && (
+                <div className="pt-1">
+                  <span className="font-bold text-slate-500 block mb-0.5">Bio / Notes:</span>
+                  <p className="text-[11px] text-slate-600 dark:text-slate-300 leading-relaxed">
+                    {previewMemberDetails.bio}
+                  </p>
+                </div>
+              )}
+            </div>
+
+            <div className="flex items-center justify-end gap-2 pt-2">
+              <button
+                type="button"
+                onClick={() => setPreviewMemberDetails(null)}
+                className="px-4 py-2 rounded-xl border border-slate-200 text-slate-600 font-bold text-xs hover:bg-slate-100 cursor-pointer"
+              >
+                Close Preview
+              </button>
+              <button
+                type="button"
+                onClick={() => handleSelectExistingMember(previewMemberDetails)}
+                className="px-4 py-2 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white font-bold text-xs flex items-center gap-1.5 shadow-md cursor-pointer"
+              >
+                <Link2 className="h-3.5 w-3.5" />
+                <span>Select & Link Profile</span>
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
