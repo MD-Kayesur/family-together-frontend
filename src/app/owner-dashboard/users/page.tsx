@@ -76,11 +76,20 @@ export default function OwnerUsersPage() {
     }
   };
 
+  const [updatingRoleId, setUpdatingRoleId] = useState<string | null>(null);
+  const [roleUpdateMsg, setRoleUpdateMsg] = useState<string | null>(null);
+
   const handleRoleChange = async (id: string, newRole: string) => {
+    setUpdatingRoleId(id);
+    setRoleUpdateMsg(null);
     try {
-      await updateUserRole({ id, role: newRole }).unwrap();
+      await updateUserRole({ id, role: newRole.toUpperCase() }).unwrap();
+      setRoleUpdateMsg(`Role updated to ${newRole.toUpperCase()} successfully!`);
+      setTimeout(() => setRoleUpdateMsg(null), 3000);
     } catch (err: any) {
       alert("Failed to update user role: " + (err?.data?.message || err?.message || "Unknown error"));
+    } finally {
+      setUpdatingRoleId(null);
     }
   };
 
@@ -172,6 +181,13 @@ export default function OwnerUsersPage() {
           </button>
         </div>
 
+        {roleUpdateMsg && (
+          <div className="p-3.5 rounded-2xl bg-emerald-50 dark:bg-emerald-950/60 border border-emerald-200 dark:border-emerald-800 text-emerald-800 dark:text-emerald-300 text-xs font-bold flex items-center gap-2 shadow-xs animate-in fade-in">
+            <CheckCircle2 className="h-4 w-4 text-emerald-500 shrink-0" />
+            <span>{roleUpdateMsg}</span>
+          </div>
+        )}
+
         {/* Users Table */}
         {isLoading ? (
           <div className="p-12 text-center flex items-center justify-center gap-3 text-slate-500 text-sm bg-white dark:bg-slate-900 rounded-2xl border border-slate-200/80 dark:border-slate-800 shadow-sm">
@@ -240,17 +256,23 @@ export default function OwnerUsersPage() {
                       </td>
 
                       <td className="py-4 px-6">
-                        <select
-                          value={u.role || "MEMBER"}
-                          onChange={(e) => handleRoleChange(u.id, e.target.value)}
-                          className="px-2.5 py-1.5 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg text-xs font-semibold text-slate-800 dark:text-slate-200 focus:outline-none focus:ring-2 focus:ring-indigo-500 cursor-pointer"
-                        >
-                          <option value="MEMBER">Member</option>
-                          <option value="VIEWER">Viewer</option>
-                          <option value="ADMIN">Admin</option>
-                          <option value="OWNER">Owner</option>
-                          <option value="USER">User</option>
-                        </select>
+                        <div className="flex items-center gap-2">
+                          <select
+                            value={(u.role || "MEMBER").toUpperCase()}
+                            onChange={(e) => handleRoleChange(u.id, e.target.value)}
+                            disabled={updatingRoleId === u.id}
+                            className="px-2.5 py-1.5 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg text-xs font-semibold text-slate-800 dark:text-slate-200 focus:outline-none focus:ring-2 focus:ring-indigo-500 cursor-pointer disabled:opacity-50"
+                          >
+                            <option value="MEMBER">Member</option>
+                            <option value="VIEWER">Viewer</option>
+                            <option value="ADMIN">Admin</option>
+                            <option value="OWNER">Owner</option>
+                            <option value="USER">User</option>
+                          </select>
+                          {updatingRoleId === u.id && (
+                            <Loader2 className="h-3.5 w-3.5 animate-spin text-indigo-600" />
+                          )}
+                        </div>
                       </td>
 
                       <td className="py-4 px-6 text-right">
