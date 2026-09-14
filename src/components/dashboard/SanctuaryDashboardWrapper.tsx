@@ -20,7 +20,7 @@ import {
 import { useAppSelector } from "@/redux/store";
 import UserNavbarAvatarMenu from "@/components/dashboard/UserNavbarAvatarMenu";
 import ThemeToggle from "@/components/theme/ThemeToggle";
-import { getDashboardRouteByRole } from "@/lib/utils/roleUtils";
+import { getDashboardRouteByRole, canAccessRoute } from "@/lib/utils/roleUtils";
 
 interface SanctuaryDashboardWrapperProps {
   children: React.ReactNode;
@@ -37,14 +37,20 @@ export default function SanctuaryDashboardWrapper({
   const router = useRouter();
   const { user, isAuthenticated } = useAppSelector((state) => state.auth);
 
-  // Route Protection: Redirect unauthenticated users to Sign In
+  // Route Protection & Role Authorization: Redirect unauthenticated or unauthorized users
   useEffect(() => {
     if (!isAuthenticated) {
       router.push("/signin");
+      return;
     }
-  }, [isAuthenticated, router]);
 
-  if (!isAuthenticated || !user) {
+    if (user && !canAccessRoute(pathname, user.role)) {
+      const targetRoute = getDashboardRouteByRole(user.role);
+      router.replace(targetRoute);
+    }
+  }, [isAuthenticated, user, pathname, router]);
+
+  if (!isAuthenticated || !user || !canAccessRoute(pathname, user.role)) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-slate-900 text-white">
         <div className="flex items-center gap-3 text-indigo-400 font-semibold">
@@ -55,18 +61,28 @@ export default function SanctuaryDashboardWrapper({
     );
   }
 
-  const sidebarLinks = [
-    { name: "Dashboard", href: getDashboardRouteByRole(user?.role), icon: LayoutDashboard, badge: null },
-    { name: "My Family", href: "/owner-dashboard/family", icon: Users, badge: null },
-    { name: "Family Tree", href: "/owner-dashboard/tree", icon: TreePine, badge: null },
-    { name: "Members", href: "/owner-dashboard/members", icon: UserCheck, badge: null },
-    { name: "Relationships", href: "/owner-dashboard/relationships", icon: Heart, badge: null },
-    { name: "Memories", href: "/owner-dashboard/memories", icon: ImageIcon, badge: null },
-    { name: "Events", href: "/owner-dashboard/events", icon: Calendar, badge: null },
-    { name: "Documents", href: "/owner-dashboard/documents", icon: FolderLock, badge: null },
-    { name: "Invitations", href: "/owner-dashboard/invitations", icon: Mail, badge: "2" },
-    { name: "Settings", href: "/owner-dashboard/settings", icon: Settings, badge: null },
-  ];
+  const isOwnerOrAdmin =
+    user?.role === "OWNER" ||
+    user?.role === "ADMIN" ||
+    user?.role === "SUPER_ADMIN";
+
+  const sidebarLinks = isOwnerOrAdmin
+    ? [
+        { name: "Dashboard", href: getDashboardRouteByRole(user?.role), icon: LayoutDashboard, badge: null },
+        { name: "My Family", href: "/owner-dashboard/family", icon: Users, badge: null },
+        { name: "Family Tree", href: "/owner-dashboard/tree", icon: TreePine, badge: null },
+        { name: "Members", href: "/owner-dashboard/members", icon: UserCheck, badge: null },
+        { name: "Relationships", href: "/owner-dashboard/relationships", icon: Heart, badge: null },
+        { name: "Memories", href: "/owner-dashboard/memories", icon: ImageIcon, badge: null },
+        { name: "Events", href: "/owner-dashboard/events", icon: Calendar, badge: null },
+        { name: "Documents", href: "/owner-dashboard/documents", icon: FolderLock, badge: null },
+        { name: "Invitations", href: "/owner-dashboard/invitations", icon: Mail, badge: "2" },
+        { name: "Settings", href: "/owner-dashboard/settings", icon: Settings, badge: null },
+      ]
+    : [
+        { name: "Member Sanctuary", href: "/user-dashboard", icon: LayoutDashboard, badge: null },
+        { name: "My Profile", href: "/user-dashboard/profile", icon: UserCheck, badge: null },
+      ];
 
   return (
     <div className="min-h-screen flex bg-slate-50/70 dark:bg-slate-950 font-sans text-slate-800 dark:text-slate-100 antialiased transition-colors duration-200">

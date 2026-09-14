@@ -47,6 +47,10 @@ export default function UserDashboardPage() {
   }
 
   const userInitial = user.fullName ? user.fullName.charAt(0).toUpperCase() : "U";
+  const isOwnerOrAdmin =
+    user.role === "OWNER" ||
+    user.role === "ADMIN" ||
+    user.role === "SUPER_ADMIN";
 
   return (
     <SanctuaryDashboardWrapper>
@@ -60,7 +64,7 @@ export default function UserDashboardPage() {
           <div className="relative z-10 max-w-2xl space-y-3">
             <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-white/10 backdrop-blur-md text-indigo-200 text-xs font-semibold border border-white/10">
               <Sparkles className="h-3.5 w-3.5 text-amber-300" />
-              <span>Normal Member Account</span>
+              <span>{user.role || "MEMBER"} Account</span>
               <span className="mx-1">•</span>
               <span className="flex items-center gap-1 text-emerald-300">
                 <CheckCircle className="h-3 w-3" />
@@ -77,15 +81,15 @@ export default function UserDashboardPage() {
 
             <div className="pt-2 flex flex-wrap gap-3">
               <Link
-                href="/owner-dashboard/tree"
+                href={isOwnerOrAdmin ? "/owner-dashboard/tree" : "/user-dashboard/profile"}
                 className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-white text-indigo-950 font-bold text-xs hover:bg-indigo-50 shadow-md transition-all group"
               >
                 <TreePine className="h-4 w-4 text-indigo-600 group-hover:scale-110 transition-transform" />
-                <span>Explore Family Tree</span>
+                <span>{isOwnerOrAdmin ? "Explore Family Tree" : "View My Profile"}</span>
                 <ArrowRight className="h-3.5 w-3.5 opacity-70 group-hover:translate-x-0.5 transition-transform" />
               </Link>
               <Link
-                href="/owner-dashboard/memories"
+                href={isOwnerOrAdmin ? "/owner-dashboard/memories" : "#memories-feed"}
                 className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-white/10 backdrop-blur-md text-white font-semibold text-xs hover:bg-white/20 border border-white/20 transition-all"
               >
                 <ImageIcon className="h-4 w-4" />
@@ -98,10 +102,7 @@ export default function UserDashboardPage() {
         {/* Feature Navigation Cards */}
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
           {/* Card 1: Family Tree */}
-          <Link
-            href="/owner-dashboard/tree"
-            className="group p-6 rounded-2xl bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 hover:border-indigo-300 dark:hover:border-indigo-500/50 hover:shadow-lg hover:shadow-indigo-500/10 transition-all flex flex-col justify-between"
-          >
+          <div className="group p-6 rounded-2xl bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 hover:border-indigo-300 dark:hover:border-indigo-500/50 hover:shadow-lg hover:shadow-indigo-500/10 transition-all flex flex-col justify-between">
             <div className="space-y-3">
               <div className="h-11 w-11 rounded-xl bg-emerald-50 dark:bg-emerald-950/50 text-emerald-600 dark:text-emerald-400 flex items-center justify-center group-hover:scale-105 transition-transform">
                 <TreePine className="h-5 w-5" />
@@ -114,16 +115,20 @@ export default function UserDashboardPage() {
               </p>
             </div>
             <div className="mt-4 pt-3 border-t border-slate-100 dark:border-slate-800 flex items-center justify-between text-xs font-semibold text-indigo-600 dark:text-indigo-400">
-              <span>View Canvas</span>
-              <ArrowRight className="h-3.5 w-3.5 group-hover:translate-x-1 transition-transform" />
+              <span>{isOwnerOrAdmin ? "View Canvas" : "Sanctuary Lineage"}</span>
+              {isOwnerOrAdmin ? (
+                <Link href="/owner-dashboard/tree" className="inline-flex items-center gap-1 hover:underline">
+                  <span>Open</span>
+                  <ArrowRight className="h-3.5 w-3.5 group-hover:translate-x-1 transition-transform" />
+                </Link>
+              ) : (
+                <span className="text-slate-400 font-medium">Active Member</span>
+              )}
             </div>
-          </Link>
+          </div>
 
           {/* Card 2: Memories */}
-          <Link
-            href="/owner-dashboard/memories"
-            className="group p-6 rounded-2xl bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 hover:border-indigo-300 dark:hover:border-indigo-500/50 hover:shadow-lg hover:shadow-indigo-500/10 transition-all flex flex-col justify-between"
-          >
+          <div className="group p-6 rounded-2xl bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 hover:border-indigo-300 dark:hover:border-indigo-500/50 hover:shadow-lg hover:shadow-indigo-500/10 transition-all flex flex-col justify-between">
             <div className="space-y-3">
               <div className="h-11 w-11 rounded-xl bg-indigo-50 dark:bg-indigo-950/50 text-indigo-600 dark:text-indigo-400 flex items-center justify-center group-hover:scale-105 transition-transform">
                 <ImageIcon className="h-5 w-5" />
@@ -137,15 +142,22 @@ export default function UserDashboardPage() {
             </div>
             <div className="mt-4 pt-3 border-t border-slate-100 dark:border-slate-800 flex items-center justify-between text-xs font-semibold text-indigo-600 dark:text-indigo-400">
               <span>{memories.length} Memories Saved</span>
-              <ArrowRight className="h-3.5 w-3.5 group-hover:translate-x-1 transition-transform" />
+              {isOwnerOrAdmin ? (
+                <Link href="/owner-dashboard/memories" className="inline-flex items-center gap-1 hover:underline">
+                  <span>Vault</span>
+                  <ArrowRight className="h-3.5 w-3.5 group-hover:translate-x-1 transition-transform" />
+                </Link>
+              ) : (
+                <a href="#memories-feed" className="inline-flex items-center gap-1 hover:underline">
+                  <span>Feed</span>
+                  <ArrowRight className="h-3.5 w-3.5 group-hover:translate-x-1 transition-transform" />
+                </a>
+              )}
             </div>
-          </Link>
+          </div>
 
           {/* Card 3: Events */}
-          <Link
-            href="/owner-dashboard/events"
-            className="group p-6 rounded-2xl bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 hover:border-indigo-300 dark:hover:border-indigo-500/50 hover:shadow-lg hover:shadow-indigo-500/10 transition-all flex flex-col justify-between"
-          >
+          <div className="group p-6 rounded-2xl bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 hover:border-indigo-300 dark:hover:border-indigo-500/50 hover:shadow-lg hover:shadow-indigo-500/10 transition-all flex flex-col justify-between">
             <div className="space-y-3">
               <div className="h-11 w-11 rounded-xl bg-amber-50 dark:bg-amber-950/50 text-amber-600 dark:text-amber-400 flex items-center justify-center group-hover:scale-105 transition-transform">
                 <Calendar className="h-5 w-5" />
@@ -159,15 +171,22 @@ export default function UserDashboardPage() {
             </div>
             <div className="mt-4 pt-3 border-t border-slate-100 dark:border-slate-800 flex items-center justify-between text-xs font-semibold text-indigo-600 dark:text-indigo-400">
               <span>{events.length} Upcoming Events</span>
-              <ArrowRight className="h-3.5 w-3.5 group-hover:translate-x-1 transition-transform" />
+              {isOwnerOrAdmin ? (
+                <Link href="/owner-dashboard/events" className="inline-flex items-center gap-1 hover:underline">
+                  <span>Manage</span>
+                  <ArrowRight className="h-3.5 w-3.5 group-hover:translate-x-1 transition-transform" />
+                </Link>
+              ) : (
+                <a href="#gatherings-feed" className="inline-flex items-center gap-1 hover:underline">
+                  <span>List</span>
+                  <ArrowRight className="h-3.5 w-3.5 group-hover:translate-x-1 transition-transform" />
+                </a>
+              )}
             </div>
-          </Link>
+          </div>
 
           {/* Card 4: Members */}
-          <Link
-            href="/owner-dashboard/members"
-            className="group p-6 rounded-2xl bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 hover:border-indigo-300 dark:hover:border-indigo-500/50 hover:shadow-lg hover:shadow-indigo-500/10 transition-all flex flex-col justify-between"
-          >
+          <div className="group p-6 rounded-2xl bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 hover:border-indigo-300 dark:hover:border-indigo-500/50 hover:shadow-lg hover:shadow-indigo-500/10 transition-all flex flex-col justify-between">
             <div className="space-y-3">
               <div className="h-11 w-11 rounded-xl bg-purple-50 dark:bg-purple-950/50 text-purple-600 dark:text-purple-400 flex items-center justify-center group-hover:scale-105 transition-transform">
                 <Users className="h-5 w-5" />
@@ -181,27 +200,28 @@ export default function UserDashboardPage() {
             </div>
             <div className="mt-4 pt-3 border-t border-slate-100 dark:border-slate-800 flex items-center justify-between text-xs font-semibold text-indigo-600 dark:text-indigo-400">
               <span>{members.length} Members Listed</span>
-              <ArrowRight className="h-3.5 w-3.5 group-hover:translate-x-1 transition-transform" />
+              {isOwnerOrAdmin ? (
+                <Link href="/owner-dashboard/members" className="inline-flex items-center gap-1 hover:underline">
+                  <span>Directory</span>
+                  <ArrowRight className="h-3.5 w-3.5 group-hover:translate-x-1 transition-transform" />
+                </Link>
+              ) : (
+                <span className="text-slate-400 font-medium font-sans">Active</span>
+              )}
             </div>
-          </Link>
+          </div>
         </div>
 
         {/* Two Column Layout: Recent Memories & Family Info */}
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
           {/* Left Column (2 Cols): Highlights */}
           <div className="lg:col-span-2 space-y-6">
-            <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200/80 dark:border-slate-800 p-6 shadow-xs">
+            <div id="memories-feed" className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200/80 dark:border-slate-800 p-6 shadow-xs">
               <div className="flex items-center justify-between mb-4">
                 <div>
                   <h2 className="font-bold text-base text-slate-900 dark:text-white">Recent Memories</h2>
                   <p className="text-xs text-slate-500 dark:text-slate-400">Photographs and stories shared by family members</p>
                 </div>
-                <Link
-                  href="/owner-dashboard/memories"
-                  className="text-xs font-semibold text-indigo-600 dark:text-indigo-400 hover:text-indigo-800 dark:hover:text-indigo-300 transition-colors"
-                >
-                  View All →
-                </Link>
               </div>
 
               {memories.length > 0 ? (
@@ -232,7 +252,7 @@ export default function UserDashboardPage() {
             </div>
 
             {/* Upcoming Gatherings */}
-            <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200/80 dark:border-slate-800 p-6 shadow-xs">
+            <div id="gatherings-feed" className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200/80 dark:border-slate-800 p-6 shadow-xs">
               <div className="flex items-center justify-between mb-4">
                 <div>
                   <h2 className="font-bold text-base text-slate-900 dark:text-white">Upcoming Gatherings</h2>

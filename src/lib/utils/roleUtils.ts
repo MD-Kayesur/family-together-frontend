@@ -56,3 +56,29 @@ export function getDashboardLabelByRole(role?: string | null): string {
       return "User Dashboard";
   }
 }
+
+/**
+ * Checks whether a given user role has permission to access a specific route pathname.
+ * - /admin-dashboard/* requires ADMIN or SUPER_ADMIN
+ * - /owner-dashboard/* requires OWNER, ADMIN, or SUPER_ADMIN (denies USER / MEMBER / VIEWER)
+ * - /user-dashboard/* allows authenticated users
+ */
+export function canAccessRoute(pathname: string, role?: string | null): boolean {
+  if (!role) return false;
+  const normalizedRole = role.toUpperCase().trim();
+
+  if (pathname.startsWith("/admin-dashboard")) {
+    return normalizedRole === "ADMIN" || normalizedRole === "SUPER_ADMIN";
+  }
+
+  if (pathname.startsWith("/owner-dashboard")) {
+    return (
+      normalizedRole === "OWNER" ||
+      normalizedRole === "ADMIN" ||
+      normalizedRole === "SUPER_ADMIN"
+    );
+  }
+
+  return true;
+}
+
