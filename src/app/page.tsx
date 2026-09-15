@@ -27,7 +27,9 @@ import {
   FileText,
   Activity,
   Layers,
-  ChevronRight
+  ChevronRight,
+  ChevronDown,
+  HelpCircle
 } from "lucide-react";
 import { useAppSelector } from "@/redux/store";
 import { useLogoutMutation } from "@/redux/api/authApi";
@@ -37,6 +39,7 @@ export default function Home() {
   const { user, isAuthenticated } = useAppSelector((state) => state.auth);
   const [logout] = useLogoutMutation();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [openFaqIndex, setOpenFaqIndex] = useState<number | null>(0);
 
   const dashboardHref = getDashboardRouteByRole(user?.role);
   const dashboardLabel = getDashboardLabelByRole(user?.role);
@@ -61,6 +64,9 @@ export default function Home() {
           </a>
           <a href="#pricing" className="text-sm font-semibold text-slate-600 hover:text-indigo-600 transition-colors">
             Pricing
+          </a>
+          <a href="#faq" className="text-sm font-semibold text-slate-600 hover:text-indigo-600 transition-colors">
+            FAQ
           </a>
 
           {isAuthenticated && user ? (
@@ -133,6 +139,13 @@ export default function Home() {
             className="block text-sm font-semibold text-slate-700"
           >
             Pricing
+          </a>
+          <a
+            href="#faq"
+            onClick={() => setMobileMenuOpen(false)}
+            className="block text-sm font-semibold text-slate-700"
+          >
+            FAQ
           </a>
 
           {isAuthenticated && user ? (
@@ -536,6 +549,73 @@ export default function Home() {
                   Upgrade to Pro
                 </button>
               </div>
+            </div>
+          </div>
+        </section>
+
+        {/* FAQ Section */}
+        <section id="faq" className="py-24 px-6 lg:px-12 bg-slate-50/70 border-t border-slate-200/80">
+          <div className="max-w-4xl mx-auto space-y-12">
+            <div className="text-center space-y-4">
+              <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-indigo-50 border border-indigo-200 text-indigo-700 text-xs font-bold uppercase tracking-wider">
+                <HelpCircle className="h-4 w-4 text-indigo-600" />
+                <span>Got Questions?</span>
+              </div>
+              <h2 className="text-3xl sm:text-4xl font-extrabold text-slate-950 tracking-tight">
+                Frequently Asked Questions
+              </h2>
+              <p className="text-base sm:text-lg text-slate-600 max-w-xl mx-auto">
+                Everything you need to know about FamilyRoots, user roles, real-time deduplication, and how our private family sanctuary works.
+              </p>
+            </div>
+
+            <div className="space-y-4">
+              {[
+                {
+                  q: "What is FamilyRoots and what is the move with this project?",
+                  a: "FamilyRoots is a next-generation private family sanctuary app designed to bring generations together. The goal of this project is to provide a single, unified digital home for your lineage—featuring interactive family tree visualization, collaborative memory vaults, real-time relative deduplication, and strict privacy guards so your family history stays safe forever."
+                },
+                {
+                  q: "How do user permissions and roles (Owner, Admin, Member, Viewer) work?",
+                  a: "• Owner & Admin: Have full control over managing tree structures, inviting family members, verifying duplicates, and managing user roles.\n• Member: Can view family trees, upload memories, update their own profile, and receive notifications.\n• Viewer: Public/guest access restricted strictly to viewing the landing page without accessing private family dashboard data."
+                },
+                {
+                  q: "How does real-time family member deduplication work?",
+                  a: "When an Admin or Owner adds a new relative to the family tree, FamilyRoots automatically analyzes incoming names and emails against existing family records in real-time. If a potential match or duplicate is detected, administrators receive an instant alert to merge or confirm records, keeping your family tree clean and accurate."
+                },
+                {
+                  q: "What happens when a new family member account is created?",
+                  a: "When a family member is added with a valid email address, an account activation notice is dispatched. Once the user signs in or completes registration, their account automatically links to their designated spot in the family tree, and a notification banner alerts them in their top navbar."
+                },
+                {
+                  q: "Is our family tree and personal media data secure and private?",
+                  a: "Yes! FamilyRoots is built on a privacy-first foundation. Your family photos, vital documents, and relationship histories are completely private to your family sanctuary and never sold, shared, or exposed publicly."
+                }
+              ].map((faq, idx) => {
+                const isOpen = openFaqIndex === idx;
+                return (
+                  <div
+                    key={idx}
+                    className="bg-white border border-slate-200/90 rounded-2xl overflow-hidden transition-all shadow-sm hover:shadow-md"
+                  >
+                    <button
+                      type="button"
+                      onClick={() => setOpenFaqIndex(isOpen ? null : idx)}
+                      className="w-full px-6 py-5 flex items-center justify-between text-left font-bold text-slate-950 hover:text-indigo-600 transition-colors cursor-pointer"
+                    >
+                      <span className="text-base sm:text-lg pr-4">{faq.q}</span>
+                      <div className={`p-1.5 rounded-full bg-slate-100 transition-transform ${isOpen ? "rotate-180 bg-indigo-50 text-indigo-600" : "text-slate-500"}`}>
+                        <ChevronDown className="h-5 w-5" />
+                      </div>
+                    </button>
+                    {isOpen && (
+                      <div className="px-6 pb-6 pt-1 text-sm text-slate-600 leading-relaxed border-t border-slate-100 whitespace-pre-line bg-slate-50/40">
+                        {faq.a}
+                      </div>
+                    )}
+                  </div>
+                );
+              })}
             </div>
           </div>
         </section>
