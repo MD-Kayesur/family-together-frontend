@@ -73,8 +73,10 @@ export default function LandingDemoCanvas() {
   const [linkingFromId, setLinkingFromId] = useState<string | null>(null);
   const [linkingCursor, setLinkingCursor] = useState<{ x: number; y: number } | null>(null);
 
-  // Edit Node Modal State
+  // Custom Modal States (Replaces browser default prompt())
   const [editingNode, setEditingNode] = useState<DemoNode | null>(null);
+  const [editingConnection, setEditingConnection] = useState<DemoConnection | null>(null);
+  const [customLineLabel, setCustomLineLabel] = useState("");
 
   // Handle Add Person Form Submit
   const handleAddPerson = (e: React.FormEvent) => {
@@ -122,6 +124,8 @@ export default function LandingDemoCanvas() {
     setConnections(INITIAL_DEMO_CONNECTIONS);
     setSelectedSourceId(null);
     setLinkingFromId(null);
+    setEditingConnection(null);
+    setEditingNode(null);
   };
 
   // Node Pointer Down (Drag or Link selection)
@@ -230,15 +234,27 @@ export default function LandingDemoCanvas() {
     setConnections((prev) => prev.filter((c) => c.id !== connId));
   };
 
-  // Edit Connection Line Label
-  const handleEditConnectionLabel = (connId: string) => {
-    const current = connections.find((c) => c.id === connId);
-    const updatedLabel = prompt("Enter line connection label:", current?.label || "Connected Link");
-    if (updatedLabel !== null && updatedLabel.trim()) {
-      setConnections((prev) =>
-        prev.map((c) => (c.id === connId ? { ...c, label: updatedLabel.trim() } : c))
-      );
+  // Open Custom Modal for Editing Connection Line Label
+  const openEditConnectionModal = (connId: string) => {
+    const conn = connections.find((c) => c.id === connId);
+    if (conn) {
+      setEditingConnection(conn);
+      setCustomLineLabel(conn.label || "Connected Link");
     }
+  };
+
+  // Save Connection Line Label from Custom Modal
+  const handleSaveConnectionLabel = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!editingConnection) return;
+    setConnections((prev) =>
+      prev.map((c) =>
+        c.id === editingConnection.id
+          ? { ...c, label: customLineLabel.trim() || "Connected Link" }
+          : c
+      )
+    );
+    setEditingConnection(null);
   };
 
   // Delete Node
@@ -440,7 +456,7 @@ export default function LandingDemoCanvas() {
                 >
                   <div className="flex items-center justify-center gap-1 bg-white border border-indigo-200 shadow-md rounded-full px-2 py-0.5 text-[10px] font-bold text-indigo-700 hover:bg-rose-50 hover:border-rose-300 transition-all cursor-pointer">
                     <span
-                      onClick={() => handleEditConnectionLabel(conn.id)}
+                      onClick={() => openEditConnectionModal(conn.id)}
                       title="Click to edit line label"
                       className="hover:underline"
                     >
@@ -573,7 +589,7 @@ export default function LandingDemoCanvas() {
         })}
       </div>
 
-      {/* Connection Lines Permission & Control Bar */}
+      {/* Connection Lines Control Bar */}
       {connections.length > 0 && (
         <div className="p-3.5 rounded-2xl bg-white border border-slate-200/90 shadow-sm space-y-2">
           <div className="flex items-center justify-between">
@@ -603,7 +619,7 @@ export default function LandingDemoCanvas() {
                   <span>
                     {m1?.name || "Relative A"} ➔ {m2?.name || "Relative B"}{" "}
                     <strong
-                      onClick={() => handleEditConnectionLabel(c.id)}
+                      onClick={() => openEditConnectionModal(c.id)}
                       className="text-indigo-600 cursor-pointer hover:underline"
                       title="Click to edit line label"
                     >
@@ -622,6 +638,62 @@ export default function LandingDemoCanvas() {
               );
             })}
           </div>
+        </div>
+      )}
+
+      {/* Custom Edit Connection Line Label Modal (Replaces browser prompt()) */}
+      {editingConnection && (
+        <div className="fixed inset-0 bg-slate-900/50 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+          <form
+            onSubmit={handleSaveConnectionLabel}
+            className="bg-white rounded-3xl border border-slate-200 p-6 max-w-sm w-full shadow-2xl space-y-4"
+          >
+            <div className="flex items-center justify-between">
+              <h3 className="font-extrabold text-slate-900 text-sm flex items-center gap-2">
+                <GitMerge className="h-4 w-4 text-indigo-600" />
+                <span>Edit Line Connection Label</span>
+              </h3>
+              <button
+                type="button"
+                onClick={() => setEditingConnection(null)}
+                className="text-slate-400 hover:text-slate-600 p-1 rounded-lg hover:bg-slate-100"
+              >
+                <X className="h-4 w-4" />
+              </button>
+            </div>
+
+            <div className="space-y-2">
+              <label className="text-xs font-bold text-slate-600 block">Line Label Name:</label>
+              <input
+                type="text"
+                value={customLineLabel}
+                onChange={(e) => setCustomLineLabel(e.target.value)}
+                placeholder="e.g. Father, Parent ➔ Child, Spouse"
+                className="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 bg-slate-50 text-xs font-bold text-slate-800 focus:ring-2 focus:ring-indigo-500 focus:outline-none"
+                autoFocus
+                required
+              />
+              <p className="text-[11px] text-slate-400">
+                This label will appear on the connection line curve in the sandbox demo.
+              </p>
+            </div>
+
+            <div className="flex items-center gap-2 pt-1">
+              <button
+                type="button"
+                onClick={() => setEditingConnection(null)}
+                className="w-1/2 py-2.5 rounded-xl border border-slate-200 text-slate-600 font-bold text-xs hover:bg-slate-50 cursor-pointer"
+              >
+                Cancel
+              </button>
+              <button
+                type="submit"
+                className="w-1/2 py-2.5 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white font-bold text-xs shadow-md shadow-indigo-600/25 cursor-pointer"
+              >
+                Save Label
+              </button>
+            </div>
+          </form>
         </div>
       )}
 
