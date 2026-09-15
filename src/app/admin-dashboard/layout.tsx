@@ -20,6 +20,7 @@ import {
 } from "lucide-react";
 import { useAppSelector } from "@/redux/store";
 import { useLogoutMutation } from "@/redux/api/authApi";
+import NavbarNotificationMenu from "@/components/dashboard/NavbarNotificationMenu";
 import ThemeToggle from "@/components/theme/ThemeToggle";
 
 export default function AdminLayout({ children }: { children: React.ReactNode }) {
@@ -165,15 +166,8 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
             {/* Theme Toggle Button (Sun & Moon) */}
             <ThemeToggle />
 
-            {/* Notification Bell */}
-            <button
-              type="button"
-              className="relative p-2 rounded-full hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-600 dark:text-slate-300 transition-colors cursor-pointer"
-              aria-label="Notifications"
-            >
-              <Bell className="h-5 w-5" />
-              <span className="absolute top-1.5 right-1.5 h-2 w-2 rounded-full bg-rose-500 ring-2 ring-white dark:ring-slate-900" />
-            </button>
+            {/* Interactive Notification Bell */}
+            <NavbarNotificationMenu />
 
             {/* Settings Gear */}
             <Link

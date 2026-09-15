@@ -19,6 +19,7 @@ import {
   Search,
 } from "lucide-react";
 import { useAppSelector } from "@/redux/store";
+import NavbarNotificationMenu from "@/components/dashboard/NavbarNotificationMenu";
 import UserNavbarAvatarMenu from "@/components/dashboard/UserNavbarAvatarMenu";
 import ThemeToggle from "@/components/theme/ThemeToggle";
 import { getDashboardRouteByRole, canAccessRoute } from "@/lib/utils/roleUtils";
@@ -160,15 +161,8 @@ export default function SanctuaryDashboardWrapper({
             {/* Theme Toggle Button (Sun & Moon) */}
             <ThemeToggle />
 
-            {/* Notification Bell */}
-            <button
-              type="button"
-              className="relative p-2 rounded-full hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-600 dark:text-slate-300 transition-colors cursor-pointer"
-              aria-label="Notifications"
-            >
-              <Bell className="h-5 w-5" />
-              <span className="absolute top-1.5 right-1.5 h-2 w-2 rounded-full bg-rose-500 ring-2 ring-white dark:ring-slate-900" />
-            </button>
+            {/* Interactive Notification Bell */}
+            <NavbarNotificationMenu />
 
             <div className="pl-2 border-l border-slate-200 dark:border-slate-700">
               <UserNavbarAvatarMenu />
