@@ -35,6 +35,11 @@ export interface MemoryRecord {
   sharedBy?: string;
   photoCount?: number;
   mediaUrl?: string;
+  category?: string;
+  date?: string;
+  location?: string;
+  taggedMembers?: string;
+  privacy?: string;
   createdAt?: string;
 }
 
