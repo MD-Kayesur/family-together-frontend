@@ -12,10 +12,10 @@ import {
   MoreVertical,
   ChevronDown,
   ExternalLink,
-  ShieldCheck,
   CheckCircle2,
   AlertCircle,
-  XCircle
+  XCircle,
+  UserCheck
 } from "lucide-react";
 import { useAppSelector } from "@/redux/store";
 import { useGetAdminStatsQuery, useGetUsersListQuery } from "@/redux/api/adminApi";
@@ -34,14 +34,24 @@ export default function AdminDashboardPage() {
 
   return (
     <div className="space-y-8">
-      {/* Title Header */}
-      <div className="space-y-1">
-        <h1 className="text-3xl font-extrabold text-slate-900 tracking-tight">
-          Dashboard Overview
-        </h1>
-        <p className="text-sm font-normal text-slate-500">
-          Real-time metrics and system activity for the FamilyRoots network live from PostgreSQL.
-        </p>
+      {/* Title Header & Quick Actions */}
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+        <div className="space-y-1">
+          <h1 className="text-3xl font-extrabold text-slate-900 tracking-tight">
+            Dashboard Overview
+          </h1>
+          <p className="text-sm font-normal text-slate-500">
+            Real-time metrics and system activity for the FamilyRoots network live from PostgreSQL.
+          </p>
+        </div>
+
+        <Link
+          href="/admin-dashboard/members"
+          className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white font-bold text-xs shadow-md shadow-indigo-600/25 transition-all hover:scale-[1.02]"
+        >
+          <UserCheck className="h-4 w-4" />
+          <span>+ Add Relatives & Members</span>
+        </Link>
       </div>
 
       {/* Top 4 Metric KPI Cards */}

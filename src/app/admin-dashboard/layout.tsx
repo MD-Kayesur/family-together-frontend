@@ -15,7 +15,8 @@ import {
   Search,
   Bell,
   TreePine,
-  ShieldAlert
+  ShieldAlert,
+  UserCheck,
 } from "lucide-react";
 import { useAppSelector } from "@/redux/store";
 import { useLogoutMutation } from "@/redux/api/authApi";
@@ -48,6 +49,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
   const navItems = [
     { name: "Dashboard", href: "/admin-dashboard", icon: LayoutDashboard },
     { name: "User Management", href: "/admin-dashboard/users", icon: Users },
+    { name: "Family Members", href: "/admin-dashboard/members", icon: UserCheck },
     { name: "Activity Monitor", href: "/admin-dashboard/activity", icon: Activity },
     { name: "Network Analytics", href: "/admin-dashboard/analytics", icon: Network },
     { name: "System Settings", href: "/admin-dashboard/settings", icon: Settings },
