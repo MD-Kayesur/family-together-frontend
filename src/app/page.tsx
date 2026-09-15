@@ -572,8 +572,16 @@ export default function Home() {
             <div className="space-y-4">
               {[
                 {
-                  q: "What is FamilyRoots and what is the move with this project?",
-                  a: "FamilyRoots is a next-generation private family sanctuary app designed to bring generations together. The goal of this project is to provide a single, unified digital home for your lineage—featuring interactive family tree visualization, collaborative memory vaults, real-time relative deduplication, and strict privacy guards so your family history stays safe forever."
+                  q: "Why should a family use FamilyRoots over social media or paper trees?",
+                  a: "Social media platforms are noisy, ad-driven, and publicly exposed, while physical paper trees can be easily misplaced or damaged. FamilyRoots gives your lineage a private, ad-free digital sanctuary. You get a modern interactive tree workspace, secure document vaults, and dedicated family features built strictly for your family—with zero algorithms and 100% privacy."
+                },
+                {
+                  q: "What facilities and core features are available in this platform?",
+                  a: "• 🌳 Interactive Family Tree Visualizer: Fluidly trace parents, siblings, children, and extended roots across generations.\n• 🛡️ Real-Time Relative Deduplication: Live validation detects duplicate names or emails instantly when adding family members.\n• 🔐 Secure Legacy Vaults: Store photos, scanned historical records, birth certificates, and memorial dates safely.\n• 🔔 Account Activation & Navbar Alerts: Automated account link generation and instant notifications for new members.\n• 👥 Role-Based Governance: Dedicated dashboards and permissions tailored for Owner, Admin, Member, and Viewer roles."
+                },
+                {
+                  q: "What key benefits will our family gain by using FamilyRoots?",
+                  a: "• 📜 Generational Preservation: Ensure younger generations stay connected to their heritage, stories, and family roots.\n• 🤝 Seamless Extended Connection: Connect family members across different cities and countries in one private hub.\n• 🔒 100% Data Privacy & Ownership: Your family history is strictly yours—never indexed publicly or sold to third parties.\n• ⏱️ Instant Onboarding: Administrators can add relatives with valid emails for immediate account access and notifications."
                 },
                 {
                   q: "How do user permissions and roles (Owner, Admin, Member, Viewer) work?",
@@ -590,6 +598,10 @@ export default function Home() {
                 {
                   q: "Is our family tree and personal media data secure and private?",
                   a: "Yes! FamilyRoots is built on a privacy-first foundation. Your family photos, vital documents, and relationship histories are completely private to your family sanctuary and never sold, shared, or exposed publicly."
+                },
+                {
+                  q: "How do I get started and create an account today?",
+                  a: "Getting started takes less than a minute! Click the 'Create Your Family' or 'Get Started' button at the top of this page, sign up with your email, name your family sanctuary, and start building your interactive family tree immediately."
                 }
               ].map((faq, idx) => {
                 const isOpen = openFaqIndex === idx;
@@ -616,6 +628,23 @@ export default function Home() {
                   </div>
                 );
               })}
+            </div>
+
+            {/* FAQ Call to Action Banner */}
+            <div className="bg-gradient-to-r from-indigo-600 via-purple-600 to-indigo-700 rounded-3xl p-8 sm:p-10 text-white flex flex-col sm:flex-row items-center justify-between gap-6 shadow-xl border border-indigo-500/30 mt-12">
+              <div className="space-y-2 text-center sm:text-left">
+                <h3 className="text-2xl font-extrabold tracking-tight">Ready to preserve your family legacy?</h3>
+                <p className="text-sm text-indigo-100 max-w-lg">
+                  Join thousands of families building their private digital sanctuary today. Setup takes under a minute.
+                </p>
+              </div>
+              <Link
+                href="/signup"
+                className="bg-white text-indigo-600 font-bold px-7 py-3.5 rounded-xl hover:bg-slate-100 transition-all shadow-md shrink-0 flex items-center gap-2 hover:scale-[1.02]"
+              >
+                <span>Create Your Account</span>
+                <ArrowRight className="h-4 w-4" />
+              </Link>
             </div>
           </div>
         </section>
