@@ -240,7 +240,7 @@ export default function Home() {
             </div>
 
             {/* Interactive Family Tree Canvas Preview */}
-            <div className="w-full max-w-5xl hidden md:block">
+            <div className="w-full max-w-7xl mx-auto hidden md:block">
               <LandingDemoCanvas />
             </div>
           </div>
