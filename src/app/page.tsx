@@ -34,6 +34,7 @@ import {
 import { useAppSelector } from "@/redux/store";
 import { useLogoutMutation } from "@/redux/api/authApi";
 import { getDashboardRouteByRole, getDashboardLabelByRole } from "@/lib/utils/roleUtils";
+import LandingDemoCanvas from "@/components/landing/LandingDemoCanvas";
 
 export default function Home() {
   const { user, isAuthenticated } = useAppSelector((state) => state.auth);
@@ -239,57 +240,8 @@ export default function Home() {
             </div>
 
             {/* Interactive Family Tree Canvas Preview */}
-            <div className="relative w-full max-w-5xl h-[460px] bg-white/80 backdrop-blur-md rounded-3xl shadow-2xl border border-slate-200/80 p-8 hidden md:block overflow-hidden">
-              {/* Connecting Lines */}
-              <div className="absolute left-1/2 top-[120px] -ml-[0.5px] w-px h-16 bg-slate-400/40" />
-              <div className="absolute left-1/2 top-[136px] -ml-32 w-64 h-px bg-slate-400/40" />
-              <div className="absolute left-1/2 top-[240px] -ml-[0.5px] w-px h-16 bg-slate-400/40" />
-
-              {/* Grandparents */}
-              <div className="absolute top-[35px] left-1/2 -ml-[140px] w-[120px] bg-white rounded-2xl border border-slate-200 p-3 flex flex-col items-center shadow-md">
-                <div className="h-10 w-10 rounded-full bg-slate-100 text-slate-700 font-bold text-xs flex items-center justify-center mb-1">
-                  👴
-                </div>
-                <span className="text-xs font-bold text-slate-800">Grandfather</span>
-              </div>
-
-              <div className="absolute top-[35px] left-1/2 ml-[20px] w-[120px] bg-white rounded-2xl border border-slate-200 p-3 flex flex-col items-center shadow-md">
-                <div className="h-10 w-10 rounded-full bg-slate-100 text-slate-700 font-bold text-xs flex items-center justify-center mb-1">
-                  👵
-                </div>
-                <span className="text-xs font-bold text-slate-800">Grandmother</span>
-              </div>
-
-              {/* Parents */}
-              <div className="absolute top-[155px] left-1/2 -ml-[60px] w-[120px] bg-white rounded-2xl border border-slate-200 p-3 flex flex-col items-center shadow-md">
-                <div className="h-10 w-10 rounded-full bg-indigo-100 text-indigo-700 font-bold text-xs flex items-center justify-center mb-1">
-                  👨
-                </div>
-                <span className="text-xs font-bold text-slate-800">Father</span>
-              </div>
-
-              {/* Siblings Row */}
-              <div className="absolute top-[270px] left-1/2 -ml-[210px] w-[120px] bg-white rounded-2xl border border-slate-200 p-3 flex flex-col items-center shadow-md">
-                <div className="h-10 w-10 rounded-full bg-amber-100 text-amber-700 font-bold text-xs flex items-center justify-center mb-1">
-                  👦
-                </div>
-                <span className="text-xs font-bold text-slate-800">Brother</span>
-              </div>
-
-              {/* You Node */}
-              <div className="absolute top-[265px] left-1/2 -ml-[70px] w-[140px] bg-white rounded-2xl border-2 border-indigo-600 p-3 flex flex-col items-center shadow-xl ring-4 ring-indigo-600/15">
-                <div className="h-11 w-11 rounded-full bg-indigo-600 text-white font-bold text-xs flex items-center justify-center mb-1 shadow-md">
-                  👩
-                </div>
-                <span className="text-xs font-extrabold text-indigo-600">You</span>
-              </div>
-
-              <div className="absolute top-[270px] left-1/2 ml-[90px] w-[120px] bg-white rounded-2xl border border-slate-200 p-3 flex flex-col items-center shadow-md">
-                <div className="h-10 w-10 rounded-full bg-rose-100 text-rose-700 font-bold text-xs flex items-center justify-center mb-1">
-                  👧
-                </div>
-                <span className="text-xs font-bold text-slate-800">Sister</span>
-              </div>
+            <div className="w-full max-w-5xl hidden md:block">
+              <LandingDemoCanvas />
             </div>
           </div>
         </section>
