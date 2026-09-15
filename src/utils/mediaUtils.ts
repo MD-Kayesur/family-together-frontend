@@ -24,8 +24,8 @@ export function parseMediaUrls(mediaUrl?: string | null): string[] {
 
 export function isVideoUrl(url: string): boolean {
   if (!url) return false;
-  if (url.startsWith("data:video/")) return true;
-  const cleanUrl = url.toLowerCase().split("?")[0];
+  if (url.includes("#video") || url.startsWith("data:video/")) return true;
+  const cleanUrl = url.toLowerCase().split("?")[0].split("#")[0];
   return (
     cleanUrl.endsWith(".mp4") ||
     cleanUrl.endsWith(".webm") ||
@@ -36,16 +36,28 @@ export function isVideoUrl(url: string): boolean {
   );
 }
 
-export function readFilesAsDataURLs(files: File[]): Promise<string[]> {
+export async function readFilesAsDataURLs(files: File[]): Promise<string[]> {
+  const MAX_BASE64_SIZE = 8 * 1024 * 1024; // 8 MB threshold to avoid browser V8 Out-Of-Memory
+
   return Promise.all(
-    files.map(
-      (file) =>
-        new Promise<string>((resolve, reject) => {
-          const reader = new FileReader();
-          reader.onload = () => resolve(reader.result as string);
-          reader.onerror = (err) => reject(err);
-          reader.readAsDataURL(file);
-        })
-    )
+    files.map((file) => {
+      const isVid = file.type.startsWith("video/");
+
+      // For large files (> 8 MB) or videos, use lightweight Object URL with type hash to keep RAM minimal
+      if (file.size > MAX_BASE64_SIZE) {
+        const objectUrl = URL.createObjectURL(file);
+        return Promise.resolve(isVid ? `${objectUrl}#video` : `${objectUrl}#image`);
+      }
+
+      return new Promise<string>((resolve) => {
+        const reader = new FileReader();
+        reader.onload = () => resolve(reader.result as string);
+        reader.onerror = () => {
+          const objectUrl = URL.createObjectURL(file);
+          resolve(isVid ? `${objectUrl}#video` : `${objectUrl}#image`);
+        };
+        reader.readAsDataURL(file);
+      });
+    })
   );
 }
