@@ -210,7 +210,7 @@ export default function Home() {
               Build your private family network, preserve memories, and understand every relationship across generations in a beautiful, modern space.
             </p>
 
-            <div className="flex flex-col sm:flex-row gap-4 mb-16">
+            <div className="flex flex-col sm:flex-row gap-4 mb-12">
               {isAuthenticated && user ? (
                 <Link
                   href={dashboardHref}
@@ -238,11 +238,11 @@ export default function Home() {
                 </>
               )}
             </div>
+          </div>
 
-            {/* Interactive Family Tree Canvas Preview */}
-            <div className="w-full max-w-7xl mx-auto hidden md:block">
-              <LandingDemoCanvas />
-            </div>
+          {/* Interactive Family Tree Canvas Preview - 100% Full-Width Section */}
+          <div className="w-full px-2 sm:px-4 lg:px-6 hidden md:block mt-4">
+            <LandingDemoCanvas />
           </div>
         </section>
 

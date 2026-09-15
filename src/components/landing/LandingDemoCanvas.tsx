@@ -37,12 +37,12 @@ interface DemoConnection {
 }
 
 const INITIAL_DEMO_NODES: DemoNode[] = [
-  { id: "node_1", name: "Grandfather", role: "Grandparent", emoji: "👴", x: 320, y: 40 },
-  { id: "node_2", name: "Grandmother", role: "Grandparent", emoji: "👵", x: 540, y: 40 },
-  { id: "node_3", name: "Father", role: "Parent", emoji: "👨", x: 430, y: 180 },
-  { id: "node_4", name: "Brother", role: "Sibling", emoji: "👦", x: 230, y: 320 },
-  { id: "node_5", name: "You", role: "Sanctuary Owner", emoji: "👩", x: 430, y: 320, isMain: true },
-  { id: "node_6", name: "Sister", role: "Sibling", emoji: "👧", x: 630, y: 320 },
+  { id: "node_1", name: "Grandfather", role: "Grandparent", emoji: "👴", x: 340, y: 50 },
+  { id: "node_2", name: "Grandmother", role: "Grandparent", emoji: "👵", x: 560, y: 50 },
+  { id: "node_3", name: "Father", role: "Parent", emoji: "👨", x: 450, y: 190 },
+  { id: "node_4", name: "Brother", role: "Sibling", emoji: "👦", x: 250, y: 330 },
+  { id: "node_5", name: "You", role: "Sanctuary Owner", emoji: "👩", x: 450, y: 330, isMain: true },
+  { id: "node_6", name: "Sister", role: "Sibling", emoji: "👧", x: 650, y: 330 },
 ];
 
 const INITIAL_DEMO_CONNECTIONS: DemoConnection[] = [
@@ -89,11 +89,11 @@ export default function LandingDemoCanvas() {
     e.preventDefault();
     if (!newName.trim()) return;
 
-    const canvasWidth = canvasRef.current?.getBoundingClientRect().width || 800;
-    const canvasHeight = canvasRef.current?.getBoundingClientRect().height || 500;
+    const canvasWidth = canvasRef.current?.getBoundingClientRect().width || 900;
+    const canvasHeight = canvasRef.current?.getBoundingClientRect().height || 550;
 
-    const newX = Math.max(20, Math.min(canvasWidth - 160, 250 + Math.random() * 250));
-    const newY = Math.max(20, Math.min(canvasHeight - 90, 200 + Math.random() * 180));
+    const newX = Math.max(30, Math.min(canvasWidth - 170, 260 + Math.random() * 260));
+    const newY = Math.max(30, Math.min(canvasHeight - 90, 200 + Math.random() * 180));
 
     const newNode: DemoNode = {
       id: `demo_${Date.now()}`,
@@ -136,7 +136,7 @@ export default function LandingDemoCanvas() {
 
   // Zoom Controls
   const handleZoomIn = () => setZoomLevel((z) => Math.min(z + 15, 180));
-  const handleZoomOut = () => setZoomLevel((z) => Math.max(z - 15, 60));
+  const handleZoomOut = () => setZoomLevel((z) => Math.max(z - 15, 50));
   const handleResetZoom = () => setZoomLevel(100);
 
   // Node Pointer Down
@@ -166,13 +166,22 @@ export default function LandingDemoCanvas() {
     if (!canvasRect) return;
 
     const scale = zoomLevel / 100;
+    const centerX = canvasRect.width / 2;
+    const centerY = canvasRect.height / 2;
+
+    const rawX = e.clientX - canvasRect.left;
+    const rawY = e.clientY - canvasRect.top;
+
+    const currentX = centerX + (rawX - centerX) / scale;
+    const currentY = centerY + (rawY - centerY) / scale;
+
     const node = nodes.find((n) => n.id === memberId);
     if (!node) return;
 
     setDraggingNodeId(memberId);
     setDragOffset({
-      x: (e.clientX - canvasRect.left) / scale - node.x,
-      y: (e.clientY - canvasRect.top) / scale - node.y,
+      x: currentX - node.x,
+      y: currentY - node.y,
     });
   };
 
@@ -183,9 +192,15 @@ export default function LandingDemoCanvas() {
     const canvasRect = canvasRef.current?.getBoundingClientRect();
     if (canvasRect) {
       const scale = zoomLevel / 100;
+      const centerX = canvasRect.width / 2;
+      const centerY = canvasRect.height / 2;
+
+      const rawX = e.clientX - canvasRect.left;
+      const rawY = e.clientY - canvasRect.top;
+
       setLinkingCursor({
-        x: (e.clientX - canvasRect.left) / scale,
-        y: (e.clientY - canvasRect.top) / scale,
+        x: centerX + (rawX - centerX) / scale,
+        y: centerY + (rawY - centerY) / scale,
       });
     }
   };
@@ -196,8 +211,14 @@ export default function LandingDemoCanvas() {
     const canvasRect = canvasRef.current.getBoundingClientRect();
     const scale = zoomLevel / 100;
 
-    const currentX = (e.clientX - canvasRect.left) / scale;
-    const currentY = (e.clientY - canvasRect.top) / scale;
+    const centerX = canvasRect.width / 2;
+    const centerY = canvasRect.height / 2;
+
+    const rawX = e.clientX - canvasRect.left;
+    const rawY = e.clientY - canvasRect.top;
+
+    const currentX = centerX + (rawX - centerX) / scale;
+    const currentY = centerY + (rawY - centerY) / scale;
 
     if (linkingFromId) {
       setLinkingCursor({ x: currentX, y: currentY });
@@ -205,8 +226,8 @@ export default function LandingDemoCanvas() {
     }
 
     if (draggingNodeId) {
-      const newX = Math.max(10, Math.min(canvasRect.width / scale - 150, currentX - dragOffset.x));
-      const newY = Math.max(10, Math.min(canvasRect.height / scale - 70, currentY - dragOffset.y));
+      const newX = Math.max(10, Math.min(canvasRect.width - 150, currentX - dragOffset.x));
+      const newY = Math.max(10, Math.min(canvasRect.height - 70, currentY - dragOffset.y));
 
       setNodes((prev) =>
         prev.map((n) => (n.id === draggingNodeId ? { ...n, x: newX, y: newY } : n))
@@ -298,7 +319,7 @@ export default function LandingDemoCanvas() {
       }`}
     >
       {/* Input Form & Action Bar Above Canvas */}
-      <div className="bg-white/95 backdrop-blur-md rounded-2xl border border-slate-200/90 p-4 shadow-lg space-y-3 shrink-0">
+      <div className="bg-white/95 backdrop-blur-md rounded-2xl border border-slate-200/90 p-4 shadow-lg space-y-3 shrink-0 w-full">
         <div className="flex flex-wrap items-center justify-between gap-3">
           <div className="flex items-center gap-2">
             <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-indigo-50 border border-indigo-200 text-indigo-700 text-xs font-bold">
@@ -306,7 +327,7 @@ export default function LandingDemoCanvas() {
               <span>Full-Screen Sandbox Canvas</span>
             </span>
             <span className="text-[11px] font-semibold text-slate-500 hidden sm:inline">
-              (Drag nodes, draw connecting lines, or add new relatives)
+              (Always 100% full width with center zoom scaling)
             </span>
           </div>
 
@@ -448,7 +469,7 @@ export default function LandingDemoCanvas() {
 
       {/* Guidance Banner when Link Tool is active */}
       {activeTool === "LINK" && (
-        <div className="px-4 py-2 rounded-xl bg-indigo-50 border border-indigo-200 text-indigo-800 text-xs font-semibold flex items-center justify-between shrink-0">
+        <div className="px-4 py-2 rounded-xl bg-indigo-50 border border-indigo-200 text-indigo-800 text-xs font-semibold flex items-center justify-between shrink-0 w-full">
           <div className="flex items-center gap-2">
             <GitMerge className="h-4 w-4 text-indigo-600 animate-pulse" />
             <span>
@@ -469,7 +490,7 @@ export default function LandingDemoCanvas() {
         </div>
       )}
 
-      {/* 2D Full-Screen Interactive Demo Canvas Box */}
+      {/* 2D 100% Full-Width Interactive Demo Canvas Container */}
       <div
         ref={canvasRef}
         onPointerMove={handleCanvasPointerMove}
@@ -483,11 +504,11 @@ export default function LandingDemoCanvas() {
         <div
           style={{
             transform: `scale(${zoomLevel / 100})`,
-            transformOrigin: "0 0",
-            width: `${100 * (100 / zoomLevel)}%`,
-            height: `${100 * (100 / zoomLevel)}%`,
+            transformOrigin: "50% 50%",
+            width: "100%",
+            height: "100%",
           }}
-          className="absolute inset-0 transition-transform duration-100"
+          className="absolute inset-0 transition-transform duration-150 w-full h-full"
         >
           {/* SVG Connection Lines Layer */}
           <svg className="absolute inset-0 w-full h-full pointer-events-none z-0">
@@ -668,7 +689,7 @@ export default function LandingDemoCanvas() {
 
       {/* Connection Lines Control Bar */}
       {connections.length > 0 && (
-        <div className="p-3.5 rounded-2xl bg-white border border-slate-200/90 shadow-sm space-y-2 shrink-0">
+        <div className="p-3.5 rounded-2xl bg-white border border-slate-200/90 shadow-sm space-y-2 shrink-0 w-full">
           <div className="flex items-center justify-between">
             <h4 className="font-bold text-xs text-slate-800 flex items-center gap-2">
               <GitMerge className="h-4 w-4 text-indigo-600" />
