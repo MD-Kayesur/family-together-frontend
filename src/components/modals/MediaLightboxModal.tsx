@@ -129,10 +129,12 @@ export default function MediaLightboxModal({
           {/* Main Photo / Video Media View */}
           {isVid ? (
             <video
+              key={currentMedia}
               src={currentMedia}
               controls
               autoPlay
               playsInline
+              loop
               className="w-full h-full max-h-[75vh] md:max-h-full object-contain rounded-2xl"
             />
           ) : (

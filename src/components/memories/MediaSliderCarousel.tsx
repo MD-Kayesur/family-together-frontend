@@ -90,6 +90,8 @@ export default function MediaSliderCarousel({ memories }: MediaSliderCarouselPro
                       <video
                         src={displayMedia}
                         className="w-full h-full object-cover transition-transform duration-700 group-hover/card:scale-105"
+                        autoPlay
+                        loop
                         muted
                         playsInline
                       />
