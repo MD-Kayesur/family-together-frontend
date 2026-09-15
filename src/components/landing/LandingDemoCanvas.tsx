@@ -792,57 +792,7 @@ export default function LandingDemoCanvas() {
         </div>
       </div>
 
-      {/* Connection Lines Control Bar */}
-      {connections.length > 0 && (
-        <div className="p-3.5 rounded-2xl bg-white border border-slate-200/90 shadow-sm space-y-2 shrink-0 w-full">
-          <div className="flex items-center justify-between">
-            <h4 className="font-bold text-xs text-slate-800 flex items-center gap-2">
-              <GitMerge className="h-4 w-4 text-indigo-600" />
-              <span>Active Connection Lines ({connections.length})</span>
-            </h4>
-            <button
-              type="button"
-              onClick={() => setConnections([])}
-              className="text-[11px] text-rose-600 hover:text-rose-700 font-bold hover:underline flex items-center gap-1 cursor-pointer"
-            >
-              <Trash2 className="h-3.5 w-3.5" />
-              <span>Delete All Lines</span>
-            </button>
-          </div>
 
-          <div className="flex flex-wrap gap-2 pt-1">
-            {connections.map((c) => {
-              const m1 = nodes.find((n) => n.id === c.fromId);
-              const m2 = nodes.find((n) => n.id === c.toId);
-              return (
-                <div
-                  key={c.id}
-                  className="px-3 py-1.5 rounded-xl bg-slate-50 border border-slate-200 text-xs font-semibold text-slate-700 flex items-center gap-2 shadow-2xs hover:border-indigo-300 transition-all"
-                >
-                  <span>
-                    {m1?.name || "Relative A"} ➔ {m2?.name || "Relative B"}{" "}
-                    <strong
-                      onClick={() => openEditConnectionModal(c.id)}
-                      className="text-indigo-600 cursor-pointer hover:underline"
-                      title="Click to edit line label"
-                    >
-                      ({c.label || "Connected"})
-                    </strong>
-                  </span>
-                  <button
-                    type="button"
-                    onClick={() => handleRemoveConnection(c.id)}
-                    className="p-1 rounded-md text-slate-400 hover:text-rose-600 hover:bg-rose-50 transition-all cursor-pointer"
-                    title="Delete this line connection"
-                  >
-                    <Trash2 className="h-3.5 w-3.5" />
-                  </button>
-                </div>
-              );
-            })}
-          </div>
-        </div>
-      )}
 
       {/* Custom Edit Connection Line Label Modal */}
       {editingConnection && (
