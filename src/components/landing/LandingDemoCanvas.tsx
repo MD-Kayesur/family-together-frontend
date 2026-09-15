@@ -11,6 +11,7 @@ import {
   Sparkles,
   GitMerge,
   X,
+  Edit2,
   CheckCircle2
 } from "lucide-react";
 
@@ -62,7 +63,6 @@ export default function LandingDemoCanvas() {
   const [newName, setNewName] = useState("");
   const [newRole, setNewRole] = useState("Relative");
   const [selectedEmoji, setSelectedEmoji] = useState("👨");
-  const [showAddForm, setShowAddForm] = useState(true);
 
   // Dragging State
   const [draggingNodeId, setDraggingNodeId] = useState<string | null>(null);
@@ -73,6 +73,9 @@ export default function LandingDemoCanvas() {
   const [linkingFromId, setLinkingFromId] = useState<string | null>(null);
   const [linkingCursor, setLinkingCursor] = useState<{ x: number; y: number } | null>(null);
 
+  // Edit Node Modal State
+  const [editingNode, setEditingNode] = useState<DemoNode | null>(null);
+
   // Handle Add Person Form Submit
   const handleAddPerson = (e: React.FormEvent) => {
     e.preventDefault();
@@ -81,7 +84,6 @@ export default function LandingDemoCanvas() {
     const canvasWidth = canvasRef.current?.getBoundingClientRect().width || 700;
     const canvasHeight = canvasRef.current?.getBoundingClientRect().height || 420;
 
-    // Randomize initial position slightly near center-bottom
     const newX = Math.max(20, Math.min(canvasWidth - 160, 200 + Math.random() * 200));
     const newY = Math.max(20, Math.min(canvasHeight - 90, 160 + Math.random() * 150));
 
@@ -96,7 +98,7 @@ export default function LandingDemoCanvas() {
 
     setNodes((prev) => [...prev, newNode]);
 
-    // Automatically connect to "You" (node_5) or first node if available
+    // Automatically connect line to "You" (node_5) or first node if available
     const parentNode = nodes.find((n) => n.isMain) || nodes[0];
     if (parentNode) {
       setConnections((prev) => [
@@ -105,7 +107,7 @@ export default function LandingDemoCanvas() {
           id: `conn_${Date.now()}`,
           fromId: parentNode.id,
           toId: newNode.id,
-          label: "Relative",
+          label: "Relative Link",
         },
       ]);
     }
@@ -223,15 +225,36 @@ export default function LandingDemoCanvas() {
     }
   };
 
-  // Remove connection
+  // Delete Connection Line
   const handleRemoveConnection = (connId: string) => {
     setConnections((prev) => prev.filter((c) => c.id !== connId));
   };
 
-  // Remove node
+  // Edit Connection Line Label
+  const handleEditConnectionLabel = (connId: string) => {
+    const current = connections.find((c) => c.id === connId);
+    const updatedLabel = prompt("Enter line connection label:", current?.label || "Connected Link");
+    if (updatedLabel !== null && updatedLabel.trim()) {
+      setConnections((prev) =>
+        prev.map((c) => (c.id === connId ? { ...c, label: updatedLabel.trim() } : c))
+      );
+    }
+  };
+
+  // Delete Node
   const handleRemoveNode = (nodeId: string) => {
     setNodes((prev) => prev.filter((n) => n.id !== nodeId));
     setConnections((prev) => prev.filter((c) => c.fromId !== nodeId && c.toId !== nodeId));
+  };
+
+  // Save Node Edits
+  const handleSaveNodeEdit = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!editingNode) return;
+    setNodes((prev) =>
+      prev.map((n) => (n.id === editingNode.id ? { ...editingNode } : n))
+    );
+    setEditingNode(null);
   };
 
   const nodeWidth = 140;
@@ -245,10 +268,10 @@ export default function LandingDemoCanvas() {
           <div className="flex items-center gap-2">
             <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-indigo-50 border border-indigo-200 text-indigo-700 text-xs font-bold">
               <Sparkles className="h-3.5 w-3.5 text-indigo-600" />
-              <span>Interactive Sandbox Demo</span>
+              <span>Interactive Sandbox Canvas</span>
             </span>
             <span className="text-[11px] font-semibold text-slate-500 hidden sm:inline">
-              (Drag nodes, connect lines, or add new people below)
+              (Full permission to add, drag, connect, edit, or delete lines)
             </span>
           </div>
 
@@ -386,17 +409,20 @@ export default function LandingDemoCanvas() {
             const x2 = posB.x + nodeWidth / 2;
             const y2 = posB.y + nodeHeight / 2;
 
+            const midX = (x1 + x2) / 2;
             const midY = (y1 + y2) / 2;
             const pathD = `M ${x1} ${y1} C ${x1} ${midY}, ${x2} ${midY}, ${x2} ${y2}`;
 
             return (
-              <g key={conn.id} className="group">
+              <g key={conn.id} className="group pointer-events-auto">
                 <path
                   d={pathD}
                   fill="none"
                   stroke="#cbd5e1"
-                  strokeWidth="3.5"
+                  strokeWidth="4"
                   strokeLinecap="round"
+                  className="group-hover:stroke-rose-400 transition-colors cursor-pointer"
+                  onClick={() => handleRemoveConnection(conn.id)}
                 />
                 <path
                   d={pathD}
@@ -405,6 +431,34 @@ export default function LandingDemoCanvas() {
                   strokeWidth="2.5"
                   strokeDasharray="6 4"
                 />
+                <foreignObject
+                  x={midX - 50}
+                  y={midY - 14}
+                  width="100"
+                  height="28"
+                  className="overflow-visible"
+                >
+                  <div className="flex items-center justify-center gap-1 bg-white border border-indigo-200 shadow-md rounded-full px-2 py-0.5 text-[10px] font-bold text-indigo-700 hover:bg-rose-50 hover:border-rose-300 transition-all cursor-pointer">
+                    <span
+                      onClick={() => handleEditConnectionLabel(conn.id)}
+                      title="Click to edit line label"
+                      className="hover:underline"
+                    >
+                      {conn.label || "Link"}
+                    </span>
+                    <button
+                      type="button"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        handleRemoveConnection(conn.id);
+                      }}
+                      className="text-slate-400 hover:text-rose-600 transition-colors p-0.5 ml-0.5 cursor-pointer"
+                      title="Delete connection line"
+                    >
+                      <X className="h-3 w-3" />
+                    </button>
+                  </div>
+                </foreignObject>
               </g>
             );
           })}
@@ -452,7 +506,7 @@ export default function LandingDemoCanvas() {
               <div
                 onPointerDown={(e) => handleHandlePointerDown(e, node.id)}
                 className="absolute -top-2 left-1/2 -translate-x-1/2 h-4 w-4 bg-indigo-600 border-2 border-white rounded-full flex items-center justify-center cursor-crosshair shadow-md hover:scale-125 transition-transform z-20"
-                title="Drag to connect line"
+                title="Drag handle to draw connection line"
               >
                 <div className="h-1.5 w-1.5 bg-white rounded-full" />
               </div>
@@ -478,25 +532,39 @@ export default function LandingDemoCanvas() {
                   </span>
                 </div>
 
-                {!node.isMain && (
+                <div className="flex items-center gap-0.5">
                   <button
                     type="button"
                     onClick={(e) => {
                       e.stopPropagation();
-                      handleRemoveNode(node.id);
+                      setEditingNode(node);
                     }}
-                    className="text-slate-300 hover:text-rose-600 transition-colors p-0.5"
-                    title="Remove Node"
+                    className="text-slate-300 hover:text-indigo-600 transition-colors p-0.5"
+                    title="Edit Node"
                   >
-                    <X className="h-3 w-3" />
+                    <Edit2 className="h-3 w-3" />
                   </button>
-                )}
+
+                  {!node.isMain && (
+                    <button
+                      type="button"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        handleRemoveNode(node.id);
+                      }}
+                      className="text-slate-300 hover:text-rose-600 transition-colors p-0.5"
+                      title="Remove Node"
+                    >
+                      <X className="h-3 w-3" />
+                    </button>
+                  )}
+                </div>
               </div>
 
               <div
                 onPointerDown={(e) => handleHandlePointerDown(e, node.id)}
                 className="absolute -bottom-2 left-1/2 -translate-x-1/2 h-4 w-4 bg-indigo-600 border-2 border-white rounded-full flex items-center justify-center cursor-crosshair shadow-md hover:scale-125 transition-transform z-20"
-                title="Drag to connect line"
+                title="Drag handle to draw connection line"
               >
                 <div className="h-1.5 w-1.5 bg-white rounded-full" />
               </div>
@@ -504,6 +572,132 @@ export default function LandingDemoCanvas() {
           );
         })}
       </div>
+
+      {/* Connection Lines Permission & Control Bar */}
+      {connections.length > 0 && (
+        <div className="p-3.5 rounded-2xl bg-white border border-slate-200/90 shadow-sm space-y-2">
+          <div className="flex items-center justify-between">
+            <h4 className="font-bold text-xs text-slate-800 flex items-center gap-2">
+              <GitMerge className="h-4 w-4 text-indigo-600" />
+              <span>Active Connection Lines ({connections.length})</span>
+            </h4>
+            <button
+              type="button"
+              onClick={() => setConnections([])}
+              className="text-[11px] text-rose-600 hover:text-rose-700 font-bold hover:underline flex items-center gap-1 cursor-pointer"
+            >
+              <Trash2 className="h-3.5 w-3.5" />
+              <span>Delete All Lines</span>
+            </button>
+          </div>
+
+          <div className="flex flex-wrap gap-2 pt-1">
+            {connections.map((c) => {
+              const m1 = nodes.find((n) => n.id === c.fromId);
+              const m2 = nodes.find((n) => n.id === c.toId);
+              return (
+                <div
+                  key={c.id}
+                  className="px-3 py-1.5 rounded-xl bg-slate-50 border border-slate-200 text-xs font-semibold text-slate-700 flex items-center gap-2 shadow-2xs hover:border-indigo-300 transition-all"
+                >
+                  <span>
+                    {m1?.name || "Relative A"} ➔ {m2?.name || "Relative B"}{" "}
+                    <strong
+                      onClick={() => handleEditConnectionLabel(c.id)}
+                      className="text-indigo-600 cursor-pointer hover:underline"
+                      title="Click to edit line label"
+                    >
+                      ({c.label || "Connected"})
+                    </strong>
+                  </span>
+                  <button
+                    type="button"
+                    onClick={() => handleRemoveConnection(c.id)}
+                    className="p-1 rounded-md text-slate-400 hover:text-rose-600 hover:bg-rose-50 transition-all cursor-pointer"
+                    title="Delete this line connection"
+                  >
+                    <Trash2 className="h-3.5 w-3.5" />
+                  </button>
+                </div>
+              );
+            })}
+          </div>
+        </div>
+      )}
+
+      {/* Edit Node Modal */}
+      {editingNode && (
+        <div className="fixed inset-0 bg-slate-900/40 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+          <form
+            onSubmit={handleSaveNodeEdit}
+            className="bg-white rounded-3xl border border-slate-200 p-6 max-w-sm w-full shadow-2xl space-y-4"
+          >
+            <div className="flex items-center justify-between">
+              <h3 className="font-extrabold text-slate-900 text-sm flex items-center gap-2">
+                <Edit2 className="h-4 w-4 text-indigo-600" />
+                <span>Edit Person Details</span>
+              </h3>
+              <button
+                type="button"
+                onClick={() => setEditingNode(null)}
+                className="text-slate-400 hover:text-slate-600"
+              >
+                <X className="h-4 w-4" />
+              </button>
+            </div>
+
+            <div className="space-y-3">
+              <div>
+                <label className="text-xs font-bold text-slate-600 block mb-1">Name:</label>
+                <input
+                  type="text"
+                  value={editingNode.name}
+                  onChange={(e) => setEditingNode({ ...editingNode, name: e.target.value })}
+                  className="w-full px-3 py-2 rounded-xl border border-slate-200 bg-slate-50 text-xs font-bold text-slate-800 focus:ring-2 focus:ring-indigo-500 focus:outline-none"
+                  required
+                />
+              </div>
+
+              <div>
+                <label className="text-xs font-bold text-slate-600 block mb-1">Role/Relation:</label>
+                <input
+                  type="text"
+                  value={editingNode.role}
+                  onChange={(e) => setEditingNode({ ...editingNode, role: e.target.value })}
+                  className="w-full px-3 py-2 rounded-xl border border-slate-200 bg-slate-50 text-xs font-bold text-slate-800 focus:ring-2 focus:ring-indigo-500 focus:outline-none"
+                />
+              </div>
+
+              <div>
+                <label className="text-xs font-bold text-slate-600 block mb-1">Avatar Emoji:</label>
+                <div className="flex items-center gap-1.5 overflow-x-auto py-1">
+                  {EMOJI_OPTIONS.map((emoji) => (
+                    <button
+                      key={emoji}
+                      type="button"
+                      onClick={() => setEditingNode({ ...editingNode, emoji })}
+                      className={`h-8 w-8 rounded-lg text-sm flex items-center justify-center transition-all ${
+                        editingNode.emoji === emoji
+                          ? "bg-indigo-600 text-white shadow-sm scale-110"
+                          : "bg-slate-100 hover:bg-slate-200 text-slate-700"
+                      }`}
+                    >
+                      {emoji}
+                    </button>
+                  ))}
+                </div>
+              </div>
+            </div>
+
+            <button
+              type="submit"
+              className="w-full py-2.5 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white font-bold text-xs shadow-md shadow-indigo-600/25 cursor-pointer"
+            >
+              Save Changes
+            </button>
+          </form>
+        </div>
+      )}
     </div>
   );
 }
