@@ -7,6 +7,7 @@ import { Image as ImageIcon, Plus, Heart, Sparkles, Loader2, SlidersHorizontal }
 import AddMemoryModal from "@/components/modals/AddMemoryModal";
 import MediaSliderCarousel from "@/components/memories/MediaSliderCarousel";
 import MediaLightboxModal from "@/components/modals/MediaLightboxModal";
+import { parseMediaUrls, isVideoUrl } from "@/utils/mediaUtils";
 
 export default function MemoriesPage() {
   const { data: memories = [], isLoading } = useGetMemoriesQuery();
@@ -98,10 +99,12 @@ export default function MemoriesPage() {
           ) : (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
               {memories.map((mem, idx) => {
-                const displayImg =
-                  mem.mediaUrl && mem.mediaUrl.startsWith("http")
-                    ? mem.mediaUrl
+                const mediaList = parseMediaUrls(mem.mediaUrl);
+                const displayMedia =
+                  mediaList.length > 0
+                    ? mediaList[0]
                     : sampleImages[idx % sampleImages.length];
+                const isVid = isVideoUrl(displayMedia);
 
                 return (
                   <div
@@ -109,16 +112,34 @@ export default function MemoriesPage() {
                     onClick={() => handleOpenLightbox(idx)}
                     className="bg-white border border-slate-200/80 rounded-3xl p-5 shadow-sm flex flex-col justify-between space-y-4 hover:shadow-xl transition-all cursor-pointer group"
                   >
-                    <div className="h-48 rounded-2xl overflow-hidden relative border border-slate-100">
-                      <img
-                        src={displayImg}
-                        alt={mem.title}
-                        className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
-                      />
-                      <div className="absolute inset-0 bg-gradient-to-t from-slate-950/70 via-transparent to-transparent opacity-80" />
-                      <span className="absolute top-3 right-3 bg-white/90 backdrop-blur-md px-2.5 py-1 rounded-full text-[10px] font-bold text-slate-700 shadow-sm">
-                        Click to View
-                      </span>
+                    <div className="h-48 rounded-2xl overflow-hidden relative border border-slate-100 bg-slate-950 flex items-center justify-center">
+                      {isVid ? (
+                        <video
+                          src={displayMedia}
+                          className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                          muted
+                          playsInline
+                        />
+                      ) : (
+                        <img
+                          src={displayMedia}
+                          alt={mem.title}
+                          className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                        />
+                      )}
+                      <div className="absolute inset-0 bg-gradient-to-t from-slate-950/70 via-transparent to-transparent opacity-80 pointer-events-none" />
+
+                      {/* Top Media Count & Play Overlay */}
+                      <div className="absolute top-3 right-3 flex items-center gap-1.5 z-10">
+                        {mediaList.length > 1 && (
+                          <span className="bg-purple-600/90 text-white backdrop-blur-md px-2.5 py-1 rounded-full text-[10px] font-bold shadow-md">
+                            {mediaList.length} Files
+                          </span>
+                        )}
+                        <span className="bg-white/90 backdrop-blur-md px-2.5 py-1 rounded-full text-[10px] font-bold text-slate-700 shadow-sm flex items-center gap-1">
+                          {isVid ? "▶ Video" : "Click to View"}
+                        </span>
+                      </div>
                     </div>
 
                     <div className="space-y-1">

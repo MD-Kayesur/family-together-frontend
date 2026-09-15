@@ -19,6 +19,7 @@ import {
   Check,
 } from "lucide-react";
 import { useAddMemoryMutation, useGetMembersQuery } from "@/redux/api/familyApi";
+import { readFilesAsDataURLs } from "@/utils/mediaUtils";
 
 interface AddMemoryModalProps {
   isOpen: boolean;
@@ -99,12 +100,12 @@ export default function AddMemoryModal({ isOpen, onClose }: AddMemoryModalProps)
     }
 
     try {
-
-      // Build media string from multiple selected files
-      const mediaListStr =
-        selectedFiles.length > 0
-          ? selectedFiles.map((f) => f.name).join(", ")
-          : undefined;
+      // Read all selected media files (photos & videos) as Data URLs
+      let mediaUrlPayload: string | undefined = undefined;
+      if (selectedFiles.length > 0) {
+        const dataUrls = await readFilesAsDataURLs(selectedFiles);
+        mediaUrlPayload = JSON.stringify(dataUrls);
+      }
 
       const finalTaggedStr =
         taggedMembersList.length > 0
@@ -118,7 +119,7 @@ export default function AddMemoryModal({ isOpen, onClose }: AddMemoryModalProps)
         date: date || undefined,
         location: location.trim() || undefined,
         category: category || undefined,
-        mediaUrl: mediaListStr ? `Files [${selectedFiles.length}]: ${mediaListStr}` : undefined,
+        mediaUrl: mediaUrlPayload,
         taggedMembers: finalTaggedStr,
         privacy: privacy || undefined,
       }).unwrap();

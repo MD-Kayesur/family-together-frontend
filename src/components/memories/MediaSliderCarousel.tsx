@@ -4,6 +4,7 @@ import React, { useState, useRef } from "react";
 import { ChevronLeft, ChevronRight, Play, Maximize2, Sparkles, Heart } from "lucide-react";
 import { MemoryRecord } from "@/redux/api/familyApi";
 import MediaLightboxModal from "@/components/modals/MediaLightboxModal";
+import { parseMediaUrls, isVideoUrl } from "@/utils/mediaUtils";
 
 interface MediaSliderCarouselProps {
   memories: MemoryRecord[];
@@ -70,10 +71,12 @@ export default function MediaSliderCarousel({ memories }: MediaSliderCarouselPro
             style={{ transform: `translateX(-${currentIndex * 100}%)` }}
           >
             {memories.map((mem, idx) => {
-              const displayImg =
-                mem.mediaUrl && mem.mediaUrl.startsWith("http")
-                  ? mem.mediaUrl
+              const mediaList = parseMediaUrls(mem.mediaUrl);
+              const displayMedia =
+                mediaList.length > 0
+                  ? mediaList[0]
                   : sampleImages[idx % sampleImages.length];
+              const isVid = isVideoUrl(displayMedia);
 
               return (
                 <div
@@ -81,23 +84,39 @@ export default function MediaSliderCarousel({ memories }: MediaSliderCarouselPro
                   className="w-full shrink-0 px-2 cursor-pointer"
                   onClick={() => handleOpenLightbox(idx)}
                 >
-                  <div className="h-64 sm:h-80 w-full rounded-3xl overflow-hidden relative border border-slate-200/80 shadow-md group/card">
-                    {/* Background Image */}
-                    <img
-                      src={displayImg}
-                      alt={mem.title}
-                      className="w-full h-full object-cover transition-transform duration-700 group-hover/card:scale-110"
-                    />
+                  <div className="h-64 sm:h-80 w-full rounded-3xl overflow-hidden relative border border-slate-200/80 shadow-md group/card bg-slate-950 flex items-center justify-center">
+                    {/* Media Item */}
+                    {isVid ? (
+                      <video
+                        src={displayMedia}
+                        className="w-full h-full object-cover transition-transform duration-700 group-hover/card:scale-105"
+                        muted
+                        playsInline
+                      />
+                    ) : (
+                      <img
+                        src={displayMedia}
+                        alt={mem.title}
+                        className="w-full h-full object-cover transition-transform duration-700 group-hover/card:scale-110"
+                      />
+                    )}
 
                     {/* Gradient Overlay */}
-                    <div className="absolute inset-0 bg-gradient-to-t from-slate-950/90 via-slate-950/40 to-transparent" />
+                    <div className="absolute inset-0 bg-gradient-to-t from-slate-950/90 via-slate-950/40 to-transparent pointer-events-none" />
 
                     {/* Top Badges */}
                     <div className="absolute top-4 left-4 right-4 flex items-center justify-between z-20">
-                      <span className="px-3 py-1 rounded-full bg-slate-900/80 text-white border border-white/20 backdrop-blur-md text-[11px] font-bold flex items-center gap-1.5 shadow-md">
-                        <Sparkles className="h-3.5 w-3.5 text-purple-400" />
-                        <span>Owner Media #{idx + 1}</span>
-                      </span>
+                      <div className="flex items-center gap-2">
+                        <span className="px-3 py-1 rounded-full bg-slate-900/80 text-white border border-white/20 backdrop-blur-md text-[11px] font-bold flex items-center gap-1.5 shadow-md">
+                          <Sparkles className="h-3.5 w-3.5 text-purple-400" />
+                          <span>Owner Media #{idx + 1}</span>
+                        </span>
+                        {mediaList.length > 1 && (
+                          <span className="px-2.5 py-1 rounded-full bg-purple-600/90 text-white text-[11px] font-bold shadow-md">
+                            {mediaList.length} Files
+                          </span>
+                        )}
+                      </div>
 
                       <div className="h-9 w-9 rounded-full bg-white/20 backdrop-blur-md text-white flex items-center justify-center shadow-md hover:bg-white/30 transition-colors">
                         <Maximize2 className="h-4 w-4" />
