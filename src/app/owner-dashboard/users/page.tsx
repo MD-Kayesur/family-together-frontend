@@ -51,6 +51,12 @@ export default function OwnerUsersPage() {
       return;
     }
 
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(email.trim())) {
+      setFormError("Please enter a valid email address (e.g. user@example.com).");
+      return;
+    }
+
     try {
       await createUser({
         fullName: fullName.trim(),
