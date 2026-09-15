@@ -87,9 +87,9 @@ export default function SanctuaryDashboardWrapper({
       ];
 
   return (
-    <div className="min-h-screen flex bg-slate-50/70 dark:bg-slate-950 font-sans text-slate-800 dark:text-slate-100 antialiased transition-colors duration-200">
+    <div className="h-screen overflow-hidden flex bg-slate-50/70 dark:bg-slate-950 font-sans text-slate-800 dark:text-slate-100 antialiased transition-colors duration-200">
       {/* Left Sidebar Navigation */}
-      <aside className="w-64 bg-white dark:bg-slate-900 border-r border-slate-200/80 dark:border-slate-800 flex flex-col justify-between p-6 shrink-0 sticky top-0 h-screen transition-colors duration-200">
+      <aside className="w-64 bg-white dark:bg-slate-900 border-r border-slate-200/80 dark:border-slate-800 flex flex-col justify-between p-6 shrink-0 h-screen transition-colors duration-200">
         <div className="space-y-7 overflow-y-auto">
           {/* Brand Logo */}
           <Link href="/" className="flex items-center gap-3 group">
@@ -144,9 +144,9 @@ export default function SanctuaryDashboardWrapper({
       </aside>
 
       {/* Main Area */}
-      <div className="flex-1 flex flex-col min-w-0">
+      <div className="flex-1 flex flex-col h-screen min-w-0 overflow-hidden">
         {/* Top Header */}
-        <header className="h-16 bg-white/80 dark:bg-slate-900/80 backdrop-blur-md border-b border-slate-200/80 dark:border-slate-800 px-8 flex items-center justify-between sticky top-0 z-40 transition-colors duration-200">
+        <header className="h-16 shrink-0 bg-white/80 dark:bg-slate-900/80 backdrop-blur-md border-b border-slate-200/80 dark:border-slate-800 px-8 flex items-center justify-between sticky top-0 z-40 transition-colors duration-200">
           <div className="relative w-80">
             <Search className="h-4 w-4 absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 dark:text-slate-500" />
             <input
@@ -177,7 +177,7 @@ export default function SanctuaryDashboardWrapper({
         </header>
 
         {/* Content Container */}
-        <main className="flex-1 p-8 space-y-6 w-full max-w-full">
+        <main className="flex-1 overflow-y-auto p-6 lg:p-8 space-y-6 w-full max-w-full">
           {title && (
             <div className="space-y-1">
               <h1 className="text-3xl font-extrabold text-slate-900 dark:text-white tracking-tight">{title}</h1>

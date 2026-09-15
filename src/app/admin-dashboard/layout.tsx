@@ -56,10 +56,10 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
   ];
 
   return (
-    <div className="min-h-screen flex bg-slate-50 font-sans text-slate-800 antialiased">
+    <div className="h-screen overflow-hidden flex bg-slate-50 font-sans text-slate-800 antialiased">
       {/* Sidebar Navigation */}
-      <aside className="w-64 bg-indigo-50/50 border-r border-indigo-100 flex flex-col justify-between p-6 shrink-0">
-        <div className="space-y-8">
+      <aside className="w-64 bg-indigo-50/50 border-r border-indigo-100 flex flex-col justify-between p-6 shrink-0 h-screen">
+        <div className="space-y-8 overflow-y-auto">
           {/* Brand Logo */}
           <Link href="/admin-dashboard" className="flex items-center gap-3 group">
             <div className="h-10 w-10 rounded-xl bg-indigo-600 flex items-center justify-center text-white shadow-lg shadow-indigo-600/30 group-hover:scale-105 transition-all">
@@ -134,9 +134,9 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
       </aside>
 
       {/* Main Area */}
-      <div className="flex-1 flex flex-col min-w-0">
+      <div className="flex-1 flex flex-col h-screen min-w-0 overflow-hidden">
         {/* Top Header Bar */}
-        <header className="h-16 bg-white dark:bg-slate-900 border-b border-slate-200 dark:border-slate-800 px-8 flex items-center justify-between sticky top-0 z-40 transition-colors duration-200">
+        <header className="h-16 shrink-0 bg-white dark:bg-slate-900 border-b border-slate-200 dark:border-slate-800 px-8 flex items-center justify-between sticky top-0 z-40 transition-colors duration-200">
           <div className="flex items-center gap-3">
             <h1 className="font-bold text-lg text-slate-800 dark:text-white">Admin Control Center</h1>
             {user.role?.toUpperCase() === "SUPER_ADMIN" && (
@@ -194,7 +194,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
         </header>
 
         {/* Page Content Container */}
-        <main className="flex-1 p-8 overflow-y-auto">{children}</main>
+        <main className="flex-1 p-6 lg:p-8 overflow-y-auto">{children}</main>
       </div>
     </div>
   );
