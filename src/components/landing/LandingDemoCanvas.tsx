@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useRef } from "react";
+import React, { useState, useRef, useEffect, useCallback } from "react";
 import {
   Move,
   Link2,
@@ -57,6 +57,7 @@ const EMOJI_OPTIONS = ["👴", "👵", "👨", "👩", "👦", "👧", "👶", "
 
 export default function LandingDemoCanvas() {
   const canvasRef = useRef<HTMLDivElement>(null);
+  const isDraggingRef = useRef(false);
 
   // In-Memory Demo States (Resets on page refresh)
   const [nodes, setNodes] = useState<DemoNode[]>(INITIAL_DEMO_NODES);
@@ -73,6 +74,61 @@ export default function LandingDemoCanvas() {
   // Dragging State
   const [draggingNodeId, setDraggingNodeId] = useState<string | null>(null);
   const [dragOffset, setDragOffset] = useState({ x: 0, y: 0 });
+
+  // Update dragging ref for auto-center guard
+  useEffect(() => {
+    isDraggingRef.current = draggingNodeId !== null;
+  }, [draggingNodeId]);
+
+  // Helper to center nodes horizontally and vertically within current canvas bounds
+  const centerNodes = useCallback((nodesList: DemoNode[]) => {
+    if (!canvasRef.current || nodesList.length === 0) return nodesList;
+    const canvasRect = canvasRef.current.getBoundingClientRect();
+    const canvasWidth = canvasRect.width;
+    const canvasHeight = canvasRect.height;
+    if (canvasWidth <= 0 || canvasHeight <= 0) return nodesList;
+
+    const minX = Math.min(...nodesList.map((n) => n.x));
+    const maxX = Math.max(...nodesList.map((n) => n.x + 140));
+    const treeCenterX = (minX + maxX) / 2;
+    const targetCenterX = canvasWidth / 2;
+    const shiftX = targetCenterX - treeCenterX;
+
+    const minY = Math.min(...nodesList.map((n) => n.y));
+    const maxY = Math.max(...nodesList.map((n) => n.y + 65));
+    const treeCenterY = (minY + maxY) / 2;
+    const targetCenterY = canvasHeight / 2;
+    const shiftY = targetCenterY - treeCenterY;
+
+    return nodesList.map((node) => ({
+      ...node,
+      x: Math.round(node.x + shiftX),
+      y: Math.round(node.y + shiftY),
+    }));
+  }, []);
+
+  // Auto-center initial nodes on mount, container resize, or fullscreen toggle
+  useEffect(() => {
+    const handleAutoCenter = () => {
+      if (isDraggingRef.current) return;
+      setNodes((prev) => centerNodes(prev));
+    };
+
+    const timer = setTimeout(handleAutoCenter, 50);
+
+    const observer = new ResizeObserver(() => {
+      handleAutoCenter();
+    });
+
+    if (canvasRef.current) {
+      observer.observe(canvasRef.current);
+    }
+
+    return () => {
+      clearTimeout(timer);
+      observer.disconnect();
+    };
+  }, [centerNodes, isFullScreen]);
 
   // Linking State
   const [selectedSourceId, setSelectedSourceId] = useState<string | null>(null);
@@ -92,8 +148,11 @@ export default function LandingDemoCanvas() {
     const canvasWidth = canvasRef.current?.getBoundingClientRect().width || 900;
     const canvasHeight = canvasRef.current?.getBoundingClientRect().height || 550;
 
-    const newX = Math.max(30, Math.min(canvasWidth - 170, 260 + Math.random() * 260));
-    const newY = Math.max(30, Math.min(canvasHeight - 90, 200 + Math.random() * 180));
+    const centerX = canvasWidth / 2;
+    const centerY = canvasHeight / 2;
+
+    const newX = Math.max(30, Math.min(canvasWidth - 170, centerX - 100 + Math.random() * 200));
+    const newY = Math.max(30, Math.min(canvasHeight - 90, centerY - 50 + Math.random() * 100));
 
     const newNode: DemoNode = {
       id: `demo_${Date.now()}`,
@@ -123,9 +182,9 @@ export default function LandingDemoCanvas() {
     setNewRole("Relative");
   };
 
-  // Reset Tree to Default
+  // Reset Tree to Default & Recenter
   const handleReset = () => {
-    setNodes(INITIAL_DEMO_NODES);
+    setNodes(centerNodes(INITIAL_DEMO_NODES));
     setConnections(INITIAL_DEMO_CONNECTIONS);
     setSelectedSourceId(null);
     setLinkingFromId(null);
