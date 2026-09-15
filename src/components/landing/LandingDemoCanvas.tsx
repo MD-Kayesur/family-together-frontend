@@ -371,184 +371,12 @@ export default function LandingDemoCanvas() {
 
   return (
     <div
-      className={`w-full space-y-3 select-none ${
+      className={`w-full select-none ${
         isFullScreen
           ? "fixed inset-0 z-50 bg-slate-950/95 backdrop-blur-xl p-4 sm:p-6 flex flex-col justify-between overflow-hidden"
           : ""
       }`}
     >
-      {/* Input Form & Action Bar Above Canvas */}
-      <div className="bg-white/95 backdrop-blur-md rounded-2xl border border-slate-200/90 p-4 shadow-lg space-y-3 shrink-0 w-full">
-        <div className="flex flex-wrap items-center justify-between gap-3">
-          <div className="flex items-center gap-2">
-            <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-indigo-50 border border-indigo-200 text-indigo-700 text-xs font-bold">
-              <Sparkles className="h-3.5 w-3.5 text-indigo-600" />
-              <span>Full-Screen Sandbox Canvas</span>
-            </span>
-            <span className="text-[11px] font-semibold text-slate-500 hidden sm:inline">
-              (Always 100% full width with center zoom scaling)
-            </span>
-          </div>
-
-          <div className="flex items-center gap-2">
-            {/* Tool Mode Selectors */}
-            <button
-              type="button"
-              onClick={() => {
-                setActiveTool("MOVE");
-                setSelectedSourceId(null);
-              }}
-              className={`px-3 py-1.5 rounded-xl text-xs font-bold flex items-center gap-1.5 transition-all cursor-pointer ${
-                activeTool === "MOVE"
-                  ? "bg-indigo-600 text-white shadow-md shadow-indigo-600/20"
-                  : "bg-slate-100 text-slate-700 hover:bg-slate-200"
-              }`}
-            >
-              <Move className="h-3.5 w-3.5" />
-              <span>Drag & Move</span>
-            </button>
-
-            <button
-              type="button"
-              onClick={() => setActiveTool("LINK")}
-              className={`px-3 py-1.5 rounded-xl text-xs font-bold flex items-center gap-1.5 transition-all cursor-pointer ${
-                activeTool === "LINK"
-                  ? "bg-indigo-600 text-white shadow-md shadow-indigo-600/20 ring-2 ring-indigo-400/30"
-                  : "bg-slate-100 text-slate-700 hover:bg-slate-200"
-              }`}
-            >
-              <Link2 className="h-3.5 w-3.5" />
-              <span>Connect Lines</span>
-            </button>
-
-            {/* Zoom & Fullscreen Controls */}
-            <div className="flex items-center gap-1 pl-2 border-l border-slate-200">
-              <button
-                type="button"
-                onClick={handleZoomIn}
-                className="p-1.5 rounded-lg border border-slate-200 bg-slate-50 hover:bg-slate-100 text-slate-700 font-bold text-xs cursor-pointer"
-                title="Zoom In (+)"
-              >
-                <ZoomIn className="h-3.5 w-3.5" />
-              </button>
-
-              <button
-                type="button"
-                onClick={handleZoomOut}
-                className="p-1.5 rounded-lg border border-slate-200 bg-slate-50 hover:bg-slate-100 text-slate-700 font-bold text-xs cursor-pointer"
-                title="Zoom Out (-)"
-              >
-                <ZoomOut className="h-3.5 w-3.5" />
-              </button>
-
-              <button
-                type="button"
-                onClick={handleResetZoom}
-                className="px-2 py-1 rounded-lg border border-slate-200 bg-slate-50 hover:bg-slate-100 text-slate-600 font-extrabold text-[11px] cursor-pointer"
-                title="Reset Zoom"
-              >
-                {zoomLevel}%
-              </button>
-
-              <button
-                type="button"
-                onClick={() => setIsFullScreen(!isFullScreen)}
-                className={`p-1.5 rounded-lg border font-bold text-xs flex items-center gap-1 cursor-pointer transition-colors ${
-                  isFullScreen
-                    ? "bg-indigo-600 border-indigo-600 text-white"
-                    : "border-slate-200 bg-slate-50 hover:bg-slate-100 text-slate-700"
-                }`}
-                title={isFullScreen ? "Exit Fullscreen" : "Full Screen Canvas"}
-              >
-                {isFullScreen ? <Minimize2 className="h-3.5 w-3.5" /> : <Maximize2 className="h-3.5 w-3.5" />}
-                <span className="hidden sm:inline">{isFullScreen ? "Exit" : "Full Screen"}</span>
-              </button>
-            </div>
-
-            <button
-              type="button"
-              onClick={handleReset}
-              className="px-3 py-1.5 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-600 font-bold text-xs flex items-center gap-1.5 transition-all cursor-pointer"
-              title="Reset Demo Tree"
-            >
-              <RotateCcw className="h-3.5 w-3.5" />
-              <span>Reset</span>
-            </button>
-          </div>
-        </div>
-
-        {/* Add Person Input Form */}
-        <form onSubmit={handleAddPerson} className="flex flex-wrap items-center gap-2 pt-2 border-t border-slate-100">
-          <div className="flex items-center gap-1 bg-slate-50 border border-slate-200 rounded-xl px-2 py-1">
-            <span className="text-xs font-bold text-slate-400 pl-1">Avatar:</span>
-            <div className="flex items-center gap-1 overflow-x-auto py-0.5 max-w-[140px] sm:max-w-none">
-              {EMOJI_OPTIONS.map((emoji) => (
-                <button
-                  key={emoji}
-                  type="button"
-                  onClick={() => setSelectedEmoji(emoji)}
-                  className={`h-7 w-7 rounded-lg text-sm flex items-center justify-center transition-all ${
-                    selectedEmoji === emoji
-                      ? "bg-indigo-600 text-white shadow-sm scale-110"
-                      : "hover:bg-slate-200 text-slate-700"
-                  }`}
-                >
-                  {emoji}
-                </button>
-              ))}
-            </div>
-          </div>
-
-          <input
-            type="text"
-            value={newName}
-            onChange={(e) => setNewName(e.target.value)}
-            placeholder="Person Name (e.g. Uncle Sam)"
-            className="flex-1 min-w-[150px] px-3.5 py-1.5 rounded-xl border border-slate-200 bg-slate-50 text-xs font-bold text-slate-800 focus:outline-none focus:ring-2 focus:ring-indigo-500"
-            required
-          />
-
-          <input
-            type="text"
-            value={newRole}
-            onChange={(e) => setNewRole(e.target.value)}
-            placeholder="Role/Relation (e.g. Uncle)"
-            className="w-28 sm:w-36 px-3.5 py-1.5 rounded-xl border border-slate-200 bg-slate-50 text-xs font-bold text-slate-800 focus:outline-none focus:ring-2 focus:ring-indigo-500"
-          />
-
-          <button
-            type="submit"
-            className="px-4 py-1.5 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white font-bold text-xs shadow-md shadow-indigo-600/20 flex items-center gap-1.5 cursor-pointer shrink-0"
-          >
-            <Plus className="h-4 w-4" />
-            <span>Add Person</span>
-          </button>
-        </form>
-      </div>
-
-      {/* Guidance Banner when Link Tool is active */}
-      {activeTool === "LINK" && (
-        <div className="px-4 py-2 rounded-xl bg-indigo-50 border border-indigo-200 text-indigo-800 text-xs font-semibold flex items-center justify-between shrink-0 w-full">
-          <div className="flex items-center gap-2">
-            <GitMerge className="h-4 w-4 text-indigo-600 animate-pulse" />
-            <span>
-              {selectedSourceId
-                ? `Click any target relative card to draw a connection line!`
-                : `Click a starting node card, then click a target node to connect with a line!`}
-            </span>
-          </div>
-          {selectedSourceId && (
-            <button
-              type="button"
-              onClick={() => setSelectedSourceId(null)}
-              className="text-[10px] bg-white px-2 py-1 rounded-lg border border-indigo-200 font-bold hover:bg-indigo-100"
-            >
-              Cancel Selection
-            </button>
-          )}
-        </div>
-      )}
-
       {/* 2D 100% Full-Width Interactive Demo Canvas Container */}
       <div
         ref={canvasRef}
@@ -558,8 +386,228 @@ export default function LandingDemoCanvas() {
           isFullScreen
             ? "h-[calc(100vh-210px)]"
             : "h-[75vh] min-h-[550px] lg:h-[calc(100vh-180px)]"
-        } bg-white/90 backdrop-blur-md rounded-3xl shadow-2xl border border-slate-200/90 overflow-hidden select-none touch-none bg-[radial-gradient(#e2e8f0_1px,transparent_1px)] [background-size:16px_16px] transition-all`}
+        } bg-white/90 backdrop-blur-md rounded-3xl border border-slate-200/90 overflow-hidden select-none touch-none bg-[radial-gradient(#e2e8f0_1px,transparent_1px)] [background-size:16px_16px] transition-all`}
       >
+        {/* Floating Top-Right Controls & Add Person Toolbar Overlay */}
+        <div className="absolute top-4 right-4 z-40 max-w-full sm:max-w-md md:max-w-xl bg-white/95 backdrop-blur-md rounded-2xl border border-slate-200/90 p-3.5 shadow-xl space-y-2.5 pointer-events-auto">
+          <div className="flex flex-wrap items-center justify-between gap-2.5">
+            <div className="flex items-center gap-2">
+              <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-indigo-50 border border-indigo-200 text-indigo-700 text-xs font-bold">
+                <Sparkles className="h-3.5 w-3.5 text-indigo-600" />
+                <span>Sandbox Canvas</span>
+              </span>
+            </div>
+
+            <div className="flex items-center gap-1.5 flex-wrap">
+              {/* Tool Mode Selectors */}
+              <button
+                type="button"
+                onClick={() => {
+                  setActiveTool("MOVE");
+                  setSelectedSourceId(null);
+                }}
+                className={`px-3 py-1.5 rounded-xl text-xs font-bold flex items-center gap-1.5 transition-all cursor-pointer ${
+                  activeTool === "MOVE"
+                    ? "bg-indigo-600 text-white shadow-md shadow-indigo-600/20"
+                    : "bg-slate-100 text-slate-700 hover:bg-slate-200"
+                }`}
+              >
+                <Move className="h-3.5 w-3.5" />
+                <span>Drag & Move</span>
+              </button>
+
+              <button
+                type="button"
+                onClick={() => setActiveTool("LINK")}
+                className={`px-3 py-1.5 rounded-xl text-xs font-bold flex items-center gap-1.5 transition-all cursor-pointer ${
+                  activeTool === "LINK"
+                    ? "bg-indigo-600 text-white shadow-md shadow-indigo-600/20 ring-2 ring-indigo-400/30"
+                    : "bg-slate-100 text-slate-700 hover:bg-slate-200"
+                }`}
+              >
+                <Link2 className="h-3.5 w-3.5" />
+                <span>Connect Lines</span>
+              </button>
+
+              {/* Zoom & Fullscreen Controls */}
+              <div className="flex items-center gap-1 pl-1.5 border-l border-slate-200">
+                <button
+                  type="button"
+                  onClick={handleZoomIn}
+                  className="p-1.5 rounded-lg border border-slate-200 bg-slate-50 hover:bg-slate-100 text-slate-700 font-bold text-xs cursor-pointer"
+                  title="Zoom In (+)"
+                >
+                  <ZoomIn className="h-3.5 w-3.5" />
+                </button>
+
+                <button
+                  type="button"
+                  onClick={handleZoomOut}
+                  className="p-1.5 rounded-lg border border-slate-200 bg-slate-50 hover:bg-slate-100 text-slate-700 font-bold text-xs cursor-pointer"
+                  title="Zoom Out (-)"
+                >
+                  <ZoomOut className="h-3.5 w-3.5" />
+                </button>
+
+                <button
+                  type="button"
+                  onClick={handleResetZoom}
+                  className="px-2 py-1 rounded-lg border border-slate-200 bg-slate-50 hover:bg-slate-100 text-slate-600 font-extrabold text-[11px] cursor-pointer"
+                  title="Reset Zoom"
+                >
+                  {zoomLevel}%
+                </button>
+
+                <button
+                  type="button"
+                  onClick={() => setIsFullScreen(!isFullScreen)}
+                  className={`p-1.5 rounded-lg border font-bold text-xs flex items-center gap-1 cursor-pointer transition-colors ${
+                    isFullScreen
+                      ? "bg-indigo-600 border-indigo-600 text-white"
+                      : "border-slate-200 bg-slate-50 hover:bg-slate-100 text-slate-700"
+                  }`}
+                  title={isFullScreen ? "Exit Fullscreen" : "Full Screen Canvas"}
+                >
+                  {isFullScreen ? <Minimize2 className="h-3.5 w-3.5" /> : <Maximize2 className="h-3.5 w-3.5" />}
+                  <span className="hidden sm:inline">{isFullScreen ? "Exit" : "Full Screen"}</span>
+                </button>
+              </div>
+
+              <button
+                type="button"
+                onClick={handleReset}
+                className="px-3 py-1.5 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-600 font-bold text-xs flex items-center gap-1.5 transition-all cursor-pointer"
+                title="Reset Demo Tree"
+              >
+                <RotateCcw className="h-3.5 w-3.5" />
+                <span>Reset</span>
+              </button>
+            </div>
+          </div>
+
+          {/* Add Person Input Form */}
+          <form onSubmit={handleAddPerson} className="flex flex-wrap items-center gap-2 pt-2 border-t border-slate-100">
+            <div className="flex items-center gap-1 bg-slate-50 border border-slate-200 rounded-xl px-2 py-1">
+              <span className="text-xs font-bold text-slate-400 pl-1">Avatar:</span>
+              <div className="flex items-center gap-1 overflow-x-auto py-0.5 max-w-[130px] sm:max-w-none">
+                {EMOJI_OPTIONS.map((emoji) => (
+                  <button
+                    key={emoji}
+                    type="button"
+                    onClick={() => setSelectedEmoji(emoji)}
+                    className={`h-7 w-7 rounded-lg text-sm flex items-center justify-center transition-all ${
+                      selectedEmoji === emoji
+                        ? "bg-indigo-600 text-white shadow-sm scale-110"
+                        : "hover:bg-slate-200 text-slate-700"
+                    }`}
+                  >
+                    {emoji}
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            <input
+              type="text"
+              value={newName}
+              onChange={(e) => setNewName(e.target.value)}
+              placeholder="Person Name (e.g. Uncle Sam)"
+              className="flex-1 min-w-[140px] px-3.5 py-1.5 rounded-xl border border-slate-200 bg-slate-50 text-xs font-bold text-slate-800 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+              required
+            />
+
+            <input
+              type="text"
+              value={newRole}
+              onChange={(e) => setNewRole(e.target.value)}
+              placeholder="Role/Relation (e.g. Uncle)"
+              className="w-24 sm:w-32 px-3.5 py-1.5 rounded-xl border border-slate-200 bg-slate-50 text-xs font-bold text-slate-800 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+            />
+
+            <button
+              type="submit"
+              className="px-4 py-1.5 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white font-bold text-xs shadow-md shadow-indigo-600/20 flex items-center gap-1.5 cursor-pointer shrink-0"
+            >
+              <Plus className="h-4 w-4" />
+              <span>Add Person</span>
+            </button>
+          </form>
+        </div>
+
+        {/* Guidance Banner when Link Tool is active */}
+        {activeTool === "LINK" && (
+          <div className="absolute top-4 left-4 z-40 max-w-sm px-4 py-2 rounded-xl bg-indigo-50/95 backdrop-blur-md border border-indigo-200 text-indigo-800 text-xs font-semibold flex items-center justify-between shadow-lg pointer-events-auto">
+            <div className="flex items-center gap-2">
+              <GitMerge className="h-4 w-4 text-indigo-600 animate-pulse" />
+              <span>
+                {selectedSourceId
+                  ? `Click target card to connect!`
+                  : `Click starting card to connect!`}
+              </span>
+            </div>
+            {selectedSourceId && (
+              <button
+                type="button"
+                onClick={() => setSelectedSourceId(null)}
+                className="text-[10px] bg-white px-2 py-1 rounded-lg border border-indigo-200 font-bold hover:bg-indigo-100 ml-2"
+              >
+                Cancel
+              </button>
+            )}
+          </div>
+        )}
+
+        {/* Connection Lines Control Bar Overlay (Bottom Left) */}
+        {connections.length > 0 && (
+          <div className="absolute bottom-4 left-4 z-40 max-w-md bg-white/95 backdrop-blur-md p-3 rounded-2xl border border-slate-200/90 shadow-xl space-y-1.5 pointer-events-auto">
+            <div className="flex items-center justify-between gap-4">
+              <h4 className="font-bold text-xs text-slate-800 flex items-center gap-1.5">
+                <GitMerge className="h-3.5 w-3.5 text-indigo-600" />
+                <span>Lines ({connections.length})</span>
+              </h4>
+              <button
+                type="button"
+                onClick={() => setConnections([])}
+                className="text-[10px] text-rose-600 hover:text-rose-700 font-bold hover:underline flex items-center gap-1 cursor-pointer"
+              >
+                <Trash2 className="h-3 w-3" />
+                <span>Clear All</span>
+              </button>
+            </div>
+
+            <div className="flex flex-wrap gap-1.5 max-h-24 overflow-y-auto pt-0.5">
+              {connections.map((c) => {
+                const m1 = nodes.find((n) => n.id === c.fromId);
+                const m2 = nodes.find((n) => n.id === c.toId);
+                return (
+                  <div
+                    key={c.id}
+                    className="px-2 py-1 rounded-lg bg-slate-50 border border-slate-200 text-[11px] font-semibold text-slate-700 flex items-center gap-1.5 shadow-2xs hover:border-indigo-300 transition-all"
+                  >
+                    <span>
+                      {m1?.name || "A"} ➔ {m2?.name || "B"}{" "}
+                      <strong
+                        onClick={() => openEditConnectionModal(c.id)}
+                        className="text-indigo-600 cursor-pointer hover:underline"
+                        title="Edit label"
+                      >
+                        ({c.label || "Link"})
+                      </strong>
+                    </span>
+                    <button
+                      type="button"
+                      onClick={() => handleRemoveConnection(c.id)}
+                      className="text-slate-400 hover:text-rose-600 transition-colors p-0.5 cursor-pointer"
+                      title="Delete line"
+                    >
+                      <Trash2 className="h-3 w-3" />
+                    </button>
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+        )}
         <div
           style={{
             transform: `scale(${zoomLevel / 100})`,
