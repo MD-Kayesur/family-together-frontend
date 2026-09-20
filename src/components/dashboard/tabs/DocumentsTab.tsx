@@ -64,7 +64,7 @@ export default function DocumentsTab() {
     });
 
     const timeoutPromise = new Promise<string>((_, reject) =>
-      setTimeout(() => reject(new Error(`Reading timed out for: ${file.name}`)), 15000)
+      setTimeout(() => reject(new Error(`Reading timed out for: ${file.name}`)), 60000)
     );
 
     return Promise.race([readPromise, timeoutPromise]);
