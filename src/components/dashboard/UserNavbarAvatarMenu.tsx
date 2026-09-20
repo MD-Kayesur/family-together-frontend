@@ -3,7 +3,7 @@
 import React, { useState, useRef, useEffect } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { UserCheck, HelpCircle, LogOut, ShieldCheck, ChevronDown, LayoutDashboard } from "lucide-react";
+import { LogOut, ShieldCheck, ChevronDown, LayoutDashboard } from "lucide-react";
 import { useAppSelector } from "@/redux/store";
 import { useLogoutMutation } from "@/redux/api/authApi";
 import { getDashboardRouteByRole, getDashboardLabelByRole } from "@/lib/utils/roleUtils";
@@ -32,9 +32,6 @@ export default function UserNavbarAvatarMenu() {
 
   const userInitial = user.fullName ? user.fullName.charAt(0).toUpperCase() : "U";
   const userRole = user.role || "OWNER";
-  const profileRoute = userRole.toUpperCase() === "ADMIN" || userRole.toUpperCase() === "SUPER_ADMIN"
-    ? "/admin-dashboard/settings"
-    : "/owner-dashboard/profile";
   const dashboardHref = getDashboardRouteByRole(user.role);
   const dashboardLabel = getDashboardLabelByRole(user.role);
   const avatarUrl = user.avatarUrl || (user as any).avatar || (user as any).profileImage || (user as any).image;
@@ -114,7 +111,7 @@ export default function UserNavbarAvatarMenu() {
             </div>
           </div>
 
-          {/* Menu Actions */}
+          {/* Menu Actions: Only Dashboard and Logout */}
           <div className="space-y-1 pt-1">
             <Link
               href={dashboardHref}
@@ -123,24 +120,6 @@ export default function UserNavbarAvatarMenu() {
             >
               <LayoutDashboard className="h-4 w-4 text-indigo-600 dark:text-indigo-400" />
               <span>{dashboardLabel}</span>
-            </Link>
-
-            <Link
-              href={profileRoute}
-              onClick={() => setIsOpen(false)}
-              className="flex items-center gap-3 px-3 py-2.5 rounded-xl text-xs font-bold text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-stone-800 hover:text-indigo-600 transition-colors"
-            >
-              <UserCheck className="h-4 w-4 text-indigo-600" />
-              <span>User Profile</span>
-            </Link>
-
-            <Link
-              href="/support"
-              onClick={() => setIsOpen(false)}
-              className="flex items-center gap-3 px-3 py-2.5 rounded-xl text-xs font-bold text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-stone-800 hover:text-indigo-600 transition-colors"
-            >
-              <HelpCircle className="h-4 w-4 text-indigo-600" />
-              <span>Help & Support</span>
             </Link>
 
             <div className="pt-1 border-t border-slate-100 dark:border-stone-800">
