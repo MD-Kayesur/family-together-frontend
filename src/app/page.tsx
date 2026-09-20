@@ -280,20 +280,9 @@ export default function Home() {
               </div>
             </div>
 
-            <div className="relative h-[380px] rounded-3xl bg-gradient-to-br from-indigo-50 via-slate-50 to-emerald-50 border border-slate-200 flex items-center justify-center overflow-hidden p-8">
-              <div className="relative z-10 flex flex-col items-center gap-6">
-                <div className="flex gap-8 items-center">
-                  <div className="w-14 h-14 rounded-full bg-white shadow-md border border-slate-200 flex items-center justify-center text-lg">👴</div>
-                  <div className="w-14 h-14 rounded-full bg-white shadow-md border border-slate-200 flex items-center justify-center text-lg">👵</div>
-                </div>
-                <div className="w-16 h-16 rounded-full bg-indigo-600 text-white shadow-lg flex items-center justify-center text-xl font-bold border-4 border-white">
-                  👩
-                </div>
-                <div className="flex gap-6 items-center">
-                  <div className="w-12 h-12 rounded-full bg-white shadow-sm border border-slate-200 flex items-center justify-center text-sm">👦</div>
-                  <div className="w-12 h-12 rounded-full bg-white shadow-sm border border-slate-200 flex items-center justify-center text-sm">👧</div>
-                </div>
-              </div>
+            {/* Interactive Signature Tree Preview Card (Rich interactive canvas) */}
+            <div className="w-full relative">
+              <LandingFamilyTreeCanvas variant="card" storageKey="signature_tree_preview_v1" />
             </div>
           </div>
         </section>

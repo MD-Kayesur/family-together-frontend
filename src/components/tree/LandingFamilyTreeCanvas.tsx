@@ -81,14 +81,27 @@ const DEFAULT_NODE_OFFSETS: Record<string, { dx: number; dy: number }> = {
   sister: { dx: 95, dy: 120 },
 };
 
-export default function LandingFamilyTreeCanvas() {
+interface LandingFamilyTreeCanvasProps {
+  variant?: "fullscreen" | "card";
+  className?: string;
+  storageKey?: string;
+}
+
+export default function LandingFamilyTreeCanvas({
+  variant = "fullscreen",
+  className = "",
+  storageKey = "landing_tree_v6",
+}: LandingFamilyTreeCanvasProps) {
+  const isCard = variant === "card";
+  const defaultZoom = isCard ? 72 : 100;
+
   const canvasContainerRef = useRef<HTMLDivElement>(null);
   const canvasSurfaceRef = useRef<HTMLDivElement>(null);
 
   // Surface Dimensions for perfect middle alignment
   const [surfaceDimensions, setSurfaceDimensions] = useState<{ width: number; height: number }>({
-    width: typeof window !== "undefined" ? window.innerWidth : 1200,
-    height: typeof window !== "undefined" ? window.innerHeight : 800,
+    width: typeof window !== "undefined" ? (isCard ? 650 : window.innerWidth) : 1200,
+    height: typeof window !== "undefined" ? (isCard ? 500 : window.innerHeight) : 800,
   });
 
   // Tree Data State
@@ -99,7 +112,7 @@ export default function LandingFamilyTreeCanvas() {
   // Interaction Mode & Selection
   const [activeTool, setActiveTool] = useState<"MOVE" | "LINK">("MOVE");
   const [selectedMemberId, setSelectedMemberId] = useState<string | null>("you");
-  const [zoomLevel, setZoomLevel] = useState<number>(100);
+  const [zoomLevel, setZoomLevel] = useState<number>(defaultZoom);
   const [isFullScreen, setIsFullScreen] = useState<boolean>(false);
 
   // Canvas Panning State
@@ -160,17 +173,17 @@ export default function LandingFamilyTreeCanvas() {
   useEffect(() => {
     const updateDimensions = () => {
       const surface = canvasSurfaceRef.current;
-      const w = surface?.clientWidth || window.innerWidth || 1200;
-      const h = surface?.clientHeight || window.innerHeight || 800;
+      const w = surface?.clientWidth || (isCard ? 650 : window.innerWidth) || 1200;
+      const h = surface?.clientHeight || (isCard ? 500 : window.innerHeight) || 800;
       setSurfaceDimensions({ width: w, height: h });
       return { w, h };
     };
 
     const { w, h } = updateDimensions();
 
-    const savedPositions = localStorage.getItem("landing_tree_positions_v6");
-    const savedMembers = localStorage.getItem("landing_tree_members_v6");
-    const savedConnections = localStorage.getItem("landing_tree_connections_v6");
+    const savedPositions = localStorage.getItem(`${storageKey}_positions`);
+    const savedMembers = localStorage.getItem(`${storageKey}_members`);
+    const savedConnections = localStorage.getItem(`${storageKey}_connections`);
 
     if (savedMembers) {
       try {
@@ -201,7 +214,7 @@ export default function LandingFamilyTreeCanvas() {
 
     window.addEventListener("resize", updateDimensions);
     return () => window.removeEventListener("resize", updateDimensions);
-  }, [calculateCenteredPositions]);
+  }, [calculateCenteredPositions, isCard, storageKey]);
 
   // 2. Mouse Wheel Zoom In / Out - Always Centered in the Middle
   useEffect(() => {
@@ -227,9 +240,9 @@ export default function LandingFamilyTreeCanvas() {
     newPositions = nodePositions
   ) => {
     try {
-      localStorage.setItem("landing_tree_members_v6", JSON.stringify(newMembers));
-      localStorage.setItem("landing_tree_connections_v6", JSON.stringify(newConnections));
-      localStorage.setItem("landing_tree_positions_v6", JSON.stringify(newPositions));
+      localStorage.setItem(`${storageKey}_members`, JSON.stringify(newMembers));
+      localStorage.setItem(`${storageKey}_connections`, JSON.stringify(newConnections));
+      localStorage.setItem(`${storageKey}_positions`, JSON.stringify(newPositions));
     } catch (e) {
       console.error("LocalStorage save failed", e);
     }
@@ -237,9 +250,9 @@ export default function LandingFamilyTreeCanvas() {
 
   // Reset to initial clean centered state
   const handleReset = () => {
-    localStorage.removeItem("landing_tree_members_v6");
-    localStorage.removeItem("landing_tree_connections_v6");
-    localStorage.removeItem("landing_tree_positions_v6");
+    localStorage.removeItem(`${storageKey}_members`);
+    localStorage.removeItem(`${storageKey}_connections`);
+    localStorage.removeItem(`${storageKey}_positions`);
 
     const w = surfaceDimensions.width;
     const h = surfaceDimensions.height;
@@ -247,7 +260,7 @@ export default function LandingFamilyTreeCanvas() {
     setConnections(DEFAULT_CONNECTIONS);
     setNodePositions(calculateCenteredPositions(w, h));
     setSelectedMemberId("you");
-    setZoomLevel(100);
+    setZoomLevel(defaultZoom);
     setPanOffset({ x: 0, y: 0 });
   };
 
@@ -255,12 +268,11 @@ export default function LandingFamilyTreeCanvas() {
   const handleZoomIn = () => setZoomLevel((z) => Math.min(z + 15, 200));
   const handleZoomOut = () => setZoomLevel((z) => Math.max(z - 15, 30));
   const handleResetZoom = () => {
-    setZoomLevel(100);
+    setZoomLevel(defaultZoom);
     setPanOffset({ x: 0, y: 0 });
   };
 
   // Convert Screen Mouse Coordinates to Canvas Coordinates
-  // Taking center transformOrigin into account so that zoom and drag are 100% synchronized!
   const getCanvasCoords = (clientX: number, clientY: number) => {
     const rect = canvasSurfaceRef.current?.getBoundingClientRect();
     if (!rect) return { x: 0, y: 0 };
@@ -540,13 +552,15 @@ export default function LandingFamilyTreeCanvas() {
   return (
     <div
       ref={canvasContainerRef}
-      className={`w-full h-screen min-h-screen relative transition-all duration-300 ${
+      className={`w-full relative transition-all duration-300 ${
         isFullScreen
           ? "fixed inset-0 z-50 bg-slate-950/95 backdrop-blur-2xl p-2 sm:p-4 flex flex-col justify-between overflow-hidden"
-          : "p-0 m-0"
-      }`}
+          : isCard
+          ? "h-[480px] sm:h-[540px] rounded-3xl overflow-hidden shadow-2xl border border-slate-200/90 dark:border-slate-800"
+          : "h-screen min-h-screen p-0 m-0"
+      } ${className}`}
     >
-      {/* 2D Interactive Canvas Surface (Always Full-Width & Full-Height h-screen) */}
+      {/* 2D Interactive Canvas Surface */}
       <div
         ref={canvasSurfaceRef}
         onPointerDown={handleCanvasBackgroundPointerDown}
@@ -555,34 +569,40 @@ export default function LandingFamilyTreeCanvas() {
         style={{
           backgroundPosition: `${panOffset.x}px ${panOffset.y}px`,
         }}
-        className="w-full h-screen min-h-screen relative rounded-none border-y sm:border border-slate-200/80 dark:border-slate-800 bg-slate-50/90 dark:bg-slate-900/95 backdrop-blur-xl shadow-2xl overflow-hidden select-none touch-none bg-[radial-gradient(#cbd5e1_1.2px,transparent_1.2px)] dark:bg-[radial-gradient(#334155_1.2px,transparent_1.2px)] [background-size:24px_24px] cursor-grab active:cursor-grabbing transition-colors"
+        className={`w-full relative overflow-hidden select-none touch-none bg-[radial-gradient(#cbd5e1_1.2px,transparent_1.2px)] dark:bg-[radial-gradient(#334155_1.2px,transparent_1.2px)] [background-size:24px_24px] cursor-grab active:cursor-grabbing transition-colors ${
+          isFullScreen
+            ? "flex-1 h-full min-h-[600px] rounded-2xl"
+            : isCard
+            ? "h-full rounded-3xl border border-slate-200/80 dark:border-slate-800 bg-slate-50/90 dark:bg-slate-900/95 backdrop-blur-xl"
+            : "h-screen min-h-screen rounded-none border-y sm:border border-slate-200/80 dark:border-slate-800 bg-slate-50/90 dark:bg-slate-900/95 backdrop-blur-xl"
+        }`}
       >
         {/* Top-Left Live Indicator Pill */}
         <div
           onPointerDown={(e) => e.stopPropagation()}
-          className="absolute top-4 left-4 z-30 hidden sm:flex items-center gap-2 px-3.5 py-2 rounded-2xl bg-white/95 dark:bg-slate-900/95 backdrop-blur-md border border-slate-200/90 dark:border-slate-800 shadow-xl text-xs font-semibold text-slate-800 dark:text-slate-200 pointer-events-auto"
+          className="absolute top-3.5 left-3.5 z-30 hidden sm:flex items-center gap-2 px-3 py-1.5 rounded-2xl bg-white/95 dark:bg-slate-900/95 backdrop-blur-md border border-slate-200/90 dark:border-slate-800 shadow-xl text-xs font-semibold text-slate-800 dark:text-slate-200 pointer-events-auto"
         >
           <span className="relative flex h-2.5 w-2.5">
             <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
             <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-emerald-500"></span>
           </span>
           <span className="font-bold">Interactive Sanctuary Tree</span>
-          <span className="text-[11px] text-slate-400 dark:text-slate-500 font-normal">| Drag & connect relatives</span>
+          <span className="text-[11px] text-slate-400 dark:text-slate-500 font-normal">| Drag & connect</span>
         </div>
 
         {/* Top-Right Floating Controls Bar */}
         <div
           onPointerDown={(e) => e.stopPropagation()}
-          className="absolute top-4 right-4 z-30 flex flex-wrap items-center gap-1.5 sm:gap-2 p-2 rounded-2xl bg-white/95 dark:bg-slate-900/95 backdrop-blur-xl border border-slate-200/90 dark:border-slate-800 shadow-2xl transition-all max-w-[calc(100%-28px)] pointer-events-auto"
+          className="absolute top-3.5 right-3.5 z-30 flex flex-wrap items-center gap-1 sm:gap-1.5 p-1.5 rounded-2xl bg-white/95 dark:bg-slate-900/95 backdrop-blur-xl border border-slate-200/90 dark:border-slate-800 shadow-2xl transition-all max-w-[calc(100%-28px)] pointer-events-auto"
         >
           {/* Add Relative Button */}
           <button
             type="button"
             onClick={() => setIsAddModalOpen(true)}
-            className="px-3 py-1.5 sm:px-3.5 sm:py-2 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white font-bold text-xs shadow-md shadow-indigo-600/25 flex items-center gap-1.5 transition-all hover:scale-[1.02] cursor-pointer shrink-0"
+            className="px-2.5 py-1.5 sm:px-3 sm:py-1.5 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white font-bold text-xs shadow-md shadow-indigo-600/25 flex items-center gap-1.5 transition-all hover:scale-[1.02] cursor-pointer shrink-0"
           >
-            <Plus className="h-4 w-4 stroke-[2.5]" />
-            <span>Add Relative</span>
+            <Plus className="h-3.5 w-3.5 stroke-[2.5]" />
+            <span className="hidden sm:inline">Add Relative</span>
           </button>
 
           {/* Mode Switch: Drag & Move */}
@@ -592,28 +612,28 @@ export default function LandingFamilyTreeCanvas() {
               setActiveTool("MOVE");
               setLinkSourceId(null);
             }}
-            className={`px-2.5 py-1.5 sm:px-3 sm:py-2 rounded-xl font-bold text-xs flex items-center gap-1.5 transition-all cursor-pointer ${
+            className={`px-2 py-1.5 sm:px-2.5 sm:py-1.5 rounded-xl font-bold text-xs flex items-center gap-1 transition-all cursor-pointer ${
               activeTool === "MOVE"
                 ? "bg-slate-900 text-white dark:bg-white dark:text-slate-950 shadow-sm"
                 : "bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700"
             }`}
           >
             <Move className="h-3.5 w-3.5" />
-            <span className="hidden md:inline">Drag & Move</span>
+            <span className="hidden md:inline">Move</span>
           </button>
 
           {/* Mode Switch: Connect */}
           <button
             type="button"
             onClick={() => setActiveTool("LINK")}
-            className={`px-2.5 py-1.5 sm:px-3 sm:py-2 rounded-xl font-bold text-xs flex items-center gap-1.5 transition-all cursor-pointer ${
+            className={`px-2 py-1.5 sm:px-2.5 sm:py-1.5 rounded-xl font-bold text-xs flex items-center gap-1 transition-all cursor-pointer ${
               activeTool === "LINK"
                 ? "bg-indigo-600 text-white shadow-md shadow-indigo-600/30 ring-2 ring-indigo-400"
                 : "bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700"
             }`}
           >
             <Link2 className="h-3.5 w-3.5" />
-            <span className="hidden sm:inline">Connect</span>
+            <span className="hidden sm:inline">Link</span>
           </button>
 
           {/* Zoom Controls: - and + buttons with current % */}
@@ -622,18 +642,18 @@ export default function LandingFamilyTreeCanvas() {
             <button
               type="button"
               onClick={handleZoomOut}
-              className="h-8 w-8 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 hover:bg-slate-100 dark:hover:bg-slate-700 text-slate-800 dark:text-slate-100 font-bold text-base flex items-center justify-center cursor-pointer transition-colors"
+              className="h-7 w-7 rounded-lg border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 hover:bg-slate-100 dark:hover:bg-slate-700 text-slate-800 dark:text-slate-100 font-bold text-sm flex items-center justify-center cursor-pointer transition-colors"
               title="Zoom Out (-)"
             >
-              <Minus className="h-4 w-4 stroke-[2.5]" />
+              <Minus className="h-3.5 w-3.5 stroke-[2.5]" />
             </button>
 
             {/* Current Zoom % / Reset Zoom & Pan */}
             <button
               type="button"
               onClick={handleResetZoom}
-              className="px-2.5 py-1 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 hover:bg-slate-100 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 font-extrabold text-xs cursor-pointer transition-colors"
-              title="Click to reset zoom (100%) and center in the middle"
+              className="px-2 py-0.5 rounded-lg border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 hover:bg-slate-100 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 font-extrabold text-[11px] cursor-pointer transition-colors"
+              title="Click to reset zoom and center"
             >
               {zoomLevel}%
             </button>
@@ -642,10 +662,10 @@ export default function LandingFamilyTreeCanvas() {
             <button
               type="button"
               onClick={handleZoomIn}
-              className="h-8 w-8 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 hover:bg-slate-100 dark:hover:bg-slate-700 text-slate-800 dark:text-slate-100 font-bold text-base flex items-center justify-center cursor-pointer transition-colors"
+              className="h-7 w-7 rounded-lg border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 hover:bg-slate-100 dark:hover:bg-slate-700 text-slate-800 dark:text-slate-100 font-bold text-sm flex items-center justify-center cursor-pointer transition-colors"
               title="Zoom In (+)"
             >
-              <Plus className="h-4 w-4 stroke-[2.5]" />
+              <Plus className="h-3.5 w-3.5 stroke-[2.5]" />
             </button>
           </div>
 
@@ -653,29 +673,27 @@ export default function LandingFamilyTreeCanvas() {
           <button
             type="button"
             onClick={handleClearAll}
-            className="p-2 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 hover:bg-rose-50 dark:hover:bg-rose-950/60 hover:text-rose-600 text-slate-600 dark:text-slate-300 font-bold text-xs flex items-center gap-1 cursor-pointer transition-colors"
+            className="p-1.5 rounded-lg border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 hover:bg-rose-50 dark:hover:bg-rose-950/60 hover:text-rose-600 text-slate-600 dark:text-slate-300 font-bold text-xs flex items-center gap-1 cursor-pointer transition-colors"
             title="Clear all relatives from canvas"
           >
             <Trash2 className="h-3.5 w-3.5" />
-            <span className="hidden xl:inline text-xs">Clear All</span>
           </button>
 
           {/* Reset Layout */}
           <button
             type="button"
             onClick={handleReset}
-            className="p-2 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 hover:bg-slate-100 dark:hover:bg-slate-700 text-slate-600 dark:text-slate-300 font-bold text-xs flex items-center gap-1 cursor-pointer transition-colors"
+            className="p-1.5 rounded-lg border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 hover:bg-slate-100 dark:hover:bg-slate-700 text-slate-600 dark:text-slate-300 font-bold text-xs flex items-center gap-1 cursor-pointer transition-colors"
             title="Reset to default tree centered in the middle"
           >
             <RotateCcw className="h-3.5 w-3.5" />
-            <span className="hidden lg:inline text-xs">Reset</span>
           </button>
 
           {/* Fullscreen Toggle */}
           <button
             type="button"
             onClick={() => setIsFullScreen(!isFullScreen)}
-            className={`p-2 rounded-xl border font-bold text-xs flex items-center gap-1 cursor-pointer transition-colors ${
+            className={`p-1.5 rounded-lg border font-bold text-xs flex items-center gap-1 cursor-pointer transition-colors ${
               isFullScreen
                 ? "bg-indigo-600 border-indigo-600 text-white"
                 : "border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 hover:bg-slate-100 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200"
@@ -697,7 +715,7 @@ export default function LandingFamilyTreeCanvas() {
               Canvas is empty
             </h4>
             <p className="text-xs text-slate-400 dark:text-slate-500 max-w-xs">
-              All relatives removed. Click "+ Add Relative" to add family members or "Reset" to restore the default lineage.
+              All relatives removed. Click "+ Add Relative" or "Reset" to restore.
             </p>
             <div className="flex items-center gap-2 pt-2">
               <button
@@ -712,7 +730,7 @@ export default function LandingFamilyTreeCanvas() {
                 onClick={handleReset}
                 className="px-4 py-2 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-300 font-bold text-xs cursor-pointer"
               >
-                Reset Default Tree
+                Reset Tree
               </button>
             </div>
           </div>
@@ -722,13 +740,13 @@ export default function LandingFamilyTreeCanvas() {
         {activeTool === "LINK" && (
           <div
             onPointerDown={(e) => e.stopPropagation()}
-            className="absolute top-16 sm:top-20 left-1/2 -translate-x-1/2 z-30 px-4 py-2 rounded-2xl bg-indigo-600 text-white text-xs font-semibold shadow-2xl flex items-center gap-2 animate-in fade-in slide-in-from-top-2 max-w-[90%] pointer-events-auto"
+            className="absolute top-16 left-1/2 -translate-x-1/2 z-30 px-3.5 py-1.5 rounded-2xl bg-indigo-600 text-white text-xs font-semibold shadow-2xl flex items-center gap-2 animate-in fade-in slide-in-from-top-2 max-w-[90%] pointer-events-auto"
           >
             <Link2 className="h-4 w-4 animate-pulse shrink-0" />
             <span className="truncate">
               {linkSourceId
-                ? `Selected "${members.find((m) => m.id === linkSourceId)?.name}". Click target relative card to link!`
-                : "Click the first relative card, or drag connector dots to link."}
+                ? `Selected "${members.find((m) => m.id === linkSourceId)?.name}". Click target card!`
+                : "Click relative card or drag connector dot."}
             </span>
             {linkSourceId && (
               <button
@@ -745,20 +763,20 @@ export default function LandingFamilyTreeCanvas() {
         {/* Bottom Interactive Tips Pill */}
         <div
           onPointerDown={(e) => e.stopPropagation()}
-          className="absolute bottom-4 left-1/2 -translate-x-1/2 z-20 hidden md:flex items-center gap-3 px-4 py-2 rounded-2xl bg-white/95 dark:bg-slate-900/95 backdrop-blur-xl border border-slate-200/90 dark:border-slate-800 shadow-xl text-[11px] font-medium text-slate-600 dark:text-slate-300 pointer-events-auto"
+          className="absolute bottom-3 left-1/2 -translate-x-1/2 z-20 hidden md:flex items-center gap-2.5 px-3.5 py-1.5 rounded-2xl bg-white/95 dark:bg-slate-900/95 backdrop-blur-xl border border-slate-200/90 dark:border-slate-800 shadow-xl text-[10px] font-medium text-slate-600 dark:text-slate-300 pointer-events-auto"
         >
           <span className="flex items-center gap-1 font-bold text-indigo-600 dark:text-indigo-400">
-            <Sparkles className="h-3.5 w-3.5" />
-            Full-Screen Canvas
+            <Sparkles className="h-3 w-3" />
+            Interactive Tree
           </span>
           <span className="text-slate-300 dark:text-slate-700">|</span>
-          <span>🖱️ Mouse wheel: Zoom in/out ({zoomLevel}%)</span>
+          <span>🖱️ Scroll: Zoom ({zoomLevel}%)</span>
           <span className="text-slate-300 dark:text-slate-700">•</span>
-          <span>🖐️ Drag background: Pan / Move</span>
+          <span>🖐️ Drag: Pan</span>
           <span className="text-slate-300 dark:text-slate-700">•</span>
-          <span>🎴 Drag cards: Reposition</span>
+          <span>🎴 Cards: Move</span>
           <span className="text-slate-300 dark:text-slate-700">•</span>
-          <span>⚪ Connector dots: Link</span>
+          <span>⚪ Dots: Link</span>
         </div>
 
         {/* Transformed Inner Canvas Layer: Panning & Zooming around exact middle (cx, cy) */}
@@ -956,31 +974,31 @@ export default function LandingFamilyTreeCanvas() {
         {selectedMember && (
           <div
             onPointerDown={(e) => e.stopPropagation()}
-            className="absolute bottom-4 left-4 right-4 sm:left-auto sm:right-4 sm:w-auto p-3.5 rounded-2xl bg-white/95 dark:bg-slate-900/95 backdrop-blur-md border border-slate-200/90 dark:border-slate-800 shadow-2xl flex flex-wrap items-center justify-between gap-3 z-30 animate-in fade-in slide-in-from-bottom-2 duration-200 pointer-events-auto"
+            className="absolute bottom-3 left-3 right-3 sm:left-auto sm:right-3 sm:w-auto p-2.5 sm:p-3 rounded-2xl bg-white/95 dark:bg-slate-900/95 backdrop-blur-md border border-slate-200/90 dark:border-slate-800 shadow-2xl flex flex-wrap items-center justify-between gap-2 z-30 animate-in fade-in slide-in-from-bottom-2 duration-200 pointer-events-auto"
           >
-            <div className="flex items-center gap-2.5">
-              <div className="h-8 w-8 rounded-full bg-indigo-50 dark:bg-indigo-950/80 border border-indigo-200 dark:border-indigo-800 flex items-center justify-center text-base">
+            <div className="flex items-center gap-2">
+              <div className="h-7 w-7 rounded-full bg-indigo-50 dark:bg-indigo-950/80 border border-indigo-200 dark:border-indigo-800 flex items-center justify-center text-sm">
                 {selectedMember.emoji}
               </div>
               <div className="text-left">
                 <span className="text-xs font-extrabold text-slate-900 dark:text-white block">
                   {selectedMember.name} {selectedMember.isYou && "(You)"}
                 </span>
-                <span className="text-[10px] font-medium text-slate-400 dark:text-slate-500 block">
+                <span className="text-[9px] font-medium text-slate-400 dark:text-slate-500 block">
                   {selectedMember.role} • {connections.filter((c) => c.fromId === selectedMember.id || c.toId === selectedMember.id).length} links
                 </span>
               </div>
             </div>
 
-            <div className="flex items-center gap-1.5 ml-auto">
+            <div className="flex items-center gap-1 ml-auto">
               {/* Edit relative action */}
               <button
                 type="button"
                 onClick={() => handleOpenEdit(selectedMember)}
-                className="px-2.5 py-1.5 rounded-xl bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 font-bold text-[11px] flex items-center gap-1 cursor-pointer transition-colors"
+                className="px-2 py-1 rounded-lg bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 font-bold text-[10px] flex items-center gap-1 cursor-pointer transition-colors"
                 title="Edit this relative"
               >
-                <Pencil className="h-3.5 w-3.5" />
+                <Pencil className="h-3 w-3" />
                 <span>Edit</span>
               </button>
 
@@ -991,9 +1009,9 @@ export default function LandingFamilyTreeCanvas() {
                   setLinkSourceId(selectedMember.id);
                   setActiveTool("LINK");
                 }}
-                className="px-2.5 py-1.5 rounded-xl bg-indigo-50 dark:bg-indigo-950/60 hover:bg-indigo-100 dark:hover:bg-indigo-900 text-indigo-700 dark:text-indigo-300 font-bold text-[11px] flex items-center gap-1 cursor-pointer transition-colors"
+                className="px-2 py-1 rounded-lg bg-indigo-50 dark:bg-indigo-950/60 hover:bg-indigo-100 dark:hover:bg-indigo-900 text-indigo-700 dark:text-indigo-300 font-bold text-[10px] flex items-center gap-1 cursor-pointer transition-colors"
               >
-                <Link2 className="h-3.5 w-3.5" />
+                <Link2 className="h-3 w-3" />
                 <span>Connect</span>
               </button>
 
@@ -1001,11 +1019,10 @@ export default function LandingFamilyTreeCanvas() {
               <button
                 type="button"
                 onClick={() => handleDeleteMember(selectedMember.id)}
-                className="p-1.5 rounded-xl bg-rose-50 dark:bg-rose-950/60 hover:bg-rose-100 dark:hover:bg-rose-900 text-rose-600 dark:text-rose-400 font-bold text-[11px] flex items-center gap-1 cursor-pointer transition-colors"
+                className="p-1 rounded-lg bg-rose-50 dark:bg-rose-950/60 hover:bg-rose-100 dark:hover:bg-rose-900 text-rose-600 dark:text-rose-400 font-bold text-[10px] flex items-center gap-1 cursor-pointer transition-colors"
                 title="Delete this relative"
               >
-                <Trash2 className="h-3.5 w-3.5" />
-                <span className="hidden sm:inline">Delete</span>
+                <Trash2 className="h-3 w-3" />
               </button>
             </div>
           </div>
