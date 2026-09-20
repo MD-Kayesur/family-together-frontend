@@ -35,6 +35,8 @@ import { useAppSelector } from "@/redux/store";
 import { useLogoutMutation } from "@/redux/api/authApi";
 import { getDashboardRouteByRole, getDashboardLabelByRole } from "@/lib/utils/roleUtils";
 import LandingFamilyTreeCanvas from "@/components/tree/LandingFamilyTreeCanvas";
+import UserNavbarAvatarMenu from "@/components/dashboard/UserNavbarAvatarMenu";
+import NavbarNotificationMenu from "@/components/dashboard/NavbarNotificationMenu";
 
 export default function Home() {
   const { user, isAuthenticated } = useAppSelector((state) => state.auth);
@@ -72,27 +74,10 @@ export default function Home() {
 
           {isAuthenticated && user ? (
             <div className="flex items-center gap-3">
-              <Link
-                href={dashboardHref}
-                className="flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-bold text-white bg-indigo-600 hover:bg-indigo-700 shadow-md shadow-indigo-600/25 transition-all hover:scale-[1.02]"
-              >
-                <LayoutDashboard className="h-4 w-4" />
-                <span>{dashboardLabel}</span>
-              </Link>
-
-              <div className="flex items-center gap-2 px-3 py-1.5 rounded-xl bg-emerald-500/10 border border-emerald-500/20 text-emerald-600 text-xs font-semibold">
-                <UserCheck className="h-4 w-4" />
-                <span>{user.fullName}</span>
+              <NavbarNotificationMenu />
+              <div className="pl-2 border-l border-slate-200">
+                <UserNavbarAvatarMenu />
               </div>
-
-              <button
-                type="button"
-                onClick={() => logout()}
-                className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-semibold text-rose-600 hover:bg-rose-50 transition-all border border-rose-200 cursor-pointer"
-              >
-                <LogOut className="h-3.5 w-3.5" />
-                <span>Logout</span>
-              </button>
             </div>
           ) : (
             <div className="flex items-center gap-3">
@@ -150,7 +135,24 @@ export default function Home() {
           </a>
 
           {isAuthenticated && user ? (
-            <div className="pt-2 space-y-3">
+            <div className="pt-3 border-t border-slate-200 space-y-3">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-3">
+                  <div className="h-10 w-10 rounded-full bg-indigo-600 text-white font-bold text-sm flex items-center justify-center overflow-hidden border border-slate-200 shrink-0">
+                    {user.avatarUrl ? (
+                      <img src={user.avatarUrl} alt={user.fullName} className="h-full w-full object-cover" />
+                    ) : (
+                      <span>{user.fullName ? user.fullName.charAt(0).toUpperCase() : "U"}</span>
+                    )}
+                  </div>
+                  <div className="min-w-0">
+                    <p className="text-xs font-extrabold text-slate-900 truncate">{user.fullName}</p>
+                    <p className="text-[11px] text-slate-400 truncate">{user.email}</p>
+                  </div>
+                </div>
+                <NavbarNotificationMenu />
+              </div>
+
               <Link
                 href={dashboardHref}
                 onClick={() => setMobileMenuOpen(false)}
@@ -165,7 +167,7 @@ export default function Home() {
                   logout();
                   setMobileMenuOpen(false);
                 }}
-                className="flex items-center justify-center gap-2 w-full py-2.5 rounded-xl border border-rose-200 text-rose-600 font-bold text-xs"
+                className="flex items-center justify-center gap-2 w-full py-2.5 rounded-xl border border-rose-200 text-rose-600 font-bold text-xs cursor-pointer hover:bg-rose-50"
               >
                 <LogOut className="h-4 w-4" />
                 <span>Logout</span>
