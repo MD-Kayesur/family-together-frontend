@@ -41,8 +41,12 @@ interface Connection {
 
 export default function InteractiveFamilyTreeCanvas({
   isCompact = false,
+  role,
+  currentUserId,
 }: {
   isCompact?: boolean;
+  role?: string;
+  currentUserId?: string;
 }) {
   const { data: members = [], isLoading: isLoadingMembers, refetch: refetchMembers } = useGetMembersQuery();
   const { data: serverRelationships = [], refetch: refetchRelationships } = useGetRelationshipsQuery();
@@ -553,6 +557,12 @@ export default function InteractiveFamilyTreeCanvas({
               const pos = nodePositions[m.id] || { x: 50 + idx * 160, y: 60 };
               const isSelectedSource = selectedSourceId === m.id;
               const isDragging = draggingNodeId === m.id;
+              const isCurrentUser = Boolean(
+                currentUserId &&
+                  ((m as any).userId === currentUserId ||
+                    (m as any).user?.id === currentUserId ||
+                    (m as any).email === currentUserId)
+              );
 
               return (
                 <div
@@ -569,13 +579,17 @@ export default function InteractiveFamilyTreeCanvas({
                       ? "shadow-2xl ring-4 ring-purple-500/20 scale-105 border-purple-600 z-30"
                       : isSelectedSource
                       ? "shadow-xl ring-4 ring-purple-500/40 border-purple-600 bg-purple-950/40 z-20"
+                      : isCurrentUser
+                      ? "border-emerald-500 ring-2 ring-emerald-500/40 shadow-lg shadow-emerald-500/10 bg-emerald-950/20 z-20"
                       : "border-slate-800 shadow-md hover:shadow-lg hover:border-purple-500/50"
                   }`}
                 >
                   {/* Connector Handle Dots on Top & Bottom for Direct Linking */}
                   <div
                     onPointerDown={(e) => handleHandlePointerDown(e, m.id)}
-                    className="absolute -top-2.5 left-1/2 -translate-x-1/2 h-5 w-5 bg-purple-600 border-2 border-slate-900 rounded-full flex items-center justify-center cursor-crosshair shadow-md hover:scale-125 transition-transform z-20"
+                    className={`absolute -top-2.5 left-1/2 -translate-x-1/2 h-5 w-5 ${
+                      isCurrentUser ? "bg-emerald-500" : "bg-purple-600"
+                    } border-2 border-slate-900 rounded-full flex items-center justify-center cursor-crosshair shadow-md hover:scale-125 transition-transform z-20`}
                     title="Drag handle to link with relative"
                   >
                     <div className="h-1.5 w-1.5 bg-white rounded-full" />
@@ -584,7 +598,9 @@ export default function InteractiveFamilyTreeCanvas({
                   <div className="flex items-center gap-2.5">
                     <div
                       className={`h-9 w-9 rounded-full font-bold text-sm flex items-center justify-center shrink-0 shadow-sm ${
-                        m.gender === "FEMALE"
+                        isCurrentUser
+                          ? "bg-emerald-950/80 text-emerald-300 border border-emerald-700/80"
+                          : m.gender === "FEMALE"
                           ? "bg-rose-950/60 text-rose-300 border border-rose-800/60"
                           : "bg-purple-950/60 text-purple-300 border border-purple-800/60"
                       }`}
@@ -595,15 +611,24 @@ export default function InteractiveFamilyTreeCanvas({
                       <h5 className="font-extrabold text-white text-xs truncate leading-snug">
                         {m.firstName} {m.lastName}
                       </h5>
-                      <span className="text-[10px] font-semibold text-slate-400 block truncate">
-                        {idx === 0 ? "Sanctuary Owner" : m.bio || m.gender || "Relative"}
-                      </span>
+                      {isCurrentUser ? (
+                        <span className="text-[9px] font-extrabold text-emerald-400 flex items-center gap-1">
+                          <span className="h-1.5 w-1.5 rounded-full bg-emerald-400 animate-pulse" />
+                          <span>You (Current User)</span>
+                        </span>
+                      ) : (
+                        <span className="text-[10px] font-semibold text-slate-400 block truncate">
+                          {idx === 0 ? "Sanctuary Owner" : m.bio || m.gender || "Relative"}
+                        </span>
+                      )}
                     </div>
                   </div>
 
                   <div
                     onPointerDown={(e) => handleHandlePointerDown(e, m.id)}
-                    className="absolute -bottom-2.5 left-1/2 -translate-x-1/2 h-5 w-5 bg-purple-600 border-2 border-slate-900 rounded-full flex items-center justify-center cursor-crosshair shadow-md hover:scale-125 transition-transform z-20"
+                    className={`absolute -bottom-2.5 left-1/2 -translate-x-1/2 h-5 w-5 ${
+                      isCurrentUser ? "bg-emerald-500" : "bg-purple-600"
+                    } border-2 border-slate-900 rounded-full flex items-center justify-center cursor-crosshair shadow-md hover:scale-125 transition-transform z-20`}
                     title="Drag handle to link with relative"
                   >
                     <div className="h-1.5 w-1.5 bg-white rounded-full" />

@@ -64,7 +64,11 @@ function SidebarNavLinks({ isOwnerOrAdmin, pathname }: SidebarNavLinksProps) {
         { name: "Settings", href: "/owner-dashboard?tab=settings", tabKey: "settings", icon: Settings, badge: null },
       ]
     : [
-        { name: "Member Sanctuary", href: "/user-dashboard", tabKey: "dashboard", icon: LayoutDashboard, badge: null },
+        { name: "Sanctuary Portal", href: "/user-dashboard?tab=dashboard", tabKey: "dashboard", icon: LayoutDashboard, badge: null },
+        { name: "Family Tree", href: "/user-dashboard?tab=tree", tabKey: "tree", icon: TreePine, badge: null },
+        { name: "Family Directory", href: "/user-dashboard?tab=members", tabKey: "members", icon: Users, badge: null },
+        { name: "Memory Vault", href: "/user-dashboard?tab=memories", tabKey: "memories", icon: ImageIcon, badge: null },
+        { name: "Upcoming Events", href: "/user-dashboard?tab=events", tabKey: "events", icon: Calendar, badge: null },
         { name: "My Profile", href: "/user-dashboard/profile", tabKey: "profile", icon: UserCheck, badge: null },
       ];
 
@@ -75,7 +79,9 @@ function SidebarNavLinks({ isOwnerOrAdmin, pathname }: SidebarNavLinksProps) {
         const isActive = isOwnerOrAdmin
           ? (pathname === "/owner-dashboard" && currentTab === item.tabKey) ||
             pathname === `/owner-dashboard/${item.tabKey}`
-          : pathname === item.href;
+          : (pathname === "/user-dashboard" && currentTab === item.tabKey) ||
+            (pathname === "/user-dashboard" && !searchParams?.get("tab") && item.tabKey === "dashboard") ||
+            pathname === item.href;
 
         return (
           <Link

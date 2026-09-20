@@ -7,7 +7,11 @@ import { Image as ImageIcon, Plus, Heart, Sparkles, Loader2, SlidersHorizontal, 
 import MediaSliderCarousel from "@/components/memories/MediaSliderCarousel";
 import MediaLightboxModal from "@/components/modals/MediaLightboxModal";
 
-export default function MemoriesTab() {
+interface MemoriesTabProps {
+  role?: string;
+}
+
+export default function MemoriesTab({ role }: MemoriesTabProps = {}) {
   const { data: memories = [], isLoading, refetch } = useGetMemoriesQuery();
   const [deleteMemory] = useDeleteMemoryMutation();
   const [isLightboxOpen, setIsLightboxOpen] = useState(false);
@@ -46,20 +50,24 @@ export default function MemoriesTab() {
             <ImageIcon className="h-5 w-5" />
           </div>
           <div>
-            <h3 className="font-extrabold text-white text-sm">Owner Media Vault</h3>
+            <h3 className="font-extrabold text-white text-sm">
+              {role === "MEMBER" ? "Family Memories Vault" : "Owner Media Vault"}
+            </h3>
             <p className="text-xs text-slate-400 font-medium">
               {memories.length} Memories & Milestone Media Items Preserved
             </p>
           </div>
         </div>
 
-        <Link
-          href="/owner-dashboard/memories/create"
-          className="px-4 py-2.5 rounded-xl bg-purple-600 hover:bg-purple-700 text-white font-bold text-xs shadow-md shadow-purple-600/25 flex items-center gap-2 cursor-pointer transition-all hover:scale-[1.02]"
-        >
-          <Plus className="h-4 w-4" />
-          <span>Upload Memory</span>
-        </Link>
+        {role !== "MEMBER" && (
+          <Link
+            href="/owner-dashboard/memories/create"
+            className="px-4 py-2.5 rounded-xl bg-purple-600 hover:bg-purple-700 text-white font-bold text-xs shadow-md shadow-purple-600/25 flex items-center gap-2 cursor-pointer transition-all hover:scale-[1.02]"
+          >
+            <Plus className="h-4 w-4" />
+            <span>Upload Memory</span>
+          </Link>
+        )}
       </div>
 
       {/* 1. Featured Media Slider Carousel Section */}
@@ -176,23 +184,25 @@ export default function MemoriesTab() {
                   <div className="pt-3 border-t border-slate-800 text-[11px] font-bold text-slate-500 flex items-center justify-between">
                     <span>Shared by {mem.sharedBy || "Sanctuary Owner"}</span>
                     <div className="flex items-center gap-2">
-                      <div className="flex items-center gap-1" onClick={(e) => e.stopPropagation()}>
-                        <Link
-                          href={`/owner-dashboard/memories/create?id=${mem.id}`}
-                          className="p-1.5 rounded-lg bg-slate-800 hover:bg-purple-950 text-slate-300 hover:text-purple-300 border border-slate-700 transition-colors"
-                          title="Edit Memory"
-                        >
-                          <Pencil className="h-3.5 w-3.5" />
-                        </Link>
-                        <button
-                          type="button"
-                          onClick={(e) => handleDeleteMemory(e, mem.id, mem.title)}
-                          className="p-1.5 rounded-lg bg-slate-800 hover:bg-rose-950 text-slate-300 hover:text-rose-300 border border-slate-700 transition-colors cursor-pointer"
-                          title="Delete Memory"
-                        >
-                          <Trash2 className="h-3.5 w-3.5" />
-                        </button>
-                      </div>
+                      {role !== "MEMBER" && (
+                        <div className="flex items-center gap-1" onClick={(e) => e.stopPropagation()}>
+                          <Link
+                            href={`/owner-dashboard/memories/create?id=${mem.id}`}
+                            className="p-1.5 rounded-lg bg-slate-800 hover:bg-purple-950 text-slate-300 hover:text-purple-300 border border-slate-700 transition-colors"
+                            title="Edit Memory"
+                          >
+                            <Pencil className="h-3.5 w-3.5" />
+                          </Link>
+                          <button
+                            type="button"
+                            onClick={(e) => handleDeleteMemory(e, mem.id, mem.title)}
+                            className="p-1.5 rounded-lg bg-slate-800 hover:bg-rose-950 text-slate-300 hover:text-rose-300 border border-slate-700 transition-colors cursor-pointer"
+                            title="Delete Memory"
+                          >
+                            <Trash2 className="h-3.5 w-3.5" />
+                          </button>
+                        </div>
+                      )}
                       <Heart className="h-4 w-4 text-rose-500 fill-rose-500 ml-1" />
                     </div>
                   </div>

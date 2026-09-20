@@ -35,11 +35,25 @@ import {
 interface AddMemberModalProps {
   isOpen: boolean;
   onClose: () => void;
+  relativeToPersonId?: string;
+  role?: string;
+  defaultRelationship?: string;
+  relativeToName?: string;
 }
 
-export default function AddMemberModal({ isOpen, onClose }: AddMemberModalProps) {
+export default function AddMemberModal({
+  isOpen,
+  onClose,
+  relativeToPersonId,
+  role,
+  defaultRelationship = "CHILD",
+  relativeToName,
+}: AddMemberModalProps) {
   // Fetch existing members from database for real-time deduplication suggestions
   const { data: existingMembers = [], refetch: refetchMembers } = useGetMembersQuery();
+
+  // Relationship selection when adding a relative
+  const [relationshipType, setRelationshipType] = useState(defaultRelationship);
 
   // Primary Recognition Fields
   const [firstName, setFirstName] = useState("");
@@ -130,6 +144,8 @@ export default function AddMemberModal({ isOpen, onClose }: AddMemberModalProps)
           existingPersonId: selectedLinkedMember.id,
           firstName: firstName.trim(),
           lastName: lastName.trim(),
+          relativeToPersonId: relativeToPersonId || undefined,
+          relationshipType: relativeToPersonId ? relationshipType : undefined,
         }).unwrap();
 
         setSuccessMsg(
@@ -153,12 +169,14 @@ export default function AddMemberModal({ isOpen, onClose }: AddMemberModalProps)
           contactInfo: contactInfo.trim(),
           avatarUrl: avatarUrl.trim(),
           bio: bio.trim(),
+          relativeToPersonId: relativeToPersonId || undefined,
+          relationshipType: relativeToPersonId ? relationshipType : undefined,
         }).unwrap();
 
         setSuccessMsg(
           email.trim()
-            ? `Member added! Active login account created for ${email.trim()} with password "${password.trim() || "Family@123"}".`
-            : "Family member profile & recognition details saved to PostgreSQL Database!"
+            ? `Relative added! Active login account created for ${email.trim()} with password "${password.trim() || "Family@123"}".`
+            : "Family relative profile & recognition details saved to PostgreSQL Database!"
         );
       }
 
@@ -201,10 +219,12 @@ export default function AddMemberModal({ isOpen, onClose }: AddMemberModalProps)
             </div>
             <div>
               <h2 className="font-extrabold text-xl text-white leading-tight">
-                Add Family Member Profile
+                {relativeToPersonId || role === "MEMBER" ? "Add Family Relative" : "Add Family Member Profile"}
               </h2>
               <p className="text-xs text-slate-400 font-medium">
-                Record personal identification and recognition details into your PostgreSQL sanctuary.
+                {relativeToName
+                  ? `Adding a relative connected to ${relativeToName} in your family sanctuary.`
+                  : "Record personal identification and recognition details into your PostgreSQL sanctuary."}
               </p>
             </div>
           </div>
@@ -258,6 +278,38 @@ export default function AddMemberModal({ isOpen, onClose }: AddMemberModalProps)
 
         {/* Form Body */}
         <form onSubmit={handleSubmit} className="space-y-6 text-xs">
+          {/* Relationship to Current Member Selector */}
+          {relativeToPersonId && (
+            <div className="p-4 rounded-2xl bg-purple-950/40 border border-purple-800/60 space-y-2.5 shadow-sm">
+              <div className="flex items-center gap-2 text-purple-300 font-bold text-xs">
+                <Heart className="h-4 w-4 text-purple-400" />
+                <span>Relationship to You {relativeToName ? `(${relativeToName})` : ""}:</span>
+              </div>
+              <select
+                value={relationshipType}
+                onChange={(e) => {
+                  const val = e.target.value;
+                  setRelationshipType(val);
+                  if (val === "FATHER" || val === "SON" || val === "BROTHER") {
+                    setGender("MALE");
+                  } else if (val === "MOTHER" || val === "DAUGHTER" || val === "SISTER") {
+                    setGender("FEMALE");
+                  }
+                }}
+                className="w-full px-3.5 py-2.5 rounded-xl border border-purple-700/60 bg-slate-950 text-white font-medium focus:ring-2 focus:ring-purple-500 focus:outline-none cursor-pointer"
+              >
+                <option value="FATHER">Father (Parent)</option>
+                <option value="MOTHER">Mother (Parent)</option>
+                <option value="SPOUSE">Spouse / Partner</option>
+                <option value="SON">Son (Child)</option>
+                <option value="DAUGHTER">Daughter (Child)</option>
+                <option value="BROTHER">Brother (Sibling)</option>
+                <option value="SISTER">Sister (Sibling)</option>
+                <option value="PARENT_CHILD">Other Relative</option>
+              </select>
+            </div>
+          )}
+
           {/* Section 1: Name & Personal Identification */}
           <div className="space-y-3 relative">
             <h3 className="font-bold text-xs uppercase tracking-wider text-purple-400 flex items-center gap-1.5">

@@ -141,6 +141,8 @@ export const familyApi = baseApi.injectEndpoints({
         location?: string;
         contactInfo?: string;
         avatarUrl?: string;
+        relativeToPersonId?: string;
+        relationshipType?: string;
       }
     >({
       query: (body) => ({
@@ -148,7 +150,7 @@ export const familyApi = baseApi.injectEndpoints({
         method: "POST",
         body,
       }),
-      invalidatesTags: ["Sanctuary", "Members", "Activity"],
+      invalidatesTags: ["Sanctuary", "Members", "Relationships", "Activity"],
     }),
     updateMember: builder.mutation<
       FamilyMemberRecord,

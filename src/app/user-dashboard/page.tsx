@@ -1,8 +1,8 @@
 "use client";
 
-import React, { useEffect } from "react";
+import React, { useEffect, Suspense } from "react";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import {
   TreePine,
   Image as ImageIcon,
@@ -18,10 +18,18 @@ import {
   useGetEventsQuery,
   useGetMembersQuery,
 } from "@/redux/api/familyApi";
-import SanctuaryDashboardWrapper from "@/components/dashboard/SanctuaryDashboardWrapper";
+import SanctuaryDashboardWrapper, {
+  normalizeDashboardTab,
+} from "@/components/dashboard/SanctuaryDashboardWrapper";
+import TreeTab from "@/components/dashboard/tabs/TreeTab";
+import MembersTab from "@/components/dashboard/tabs/MembersTab";
+import MemoriesTab from "@/components/dashboard/tabs/MemoriesTab";
+import EventsTab from "@/components/dashboard/tabs/EventsTab";
 
-export default function UserDashboardPage() {
+function UserDashboardContent() {
   const router = useRouter();
+  const searchParams = useSearchParams();
+  const currentTab = normalizeDashboardTab(searchParams?.get("tab"));
   const { user, isAuthenticated } = useAppSelector((state) => state.auth);
 
   const { data: memories = [] } = useGetMemoriesQuery(undefined, { skip: !isAuthenticated });
@@ -47,11 +55,56 @@ export default function UserDashboardPage() {
   }
 
   const userInitial = user.fullName ? user.fullName.charAt(0).toUpperCase() : "U";
-  const isOwnerOrAdmin =
-    user.role === "OWNER" ||
-    user.role === "ADMIN" ||
-    user.role === "SUPER_ADMIN";
 
+  // Tab 1: Interactive Family Tree
+  if (currentTab === "tree") {
+    return (
+      <SanctuaryDashboardWrapper
+        title="Family Tree"
+        subtitle="Interactive multi-generational family tree canvas centered on your personal lineage"
+      >
+        <TreeTab role="MEMBER" currentUserId={user.id} />
+      </SanctuaryDashboardWrapper>
+    );
+  }
+
+  // Tab 2: Family Members Directory
+  if (currentTab === "members") {
+    return (
+      <SanctuaryDashboardWrapper
+        title="Family Directory"
+        subtitle="Explore your connected family members, relatives, and generations"
+      >
+        <MembersTab role="MEMBER" currentUserId={user.id} />
+      </SanctuaryDashboardWrapper>
+    );
+  }
+
+  // Tab 3: Memory Vault
+  if (currentTab === "memories") {
+    return (
+      <SanctuaryDashboardWrapper
+        title="Memory Vault"
+        subtitle="Cherished family photos, audio stories, and milestone memories"
+      >
+        <MemoriesTab role="MEMBER" />
+      </SanctuaryDashboardWrapper>
+    );
+  }
+
+  // Tab 4: Upcoming Gatherings & Events
+  if (currentTab === "events") {
+    return (
+      <SanctuaryDashboardWrapper
+        title="Family Events"
+        subtitle="Upcoming celebrations, birthdays, anniversaries, and virtual reunions"
+      >
+        <EventsTab />
+      </SanctuaryDashboardWrapper>
+    );
+  }
+
+  // Default Overview / Dashboard View
   return (
     <SanctuaryDashboardWrapper>
       <div className="space-y-8 w-full max-w-full">
@@ -81,15 +134,15 @@ export default function UserDashboardPage() {
 
             <div className="pt-2 flex flex-wrap gap-3">
               <Link
-                href={isOwnerOrAdmin ? "/owner-dashboard?tab=tree" : "/user-dashboard/profile"}
+                href="/user-dashboard?tab=tree"
                 className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-white text-indigo-950 font-bold text-xs hover:bg-indigo-50 shadow-md transition-all group"
               >
                 <TreePine className="h-4 w-4 text-indigo-600 group-hover:scale-110 transition-transform" />
-                <span>{isOwnerOrAdmin ? "Explore Family Tree" : "View My Profile"}</span>
+                <span>Explore Family Tree</span>
                 <ArrowRight className="h-3.5 w-3.5 opacity-70 group-hover:translate-x-0.5 transition-transform" />
               </Link>
               <Link
-                href={isOwnerOrAdmin ? "/owner-dashboard?tab=memories" : "#memories-feed"}
+                href="/user-dashboard?tab=memories"
                 className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-white/10 backdrop-blur-md text-white font-semibold text-xs hover:bg-white/20 border border-white/20 transition-all"
               >
                 <ImageIcon className="h-4 w-4" />
@@ -115,15 +168,11 @@ export default function UserDashboardPage() {
               </p>
             </div>
             <div className="mt-4 pt-3 border-t border-slate-800 flex items-center justify-between text-xs font-semibold text-purple-400">
-              <span>{isOwnerOrAdmin ? "View Canvas" : "Sanctuary Lineage"}</span>
-              {isOwnerOrAdmin ? (
-                <Link href="/owner-dashboard?tab=tree" className="inline-flex items-center gap-1 hover:underline">
-                  <span>Open</span>
-                  <ArrowRight className="h-3.5 w-3.5 group-hover:translate-x-1 transition-transform" />
-                </Link>
-              ) : (
-                <span className="text-slate-400 font-medium">Active Member</span>
-              )}
+              <span>Personal Lineage</span>
+              <Link href="/user-dashboard?tab=tree" className="inline-flex items-center gap-1 hover:underline">
+                <span>Open Tree</span>
+                <ArrowRight className="h-3.5 w-3.5 group-hover:translate-x-1 transition-transform" />
+              </Link>
             </div>
           </div>
 
@@ -142,17 +191,10 @@ export default function UserDashboardPage() {
             </div>
             <div className="mt-4 pt-3 border-t border-slate-800 flex items-center justify-between text-xs font-semibold text-purple-400">
               <span>{memories.length} Memories Saved</span>
-              {isOwnerOrAdmin ? (
-                <Link href="/owner-dashboard?tab=memories" className="inline-flex items-center gap-1 hover:underline">
-                  <span>Vault</span>
-                  <ArrowRight className="h-3.5 w-3.5 group-hover:translate-x-1 transition-transform" />
-                </Link>
-              ) : (
-                <a href="#memories-feed" className="inline-flex items-center gap-1 hover:underline">
-                  <span>Feed</span>
-                  <ArrowRight className="h-3.5 w-3.5 group-hover:translate-x-1 transition-transform" />
-                </a>
-              )}
+              <Link href="/user-dashboard?tab=memories" className="inline-flex items-center gap-1 hover:underline">
+                <span>View Vault</span>
+                <ArrowRight className="h-3.5 w-3.5 group-hover:translate-x-1 transition-transform" />
+              </Link>
             </div>
           </div>
 
@@ -171,17 +213,10 @@ export default function UserDashboardPage() {
             </div>
             <div className="mt-4 pt-3 border-t border-slate-800 flex items-center justify-between text-xs font-semibold text-purple-400">
               <span>{events.length} Upcoming Events</span>
-              {isOwnerOrAdmin ? (
-                <Link href="/owner-dashboard?tab=events" className="inline-flex items-center gap-1 hover:underline">
-                  <span>Manage</span>
-                  <ArrowRight className="h-3.5 w-3.5 group-hover:translate-x-1 transition-transform" />
-                </Link>
-              ) : (
-                <a href="#gatherings-feed" className="inline-flex items-center gap-1 hover:underline">
-                  <span>List</span>
-                  <ArrowRight className="h-3.5 w-3.5 group-hover:translate-x-1 transition-transform" />
-                </a>
-              )}
+              <Link href="/user-dashboard?tab=events" className="inline-flex items-center gap-1 hover:underline">
+                <span>View Events</span>
+                <ArrowRight className="h-3.5 w-3.5 group-hover:translate-x-1 transition-transform" />
+              </Link>
             </div>
           </div>
 
@@ -200,14 +235,10 @@ export default function UserDashboardPage() {
             </div>
             <div className="mt-4 pt-3 border-t border-slate-800 flex items-center justify-between text-xs font-semibold text-purple-400">
               <span>{members.length} Members Listed</span>
-              {isOwnerOrAdmin ? (
-                <Link href="/owner-dashboard?tab=members" className="inline-flex items-center gap-1 hover:underline">
-                  <span>Directory</span>
-                  <ArrowRight className="h-3.5 w-3.5 group-hover:translate-x-1 transition-transform" />
-                </Link>
-              ) : (
-                <span className="text-slate-400 font-medium font-sans">Active</span>
-              )}
+              <Link href="/user-dashboard?tab=members" className="inline-flex items-center gap-1 hover:underline">
+                <span>Directory</span>
+                <ArrowRight className="h-3.5 w-3.5 group-hover:translate-x-1 transition-transform" />
+              </Link>
             </div>
           </div>
         </div>
@@ -222,6 +253,12 @@ export default function UserDashboardPage() {
                   <h2 className="font-bold text-base text-white">Recent Memories</h2>
                   <p className="text-xs text-slate-400">Photographs and stories shared by family members</p>
                 </div>
+                <Link
+                  href="/user-dashboard?tab=memories"
+                  className="text-xs font-semibold text-purple-400 hover:text-purple-300 transition-colors"
+                >
+                  View All →
+                </Link>
               </div>
 
               {memories.length > 0 ? (
@@ -259,7 +296,7 @@ export default function UserDashboardPage() {
                   <p className="text-xs text-slate-400">Upcoming celebrations and anniversaries</p>
                 </div>
                 <Link
-                  href="/owner-dashboard?tab=events"
+                  href="/user-dashboard?tab=events"
                   className="text-xs font-semibold text-purple-400 hover:text-purple-300 transition-colors"
                 >
                   Calendar →
@@ -331,7 +368,7 @@ export default function UserDashboardPage() {
                 </div>
                 <div className="flex items-center justify-between">
                   <span className="text-slate-400">Access Level:</span>
-                  <span className="font-medium text-slate-300">Member (View & Explore)</span>
+                  <span className="font-medium text-slate-300">Member (Interactive Tree & Relatives)</span>
                 </div>
               </div>
 
@@ -366,5 +403,22 @@ export default function UserDashboardPage() {
         </div>
       </div>
     </SanctuaryDashboardWrapper>
+  );
+}
+
+export default function UserDashboardPage() {
+  return (
+    <Suspense
+      fallback={
+        <div className="min-h-screen flex items-center justify-center bg-slate-900 text-white">
+          <div className="flex items-center gap-3 text-indigo-400 font-semibold">
+            <span className="h-5 w-5 border-2 border-indigo-400 border-t-transparent rounded-full animate-spin" />
+            <span>Loading sanctuary dashboard...</span>
+          </div>
+        </div>
+      }
+    >
+      <UserDashboardContent />
+    </Suspense>
   );
 }

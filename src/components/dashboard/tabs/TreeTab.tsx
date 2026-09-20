@@ -6,10 +6,21 @@ import AddMemberModal from "@/components/modals/AddMemberModal";
 import InteractiveFamilyTreeCanvas from "@/components/tree/InteractiveFamilyTreeCanvas";
 import { useGetMembersQuery, useGetRelationshipsQuery } from "@/redux/api/familyApi";
 
-export default function TreeTab() {
+interface TreeTabProps {
+  role?: string;
+  currentUserId?: string;
+}
+
+export default function TreeTab({ role, currentUserId }: TreeTabProps) {
   const [isAddMemberOpen, setIsAddMemberOpen] = useState(false);
   const { data: members = [], refetch: refetchMembers } = useGetMembersQuery();
   const { data: relationships = [], refetch: refetchRelationships } = useGetRelationshipsQuery();
+
+  const currentMember = members.find(
+    (m: any) =>
+      currentUserId &&
+      (m.userId === currentUserId || m.user?.id === currentUserId || m.email === currentUserId)
+  );
 
   return (
     <div className="space-y-10 pb-12">
@@ -18,10 +29,14 @@ export default function TreeTab() {
         <div className="space-y-0.5">
           <h3 className="font-extrabold text-white text-sm flex items-center gap-2">
             <Sparkles className="h-4 w-4 text-indigo-400" />
-            <span>Full Page Interactive Lineage Canvas</span>
+            <span>
+              {role === "MEMBER" ? "Your Personal Family Tree Canvas" : "Full Page Interactive Lineage Canvas"}
+            </span>
           </h3>
           <p className="text-xs text-slate-400">
-            Drag node cards freely across the screen grid. Scroll down to inspect connected family members.
+            {role === "MEMBER"
+              ? "Explore your family lineage, ancestors, descendants, and relatives. Click and drag nodes freely."
+              : "Drag node cards freely across the screen grid. Scroll down to inspect connected family members."}
           </p>
         </div>
 
@@ -37,7 +52,7 @@ export default function TreeTab() {
 
       {/* 1. Full Page Hero 2D Canvas Section */}
       <div className="w-full">
-        <InteractiveFamilyTreeCanvas />
+        <InteractiveFamilyTreeCanvas role={role} currentUserId={currentUserId} />
       </div>
 
       {/* 2. Scrollable Lower Section: Quick Stats & Instructions */}
@@ -124,6 +139,9 @@ export default function TreeTab() {
           refetchMembers();
           refetchRelationships();
         }}
+        relativeToPersonId={currentMember?.id}
+        relativeToName={currentMember ? `${currentMember.firstName} ${currentMember.lastName}` : undefined}
+        role={role}
       />
     </div>
   );
