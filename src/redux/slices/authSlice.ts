@@ -9,6 +9,10 @@ export interface User {
   status?: string;
   avatarUrl?: string;
   emailVerified?: boolean;
+  phoneNumber?: string;
+  bio?: string;
+  createdAt?: string;
+  updatedAt?: string;
 }
 
 interface AuthState {

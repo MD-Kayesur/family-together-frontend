@@ -28,6 +28,7 @@ export interface UpdateProfileRequest {
   email?: string;
   phoneNumber?: string;
   bio?: string;
+  avatarUrl?: string;
 }
 
 export interface ChangePasswordRequest {
