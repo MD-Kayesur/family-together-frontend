@@ -1,9 +1,10 @@
 "use client";
 
 import React, { useState } from "react";
-import { Plus, Move, Link2, Sparkles, Users, Layers, ShieldCheck, Heart } from "lucide-react";
+import { Plus, Move, Link2, Sparkles, Users, Layers, ShieldCheck, Heart, TreePine } from "lucide-react";
 import AddMemberModal from "@/components/modals/AddMemberModal";
 import InteractiveFamilyTreeCanvas from "@/components/tree/InteractiveFamilyTreeCanvas";
+import LandingFamilyTreeCanvas from "@/components/tree/LandingFamilyTreeCanvas";
 import { useGetMembersQuery, useGetRelationshipsQuery } from "@/redux/api/familyApi";
 
 interface TreeTabProps {
@@ -13,6 +14,7 @@ interface TreeTabProps {
 
 export default function TreeTab({ role, currentUserId }: TreeTabProps) {
   const [isAddMemberOpen, setIsAddMemberOpen] = useState(false);
+  const [canvasMode, setCanvasMode] = useState<"LANDING" | "DB">("LANDING");
   const { data: members = [], refetch: refetchMembers } = useGetMembersQuery();
   const { data: relationships = [], refetch: refetchRelationships } = useGetRelationshipsQuery();
 
@@ -30,29 +32,67 @@ export default function TreeTab({ role, currentUserId }: TreeTabProps) {
           <h3 className="font-extrabold text-white text-sm flex items-center gap-2">
             <Sparkles className="h-4 w-4 text-indigo-400" />
             <span>
-              {role === "MEMBER" ? "Your Personal Family Tree Canvas" : "Full Page Interactive Lineage Canvas"}
+              {role === "MEMBER" ? "Your Personal Family Tree Canvas" : "Interactive Family Tree Lineage Canvas"}
             </span>
           </h3>
           <p className="text-xs text-slate-400">
             {role === "MEMBER"
               ? "Explore your family lineage, ancestors, descendants, and relatives. Click and drag nodes freely."
-              : "Drag node cards freely across the screen grid. Scroll down to inspect connected family members."}
+              : "Drag node cards freely across the screen grid. Zoom, pan, and draw live relationship links."}
           </p>
         </div>
 
-        <button
-          type="button"
-          onClick={() => setIsAddMemberOpen(true)}
-          className="px-4 py-2 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white font-bold text-xs shadow-md shadow-indigo-600/25 flex items-center gap-2 cursor-pointer shrink-0"
-        >
-          <Plus className="h-4 w-4" />
-          <span>Add Relative</span>
-        </button>
+        <div className="flex items-center gap-3">
+          {/* Canvas Mode Switcher */}
+          <div className="flex items-center p-1 rounded-xl bg-slate-950 border border-slate-800">
+            <button
+              type="button"
+              onClick={() => setCanvasMode("LANDING")}
+              className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer ${
+                canvasMode === "LANDING"
+                  ? "bg-indigo-600 text-white shadow-sm"
+                  : "text-slate-400 hover:text-slate-200"
+              }`}
+            >
+              Interactive 2D Canvas
+            </button>
+            <button
+              type="button"
+              onClick={() => setCanvasMode("DB")}
+              className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer ${
+                canvasMode === "DB"
+                  ? "bg-indigo-600 text-white shadow-sm"
+                  : "text-slate-400 hover:text-slate-200"
+              }`}
+            >
+              Database Sync Canvas
+            </button>
+          </div>
+
+          <button
+            type="button"
+            onClick={() => setIsAddMemberOpen(true)}
+            className="px-4 py-2 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white font-bold text-xs shadow-md shadow-indigo-600/25 flex items-center gap-2 cursor-pointer shrink-0"
+          >
+            <Plus className="h-4 w-4" />
+            <span>Add Relative</span>
+          </button>
+        </div>
       </div>
 
       {/* 1. Full Page Hero 2D Canvas Section */}
       <div className="w-full">
-        <InteractiveFamilyTreeCanvas role={role} currentUserId={currentUserId} />
+        {canvasMode === "LANDING" ? (
+          <div className="w-full h-[720px] rounded-2xl overflow-hidden border border-slate-800 shadow-2xl relative bg-slate-950">
+            <LandingFamilyTreeCanvas
+              variant="fullscreen"
+              readOnly={false}
+              storageKey="landing_tree_v6"
+            />
+          </div>
+        ) : (
+          <InteractiveFamilyTreeCanvas role={role} currentUserId={currentUserId} />
+        )}
       </div>
 
       {/* 2. Scrollable Lower Section: Quick Stats & Instructions */}

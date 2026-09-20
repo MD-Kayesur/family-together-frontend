@@ -82,7 +82,7 @@ const DEFAULT_NODE_OFFSETS: Record<string, { dx: number; dy: number }> = {
 };
 
 interface LandingFamilyTreeCanvasProps {
-  variant?: "fullscreen" | "card";
+  variant?: "fullscreen" | "card" | "dashboard";
   readOnly?: boolean;
   className?: string;
   storageKey?: string;
@@ -95,6 +95,7 @@ export default function LandingFamilyTreeCanvas({
   storageKey = "landing_tree_v6",
 }: LandingFamilyTreeCanvasProps) {
   const isCard = variant === "card";
+  const isDashboard = variant === "dashboard";
   const defaultZoom = isCard ? 70 : 100;
 
   const canvasContainerRef = useRef<HTMLDivElement>(null);
@@ -611,6 +612,8 @@ export default function LandingFamilyTreeCanvas({
           ? "fixed inset-0 z-50 bg-slate-950/95 backdrop-blur-2xl p-2 sm:p-4 flex flex-col justify-between overflow-hidden"
           : isCard
           ? "h-[480px] sm:h-[540px] rounded-3xl overflow-hidden shadow-2xl border border-slate-200/90 dark:border-slate-800"
+          : isDashboard
+          ? "h-[620px] sm:h-[660px] rounded-2xl overflow-hidden shadow-2xl border border-slate-800"
           : "h-screen min-h-screen p-0 m-0"
       } ${className}`}
     >
@@ -628,6 +631,8 @@ export default function LandingFamilyTreeCanvas({
             ? "flex-1 h-full min-h-[600px] rounded-2xl"
             : isCard
             ? "h-full rounded-3xl border border-slate-200/80 dark:border-slate-800 bg-slate-50/90 dark:bg-slate-900/95 backdrop-blur-xl"
+            : isDashboard
+            ? "h-full rounded-2xl border border-slate-800 bg-slate-900/95 backdrop-blur-xl"
             : "h-screen min-h-screen rounded-none border-y sm:border border-slate-200/80 dark:border-slate-800 bg-slate-50/90 dark:bg-slate-900/95 backdrop-blur-xl"
         }`}
       >

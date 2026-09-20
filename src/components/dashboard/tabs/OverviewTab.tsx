@@ -19,6 +19,7 @@ import {
   Layers,
   ShieldCheck,
   ArrowRight,
+  Sparkles,
 } from "lucide-react";
 import { useAppSelector } from "@/redux/store";
 import {
@@ -31,6 +32,7 @@ import {
 import AddMemberModal from "@/components/modals/AddMemberModal";
 import AddMemoryModal from "@/components/modals/AddMemoryModal";
 import MemberCreationHeatmap from "@/components/dashboard/MemberCreationHeatmap";
+import LandingFamilyTreeCanvas from "@/components/tree/LandingFamilyTreeCanvas";
 
 export default function OverviewTab() {
   const { user, isAuthenticated } = useAppSelector((state) => state.auth);
@@ -439,6 +441,43 @@ export default function OverviewTab() {
 
         {/* GitHub-Style Member Creation Activity Heatmap */}
         <MemberCreationHeatmap members={members} />
+
+        {/* Interactive Sanctuary Family Tree Canvas Section (Same 2D Canvas & Logic as Landing Page) */}
+        <div className="p-6 rounded-2xl bg-slate-900 border border-slate-800 shadow-sm space-y-4">
+          <div className="flex flex-wrap items-center justify-between gap-3">
+            <div>
+              <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-indigo-950/80 border border-indigo-800/60 text-indigo-300 text-[11px] font-bold uppercase tracking-wider mb-2">
+                <Sparkles className="h-3.5 w-3.5 text-indigo-400" />
+                <span>Interactive 2D Lineage Workspace</span>
+              </div>
+              <h3 className="font-extrabold text-white text-lg flex items-center gap-2">
+                <span>The Signature Family Tree Canvas</span>
+              </h3>
+              <p className="text-xs text-slate-400 font-medium">
+                Live 2D lineage canvas synchronized with your sanctuary. Drag nodes, connect relatives with SVG lines, zoom, and add/edit members with real-time persistence.
+              </p>
+            </div>
+
+            <div className="flex items-center gap-3">
+              <Link
+                href="/owner-dashboard?tab=tree"
+                className="px-3.5 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-200 font-bold text-xs border border-slate-700 transition-all flex items-center gap-1.5"
+              >
+                <span>Open Dedicated Tree Tab</span>
+                <ExternalLink className="h-3.5 w-3.5 text-slate-400" />
+              </Link>
+            </div>
+          </div>
+
+          {/* 2D Canvas Container */}
+          <div className="w-full h-[620px] rounded-xl overflow-hidden border border-slate-800 relative bg-slate-950">
+            <LandingFamilyTreeCanvas
+              variant="dashboard"
+              readOnly={false}
+              storageKey="landing_tree_v6"
+            />
+          </div>
+        </div>
 
         {/* Grid 3: Recent Family Records & Member Summary Table */}
         <div className="p-6 rounded-2xl bg-slate-900 border border-slate-800 shadow-sm space-y-5">
