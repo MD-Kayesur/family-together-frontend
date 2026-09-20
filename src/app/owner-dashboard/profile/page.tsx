@@ -128,7 +128,7 @@ export default function UserProfilePage() {
       title="User Account Profile"
       subtitle="Manage your personal account credentials, login email (Gmail), and security password."
     >
-      <div className="space-y-8 max-w-4xl pb-12">
+      <div className="space-y-8 w-full max-w-full pb-12">
         {/* Header Profile Summary Card */}
         <div className="p-6 sm:p-8 rounded-3xl bg-slate-900 border border-slate-800 shadow-xl flex flex-col sm:flex-row items-start sm:items-center justify-between gap-6">
           <div className="flex items-center gap-5">

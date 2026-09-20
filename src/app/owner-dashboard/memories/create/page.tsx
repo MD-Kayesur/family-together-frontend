@@ -289,7 +289,7 @@ function MemoryFormContent() {
   };
 
   return (
-    <div className="max-w-4xl mx-auto space-y-6 pb-16">
+    <div className="space-y-6 w-full max-w-full pb-16">
       {/* Top Navigation & Mode Header */}
       <div className="flex flex-wrap items-center justify-between gap-4 p-5 rounded-2xl bg-slate-900 border border-slate-800 shadow-lg">
         <div className="flex items-center gap-3">

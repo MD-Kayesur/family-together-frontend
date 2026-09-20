@@ -105,7 +105,7 @@ export default function SettingsPage() {
           <span>Loading sanctuary configuration...</span>
         </div>
       ) : (
-        <form onSubmit={handleSave} className="space-y-6 max-w-4xl pb-12">
+        <form onSubmit={handleSave} className="space-y-6 w-full max-w-full pb-12">
           {savedMsg && (
             <div className="p-4 rounded-2xl bg-emerald-950/60 border border-emerald-800 text-emerald-300 text-xs font-bold flex items-center gap-2">
               <Sparkles className="h-4 w-4" />
