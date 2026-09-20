@@ -238,12 +238,12 @@ export default function Home() {
                 </>
               )}
             </div>
-
-            {/* Interactive Family Tree Canvas (Always Full-Width & Interactive for All Viewers) */}
-            <div className="w-full">
-              <LandingFamilyTreeCanvas />
-            </div>
           </div>
+        </section>
+
+        {/* Interactive Family Tree Canvas (Full-Width Edge-to-Edge & DB Design Canvas Experience) */}
+        <section className="w-full px-2 sm:px-4 lg:px-6 pb-20 overflow-hidden">
+          <LandingFamilyTreeCanvas />
         </section>
 
         {/* The Signature Tree Section */}
