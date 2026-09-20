@@ -59,11 +59,14 @@ export interface RelationshipRecord {
 
 export interface DocumentRecord {
   id: string;
+  familyId?: string;
   name: string;
   category: string;
   size: string;
+  fileUrl?: string | null;
   uploadedBy: string;
   createdAt?: string;
+  updatedAt?: string;
 }
 
 export interface InvitationRecord {
@@ -252,10 +255,22 @@ export const familyApi = baseApi.injectEndpoints({
     }),
     addDocument: builder.mutation<
       DocumentRecord,
-      { name: string; category?: string; size?: string; uploadedBy?: string }
+      { name: string; category?: string; size?: string; fileUrl?: string; uploadedBy?: string }
     >({
       query: (body) => ({
         url: "/family/documents",
+        method: "POST",
+        body,
+      }),
+      invalidatesTags: ["Sanctuary", "Documents"],
+    }),
+    addMultipleDocuments: builder.mutation<
+      DocumentRecord[],
+      | Array<{ name: string; category?: string; size?: string; fileUrl?: string; uploadedBy?: string }>
+      | { documents: Array<{ name: string; category?: string; size?: string; fileUrl?: string; uploadedBy?: string }> }
+    >({
+      query: (body) => ({
+        url: "/family/documents/multiple",
         method: "POST",
         body,
       }),
@@ -285,18 +300,18 @@ export const familyApi = baseApi.injectEndpoints({
     }),
     updateInvitationStatus: builder.mutation<
       InvitationRecord,
-      { id: string; status: string }
+      { id: string; status: "APPROVED" | "REJECTED" }
     >({
       query: ({ id, status }) => ({
         url: `/family/invitations/${id}`,
         method: "PATCH",
         body: { status },
       }),
-      invalidatesTags: ["Sanctuary", "Invitations"],
+      invalidatesTags: ["Sanctuary", "Invitations", "Members"],
     }),
     getActivityLogs: builder.query<ActivityRecord[], void>({
-      query: () => "/family/activity",
-      providesTags: ["Activity"],
+      query: () => "/family/activity-logs",
+      providesTags: ["Sanctuary"],
     }),
     updateSanctuarySettings: builder.mutation<
       any,
@@ -331,6 +346,7 @@ export const {
   useAddRelationshipMutation,
   useGetDocumentsQuery,
   useAddDocumentMutation,
+  useAddMultipleDocumentsMutation,
   useDeleteDocumentMutation,
   useGetInvitationsQuery,
   useAddInvitationMutation,

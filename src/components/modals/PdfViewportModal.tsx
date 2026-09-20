@@ -34,8 +34,36 @@ export default function PdfViewportModal({
   const samplePdfUrl =
     "https://www.w3.org/WAI/ER/tests/xhtml/testfiles/resources/pdf/dummy.pdf";
 
+  const activePdfUrl = document.fileUrl || samplePdfUrl;
+  const isImage =
+    activePdfUrl.startsWith("data:image/") ||
+    /\.(jpg|jpeg|png|webp|gif|svg)$/i.test(document.name) ||
+    /\.(jpg|jpeg|png|webp|gif|svg)$/i.test(activePdfUrl);
+
   const handleZoomIn = () => setZoomLevel((prev) => Math.min(prev + 20, 200));
   const handleZoomOut = () => setZoomLevel((prev) => Math.max(prev - 20, 60));
+
+  const handleDownload = () => {
+    const link = window.document.createElement("a");
+    link.href = activePdfUrl;
+    link.download = document.name || "document.pdf";
+    link.target = "_blank";
+    window.document.body.appendChild(link);
+    link.click();
+    window.document.body.removeChild(link);
+  };
+
+  const handlePrint = () => {
+    if (isImage) {
+      const printWin = window.open("");
+      if (printWin) {
+        printWin.document.write(`<img src="${activePdfUrl}" style="max-width:100%" onload="window.print();window.close()" />`);
+        printWin.document.close();
+      }
+    } else {
+      window.open(activePdfUrl, "_blank");
+    }
+  };
 
   return (
     <div className="fixed inset-0 top-16 md:left-64 z-40 flex items-center justify-center bg-slate-950/80 backdrop-blur-md animate-fadeIn p-3 sm:p-6 overflow-hidden">
@@ -87,16 +115,16 @@ export default function PdfViewportModal({
 
             <button
               type="button"
-              onClick={() => alert(`Printing document: ${document.name}`)}
+              onClick={handlePrint}
               className="p-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-200 transition-colors cursor-pointer hidden sm:flex"
-              title="Print PDF"
+              title="Print Document"
             >
               <Printer className="h-4 w-4" />
             </button>
 
             <button
               type="button"
-              onClick={() => alert(`Downloading PDF document: ${document.name}`)}
+              onClick={handleDownload}
               className="px-3.5 py-1.5 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white font-bold text-xs shadow-md shadow-indigo-600/25 flex items-center gap-1.5 transition-all cursor-pointer"
             >
               <Download className="h-4 w-4" />
@@ -117,15 +145,22 @@ export default function PdfViewportModal({
         {/* Viewport Render Area */}
         <div className="flex-1 bg-slate-950 p-4 sm:p-6 overflow-auto flex items-center justify-center relative">
           <div
-            className="w-full h-full max-w-4xl bg-slate-900 rounded-2xl shadow-2xl border border-slate-800 overflow-hidden flex flex-col transition-all duration-300"
+            className="w-full h-full max-w-4xl bg-slate-900 rounded-2xl shadow-2xl border border-slate-800 overflow-hidden flex flex-col items-center justify-center transition-all duration-300"
             style={{ transform: `scale(${zoomLevel / 100})`, transformOrigin: "top center" }}
           >
-            {/* Native Iframe PDF Viewer / Preview Canvas */}
-            <iframe
-              src={`${samplePdfUrl}#toolbar=0`}
-              title={document.name}
-              className="w-full h-full min-h-[600px] border-none"
-            />
+            {isImage ? (
+              <img
+                src={activePdfUrl}
+                alt={document.name}
+                className="max-h-full max-w-full object-contain"
+              />
+            ) : (
+              <iframe
+                src={`${activePdfUrl}#toolbar=0`}
+                title={document.name}
+                className="w-full h-full min-h-[600px] border-none"
+              />
+            )}
           </div>
         </div>
 
