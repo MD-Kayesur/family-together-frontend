@@ -5,6 +5,7 @@ import {
   useGetDocumentsQuery,
   useAddMultipleDocumentsMutation,
   useDeleteDocumentMutation,
+  useDeleteAllDocumentsMutation,
   DocumentRecord,
 } from "@/redux/api/familyApi";
 import {
