@@ -1,0 +1,67 @@
+# Owner Dashboard — GitHub-Style Green Activity Heatmap Matrix
+
+## 1. Feature Overview
+The **Owner Dashboard Activity Heatmap** (`MemberCreationHeatmap.tsx`) provides a GitHub-style green contribution matrix that visualizes daily family member/people additions over time. It gives sanctuary owners an immediate, beautiful visual representation of sanctuary growth, lineage recording activity, and daily creation momentum.
+
+---
+
+## 2. Key Components & Visual Indicators
+
+### 2.1 52-Week Contribution Grid (365 Days)
+- **Grid Layout**: 52 columns (weeks) x 7 rows (Sunday through Saturday).
+- **Time Range Selector**:
+  - `1Y`: Past 52 weeks (364+ days)
+  - `6M`: Past 26 weeks
+  - `3M`: Past 14 weeks
+- **Month Headers**: Dynamically placed month labels (Jan, Feb, Mar, etc.) above the grid columns corresponding to the start of each month.
+- **Day Labels**: Left column indicators for `Mon`, `Wed`, and `Fri`.
+
+### 2.2 Color-Coded Green Activity Levels
+Following GitHub's iconic contribution palette with custom emerald-tailored hues:
+- **Level 0 (0 additions)**: Dark slate `bg-slate-800/60 border-slate-700/50`
+- **Level 1 (1 person created)**: Deep emerald `bg-emerald-900/80 border-emerald-700/60`
+- **Level 2 (2 people created)**: Medium emerald `bg-emerald-700 border-emerald-500`
+- **Level 3 (3-4 people created)**: Vibrant emerald `bg-emerald-500 border-emerald-400`
+- **Level 4 (5+ people created)**: Bright emerald glow `bg-emerald-400 border-emerald-300 shadow-[0_0_8px_rgba(52,211,153,0.6)]`
+
+---
+
+## 3. Interactive Features & Metrics
+
+### 3.1 Interactive Hover Status Bar & Tooltips
+- Hovering over any cell reveals an interactive status bar at the top right of the matrix showing:
+  - **Exact People Count**: E.g., `3 people created` or `No members created`.
+  - **Formatted Date**: E.g., `Sep 18, 2026`.
+  - **Names List**: When available, displays the names of individuals added on that date (e.g., `Amina Rahman, Zayd Rahman`).
+
+### 3.2 Real-Time Summary Metric Cards
+Located above the heatmap grid:
+1. **Total People Added**: Aggregate count of members recorded across the selected timeframe.
+2. **Active Creation Days**: Number of days where at least 1 person was created.
+3. **Longest Streak**: Maximum consecutive days with member additions.
+4. **Peak Day**: The single day with the highest number of member creations.
+
+### 3.3 Legend
+A bottom legend with 5 color squares ranging from **"Less"** to **"More"** matching the GitHub standard.
+
+---
+
+## 4. Technical Implementation Details
+
+### 4.1 Data Processing (`MemberCreationHeatmap.tsx`)
+1. **Database Integration**:
+   - Takes `members` from `useGetMembersQuery()` in `OverviewTab.tsx`.
+   - Parses each member's `createdAt` ISO timestamp into `YYYY-MM-DD`.
+   - Aggregates daily counts in a hash map `Record<string, number>`.
+   - Aggregates member full names in `Record<string, string[]>`.
+2. **Realistic Historical Baseline**:
+   - For sanctuaries starting with fewer database records, the component incorporates simulated baseline milestones (e.g., initial lineage imports, branch expansions) so the heatmap looks vibrant and active right away.
+   - Any actual member added to the database immediately takes precedence and updates the daily counts in real time.
+3. **Streak Calculation**:
+   - Iterates chronologically through the calendar days to determine both current and all-time longest creation streaks.
+
+---
+
+## 5. File Locations
+- **Heatmap Component**: `d:\Projects\family-together-frontend\src\components\dashboard\MemberCreationHeatmap.tsx`
+- **Owner Dashboard Integration**: `d:\Projects\family-together-frontend\src\components\dashboard\tabs\OverviewTab.tsx`

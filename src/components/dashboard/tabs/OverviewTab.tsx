@@ -30,6 +30,7 @@ import {
 } from "@/redux/api/familyApi";
 import AddMemberModal from "@/components/modals/AddMemberModal";
 import AddMemoryModal from "@/components/modals/AddMemoryModal";
+import MemberCreationHeatmap from "@/components/dashboard/MemberCreationHeatmap";
 
 export default function OverviewTab() {
   const { user, isAuthenticated } = useAppSelector((state) => state.auth);
@@ -435,6 +436,9 @@ export default function OverviewTab() {
             </div>
           </div>
         </div>
+
+        {/* GitHub-Style Member Creation Activity Heatmap */}
+        <MemberCreationHeatmap members={members} />
 
         {/* Grid 3: Recent Family Records & Member Summary Table */}
         <div className="p-6 rounded-2xl bg-slate-900 border border-slate-800 shadow-sm space-y-5">
