@@ -6,6 +6,7 @@ import {
   Link2,
   Plus,
   Minus,
+  Pencil,
   RotateCcw,
   Trash2,
   Sparkles,
@@ -101,6 +102,13 @@ export default function LandingFamilyTreeCanvas() {
   const [newRelativeRole, setNewRelativeRole] = useState("Mother");
   const [newRelativeEmoji, setNewRelativeEmoji] = useState("👩");
   const [newRelativeGender, setNewRelativeGender] = useState<"MALE" | "FEMALE">("FEMALE");
+
+  // Edit Relative Modal State
+  const [editingMember, setEditingMember] = useState<DemoMember | null>(null);
+  const [editName, setEditName] = useState("");
+  const [editRole, setEditRole] = useState("");
+  const [editGender, setEditGender] = useState<"MALE" | "FEMALE">("FEMALE");
+  const [editEmoji, setEditEmoji] = useState("👩");
 
   // Calculate default centered positions based on canvas width
   const calculateDefaultPositions = (width: number) => {
@@ -376,13 +384,38 @@ export default function LandingFamilyTreeCanvas() {
     setIsAddModalOpen(false);
   };
 
-  // Delete selected relative
-  const handleDeleteMember = (memberId: string) => {
-    if (members.length <= 1) {
-      alert("You need at least one family member in your tree!");
-      return;
-    }
+  // Open Edit Relative Modal
+  const handleOpenEdit = (m: DemoMember) => {
+    setEditingMember(m);
+    setEditName(m.name);
+    setEditRole(m.role);
+    setEditGender(m.gender);
+    setEditEmoji(m.emoji);
+  };
 
+  // Save Edited Relative
+  const handleSaveEdit = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!editingMember || !editName.trim()) return;
+
+    const updated = members.map((m) =>
+      m.id === editingMember.id
+        ? {
+            ...m,
+            name: editName.trim(),
+            role: editRole.trim(),
+            gender: editGender,
+            emoji: editEmoji,
+          }
+        : m
+    );
+    setMembers(updated);
+    persistTree(updated, connections, nodePositions);
+    setEditingMember(null);
+  };
+
+  // Delete selected relative (without restriction, can delete any relative)
+  const handleDeleteMember = (memberId: string) => {
     const updatedMembers = members.filter((m) => m.id !== memberId);
     const updatedConnections = connections.filter(
       (c) => c.fromId !== memberId && c.toId !== memberId
@@ -393,9 +426,20 @@ export default function LandingFamilyTreeCanvas() {
     setMembers(updatedMembers);
     setConnections(updatedConnections);
     setNodePositions(updatedPositions);
-    setSelectedMemberId(updatedMembers[0]?.id || null);
+    if (selectedMemberId === memberId) {
+      setSelectedMemberId(updatedMembers[0]?.id || null);
+    }
 
     persistTree(updatedMembers, updatedConnections, updatedPositions);
+  };
+
+  // Clear all relatives from canvas
+  const handleClearAll = () => {
+    setMembers([]);
+    setConnections([]);
+    setNodePositions({});
+    setSelectedMemberId(null);
+    persistTree([], [], {});
   };
 
   const selectedMember = members.find((m) => m.id === selectedMemberId);
@@ -508,6 +552,17 @@ export default function LandingFamilyTreeCanvas() {
             </button>
           </div>
 
+          {/* Clear All Relatives */}
+          <button
+            type="button"
+            onClick={handleClearAll}
+            className="p-2 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 hover:bg-rose-50 dark:hover:bg-rose-950/60 hover:text-rose-600 text-slate-600 dark:text-slate-300 font-bold text-xs flex items-center gap-1 cursor-pointer transition-colors"
+            title="Clear all relatives from canvas"
+          >
+            <Trash2 className="h-3.5 w-3.5" />
+            <span className="hidden xl:inline text-xs">Clear All</span>
+          </button>
+
           {/* Reset Layout */}
           <button
             type="button"
@@ -533,6 +588,35 @@ export default function LandingFamilyTreeCanvas() {
             {isFullScreen ? <Minimize2 className="h-3.5 w-3.5" /> : <Maximize2 className="h-3.5 w-3.5" />}
           </button>
         </div>
+
+        {/* Empty Canvas State */}
+        {members.length === 0 && (
+          <div className="absolute inset-0 flex flex-col items-center justify-center text-center p-6 space-y-3 z-10">
+            <User className="h-12 w-12 text-slate-300 dark:text-slate-600 mx-auto" />
+            <h4 className="font-extrabold text-slate-700 dark:text-slate-300 text-sm sm:text-base">
+              Canvas is empty
+            </h4>
+            <p className="text-xs text-slate-400 dark:text-slate-500 max-w-xs">
+              All relatives removed. Click "+ Add Relative" to add family members or "Reset" to restore the default lineage.
+            </p>
+            <div className="flex items-center gap-2 pt-2">
+              <button
+                type="button"
+                onClick={() => setIsAddModalOpen(true)}
+                className="px-4 py-2 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white font-bold text-xs shadow-md cursor-pointer"
+              >
+                + Add Relative
+              </button>
+              <button
+                type="button"
+                onClick={handleReset}
+                className="px-4 py-2 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-300 font-bold text-xs cursor-pointer"
+              >
+                Reset Default Tree
+              </button>
+            </div>
+          </div>
+        )}
 
         {/* Link Mode Guidance Banner inside canvas */}
         {activeTool === "LINK" && (
@@ -660,6 +744,34 @@ export default function LandingFamilyTreeCanvas() {
                     : "border-slate-200/90 dark:border-slate-700 shadow-md hover:shadow-lg hover:border-indigo-300 dark:hover:border-indigo-600"
                 }`}
               >
+                {/* Beside Relative: Edit & Delete Quick Action Buttons */}
+                <div className="absolute -top-2.5 -right-2.5 flex items-center gap-1 z-30 opacity-90 hover:opacity-100 transition-opacity">
+                  <button
+                    type="button"
+                    onPointerDown={(e) => e.stopPropagation()}
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      handleOpenEdit(m);
+                    }}
+                    className="h-5 w-5 rounded-full bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 hover:bg-indigo-50 dark:hover:bg-indigo-950/80 hover:border-indigo-400 text-slate-500 dark:text-slate-300 hover:text-indigo-600 shadow-md flex items-center justify-center cursor-pointer transition-all hover:scale-110"
+                    title={`Edit ${m.name}`}
+                  >
+                    <Pencil className="h-2.5 w-2.5" />
+                  </button>
+                  <button
+                    type="button"
+                    onPointerDown={(e) => e.stopPropagation()}
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      handleDeleteMember(m.id);
+                    }}
+                    className="h-5 w-5 rounded-full bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 hover:bg-rose-50 dark:hover:bg-rose-950/80 hover:border-rose-400 text-slate-500 dark:text-slate-300 hover:text-rose-600 shadow-md flex items-center justify-center cursor-pointer transition-all hover:scale-110"
+                    title={`Delete ${m.name}`}
+                  >
+                    <Trash2 className="h-2.5 w-2.5" />
+                  </button>
+                </div>
+
                 {/* Top Connector Dot */}
                 <div
                   onPointerDown={(e) => handleHandlePointerDown(e, m.id)}
@@ -730,6 +842,17 @@ export default function LandingFamilyTreeCanvas() {
             </div>
 
             <div className="flex items-center gap-1.5 ml-auto">
+              {/* Edit relative action */}
+              <button
+                type="button"
+                onClick={() => handleOpenEdit(selectedMember)}
+                className="px-2.5 py-1.5 rounded-xl bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 font-bold text-[11px] flex items-center gap-1 cursor-pointer transition-colors"
+                title="Edit this relative"
+              >
+                <Pencil className="h-3.5 w-3.5" />
+                <span>Edit</span>
+              </button>
+
               {/* Connect action from selected node */}
               <button
                 type="button"
@@ -924,6 +1047,113 @@ export default function LandingFamilyTreeCanvas() {
               >
                 Add Relative to Tree
               </button>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* Edit Relative Modal */}
+      {editingMember && (
+        <div className="fixed inset-0 bg-slate-900/50 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+          <div className="bg-white dark:bg-slate-900 rounded-3xl border border-slate-200 dark:border-slate-800 p-6 max-w-md w-full shadow-2xl space-y-4 animate-in fade-in zoom-in-95 duration-150">
+            <div className="flex items-center justify-between">
+              <h3 className="font-extrabold text-slate-900 dark:text-white text-base flex items-center gap-2">
+                <Pencil className="h-4 w-4 text-indigo-600 dark:text-indigo-400" />
+                <span>Edit Relative: {editingMember.name}</span>
+              </h3>
+              <button
+                type="button"
+                onClick={() => setEditingMember(null)}
+                className="text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 cursor-pointer"
+              >
+                <X className="h-4 w-4" />
+              </button>
+            </div>
+
+            <form onSubmit={handleSaveEdit} className="space-y-4">
+              <div>
+                <label className="text-xs font-bold text-slate-700 dark:text-slate-300 block mb-1">
+                  Relative Name
+                </label>
+                <input
+                  type="text"
+                  required
+                  value={editName}
+                  onChange={(e) => setEditName(e.target.value)}
+                  className="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 text-xs text-slate-900 dark:text-white placeholder:text-slate-400 focus:ring-2 focus:ring-indigo-500 focus:outline-none font-semibold"
+                />
+              </div>
+
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <label className="text-xs font-bold text-slate-700 dark:text-slate-300 block mb-1">
+                    Relationship / Role
+                  </label>
+                  <input
+                    type="text"
+                    required
+                    value={editRole}
+                    onChange={(e) => setEditRole(e.target.value)}
+                    placeholder="e.g. Father, Mother, Sibling"
+                    className="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 text-xs font-bold text-slate-800 dark:text-slate-100 focus:ring-2 focus:ring-indigo-500 focus:outline-none"
+                  />
+                </div>
+
+                <div>
+                  <label className="text-xs font-bold text-slate-700 dark:text-slate-300 block mb-1">
+                    Gender
+                  </label>
+                  <select
+                    value={editGender}
+                    onChange={(e) => setEditGender(e.target.value as "MALE" | "FEMALE")}
+                    className="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 text-xs font-bold text-slate-800 dark:text-slate-100 focus:ring-2 focus:ring-indigo-500 focus:outline-none"
+                  >
+                    <option value="FEMALE">Female</option>
+                    <option value="MALE">Male</option>
+                  </select>
+                </div>
+              </div>
+
+              <div>
+                <label className="text-xs font-bold text-slate-700 dark:text-slate-300 block mb-1.5">
+                  Choose Avatar Emoji
+                </label>
+                <div className="flex flex-wrap gap-2">
+                  {["👩", "👨", "👵", "👴", "👧", "👦", "👶", "🧑", "🧔", "🧕"].map((emoji) => (
+                    <button
+                      key={emoji}
+                      type="button"
+                      onClick={() => setEditEmoji(emoji)}
+                      className={`h-10 w-10 rounded-xl border text-lg flex items-center justify-center cursor-pointer transition-all ${
+                        editEmoji === emoji
+                          ? "border-indigo-600 bg-indigo-50 dark:bg-indigo-950/80 ring-2 ring-indigo-500 scale-110"
+                          : "border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 hover:bg-slate-100"
+                      }`}
+                    >
+                      {emoji}
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              <div className="flex items-center gap-2 pt-2">
+                <button
+                  type="submit"
+                  className="flex-1 py-3 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white font-bold text-xs shadow-md shadow-indigo-600/25 cursor-pointer transition-all"
+                >
+                  Save Changes
+                </button>
+                <button
+                  type="button"
+                  onClick={() => {
+                    handleDeleteMember(editingMember.id);
+                    setEditingMember(null);
+                  }}
+                  className="px-4 py-3 rounded-xl bg-rose-50 dark:bg-rose-950/60 hover:bg-rose-100 text-rose-600 dark:text-rose-400 font-bold text-xs cursor-pointer transition-all"
+                >
+                  Delete
+                </button>
+              </div>
             </form>
           </div>
         </div>
