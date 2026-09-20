@@ -345,7 +345,10 @@ function UserDashboardContent() {
   const currentTab = normalizeDashboardTab(rawTab);
   const { user, isAuthenticated } = useAppSelector((state) => state.auth);
 
-  const { data: memories = [] } = useGetMemoriesQuery(undefined, { skip: !isAuthenticated });
+  const { data: memories = [] } = useGetMemoriesQuery(
+    user ? { userId: user.id, userEmail: user.email } : undefined,
+    { skip: !isAuthenticated }
+  );
   const { data: events = [] } = useGetEventsQuery(undefined, { skip: !isAuthenticated });
   const { data: members = [] } = useGetMembersQuery(undefined, { skip: !isAuthenticated });
 

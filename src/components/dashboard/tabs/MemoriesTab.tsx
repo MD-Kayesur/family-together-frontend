@@ -3,6 +3,7 @@
 import React, { useState } from "react";
 import Link from "next/link";
 import { useGetMemoriesQuery, useDeleteMemoryMutation } from "@/redux/api/familyApi";
+import { useAppSelector } from "@/redux/store";
 import { Image as ImageIcon, Plus, Heart, Sparkles, Loader2, SlidersHorizontal, Pencil, Trash2 } from "lucide-react";
 import MediaSliderCarousel from "@/components/memories/MediaSliderCarousel";
 import MediaLightboxModal from "@/components/modals/MediaLightboxModal";
@@ -12,7 +13,10 @@ interface MemoriesTabProps {
 }
 
 export default function MemoriesTab({ role }: MemoriesTabProps = {}) {
-  const { data: memories = [], isLoading, refetch } = useGetMemoriesQuery();
+  const { user } = useAppSelector((state) => state.auth);
+  const { data: memories = [], isLoading, refetch } = useGetMemoriesQuery(
+    user ? { userId: user.id, userEmail: user.email } : undefined
+  );
   const [deleteMemory] = useDeleteMemoryMutation();
   const [isLightboxOpen, setIsLightboxOpen] = useState(false);
   const [lightboxIndex, setLightboxIndex] = useState(0);

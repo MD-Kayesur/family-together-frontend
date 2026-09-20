@@ -19,6 +19,7 @@ import {
   Check,
 } from "lucide-react";
 import { useAddMemoryMutation, useGetMembersQuery, useGetMemoriesQuery } from "@/redux/api/familyApi";
+import { useAppSelector } from "@/redux/store";
 
 interface AddMemoryModalProps {
   isOpen: boolean;
@@ -26,8 +27,11 @@ interface AddMemoryModalProps {
 }
 
 export default function AddMemoryModal({ isOpen, onClose }: AddMemoryModalProps) {
+  const { user } = useAppSelector((state) => state.auth);
   const { data: members = [] } = useGetMembersQuery();
-  const { refetch: refetchMemories } = useGetMemoriesQuery();
+  const { refetch: refetchMemories } = useGetMemoriesQuery(
+    user ? { userId: user.id, userEmail: user.email } : undefined
+  );
 
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
@@ -115,7 +119,9 @@ export default function AddMemoryModal({ isOpen, onClose }: AddMemoryModalProps)
       await addMemory({
         title: title.trim(),
         description: description.trim(),
-        sharedBy: "Sanctuary Owner",
+        sharedBy: user?.fullName || "Sanctuary Owner",
+        userId: user?.id,
+        userEmail: user?.email,
         date: date || undefined,
         location: location.trim() || undefined,
         category: category || undefined,
@@ -176,7 +182,7 @@ export default function AddMemoryModal({ isOpen, onClose }: AddMemoryModalProps)
         <div className="px-3.5 py-2 rounded-xl bg-purple-950/40 border border-purple-900/50 flex items-center justify-between text-xs">
           <div className="flex items-center gap-2 text-purple-300 font-bold">
             <UserCheck className="h-4 w-4 text-purple-400" />
-            <span>Adding as: Sanctuary Owner (Authenticated User)</span>
+            <span>Adding as: {user?.fullName || "Sanctuary Member"} ({user?.role || "Authenticated User"})</span>
           </div>
           <span className="text-[10px] bg-purple-900/60 text-purple-200 font-extrabold px-2 py-0.5 rounded-md">
             Auto

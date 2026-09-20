@@ -42,7 +42,9 @@ export default function ViewerDashboardPage() {
   const { user, isAuthenticated } = useAppSelector((state) => state.auth);
   const [logout] = useLogoutMutation();
 
-  const { data: memories = [] } = useGetMemoriesQuery();
+  const { data: memories = [] } = useGetMemoriesQuery(
+    user ? { userId: user.id, userEmail: user.email } : undefined
+  );
   const { data: events = [] } = useGetEventsQuery();
   const { data: members = [] } = useGetMembersQuery();
 

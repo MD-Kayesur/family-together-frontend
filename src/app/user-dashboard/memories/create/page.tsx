@@ -41,7 +41,9 @@ function MemberMemoryFormContent() {
 
   // Queries & Mutations
   const { data: members = [] } = useGetMembersQuery();
-  const { data: allMemories = [], refetch: refetchMemories } = useGetMemoriesQuery();
+  const { data: allMemories = [], refetch: refetchMemories } = useGetMemoriesQuery(
+    user ? { userId: user.id, userEmail: user.email } : undefined
+  );
   const { data: fetchedMemory, isLoading: isFetchingMemory } = useGetMemoryByIdQuery(
     memoryId as string,
     { skip: !memoryId }
@@ -250,6 +252,8 @@ function MemberMemoryFormContent() {
           title: title.trim(),
           description: description.trim(),
           sharedBy: authorName,
+          userId: user?.id,
+          userEmail: user?.email,
           date: date || undefined,
           location: location.trim() || undefined,
           category: category || undefined,
@@ -266,6 +270,8 @@ function MemberMemoryFormContent() {
           title: title.trim(),
           description: description.trim(),
           sharedBy: authorName,
+          userId: user?.id,
+          userEmail: user?.email,
           date: date || undefined,
           location: location.trim() || undefined,
           category: category || undefined,

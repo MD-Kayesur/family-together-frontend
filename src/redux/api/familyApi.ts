@@ -170,8 +170,15 @@ export const familyApi = baseApi.injectEndpoints({
       }),
       invalidatesTags: ["Sanctuary", "Members", "Relationships", "Activity"],
     }),
-    getMemories: builder.query<MemoryRecord[], void>({
-      query: () => "/family/memories",
+    getMemories: builder.query<MemoryRecord[], { userId?: string; userEmail?: string } | void>({
+      query: (params) => {
+        if (!params) return "/family/memories";
+        const queryParams = new URLSearchParams();
+        if (params.userId) queryParams.set("userId", params.userId);
+        if (params.userEmail) queryParams.set("userEmail", params.userEmail);
+        const qs = queryParams.toString();
+        return qs ? `/family/memories?${qs}` : "/family/memories";
+      },
       providesTags: ["Memories"],
     }),
     addMemory: builder.mutation<
@@ -180,6 +187,8 @@ export const familyApi = baseApi.injectEndpoints({
         title: string;
         description?: string;
         sharedBy?: string;
+        userId?: string;
+        userEmail?: string;
         date?: string;
         location?: string;
         category?: string;
@@ -207,6 +216,8 @@ export const familyApi = baseApi.injectEndpoints({
         title?: string;
         description?: string;
         sharedBy?: string;
+        userId?: string;
+        userEmail?: string;
         date?: string;
         location?: string;
         category?: string;

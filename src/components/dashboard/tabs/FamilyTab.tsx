@@ -8,6 +8,7 @@ import {
   useGetMemoriesQuery,
   useUpdateFamilyDetailsMutation,
 } from "@/redux/api/familyApi";
+import { useAppSelector } from "@/redux/store";
 import {
   Users,
   ShieldCheck,
@@ -23,6 +24,11 @@ import {
   MapPin,
   Globe,
   Award,
+  BookOpen,
+  Camera,
+  Activity,
+  Layers,
+  ChevronRight,
   Loader2,
   X,
   Check,
@@ -34,10 +40,13 @@ import AddMemoryModal from "@/components/modals/AddMemoryModal";
 import InteractiveFamilyTreeCanvas from "@/components/tree/InteractiveFamilyTreeCanvas";
 
 export default function FamilyTab() {
+  const { user } = useAppSelector((state) => state.auth);
   const { data: sanctuaryData, isLoading: isLoadingSanctuary, refetch: refetchSanctuary } = useGetSanctuaryQuery();
   const { data: members = [], isLoading: isLoadingMembers, refetch: refetchMembers } = useGetMembersQuery();
   const { data: relationships = [], refetch: refetchRelationships } = useGetRelationshipsQuery();
-  const { data: memories = [], refetch: refetchMemories } = useGetMemoriesQuery();
+  const { data: memories = [], refetch: refetchMemories } = useGetMemoriesQuery(
+    user ? { userId: user.id, userEmail: user.email } : undefined
+  );
   const [updateFamilyDetails, { isLoading: isUpdating }] = useUpdateFamilyDetailsMutation();
 
   // Modals & Search state
