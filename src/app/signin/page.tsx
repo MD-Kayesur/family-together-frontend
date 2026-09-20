@@ -192,37 +192,14 @@ function SignInContent() {
               </div>
 
               {/* Password Field */}
+              {/* Password Field */}
               <div>
-                <div className="flex items-center justify-between mb-1">
-                  <label
-                    className="block font-label-md text-label-md text-on-surface"
-                    htmlFor="password"
-                  >
-                    Password
-                  </label>
-                  <a
-                    className="font-label-sm text-label-sm text-primary hover:text-primary-fixed-dim transition-colors cursor-pointer"
-                    href="#forgot"
-                    onClick={async (e) => {
-                      e.preventDefault();
-                      setErrorMsg("");
-                      setSuccessMsg("");
-                      if (!email || !email.includes("@")) {
-                        setErrorMsg("Please enter your email address first to reset password.");
-                        return;
-                      }
-                      try {
-                        const res = await forgotPassword({ email }).unwrap();
-                        setSuccessMsg(res.message || "Password reset instructions sent to your email.");
-                      } catch (err: any) {
-                        const msg = err?.data?.message || "Could not process password reset request.";
-                        setErrorMsg(Array.isArray(msg) ? msg.join(", ") : msg);
-                      }
-                    }}
-                  >
-                    Forgot Password?
-                  </a>
-                </div>
+                <label
+                  className="block font-label-md text-label-md text-on-surface mb-1"
+                  htmlFor="password"
+                >
+                  Password
+                </label>
                 <div className="relative">
                   <span className="absolute inset-y-0 left-0 flex items-center pl-3 text-outline">
                     <span className="material-symbols-outlined text-[20px]">lock</span>
@@ -246,6 +223,32 @@ function SignInContent() {
                     <span className="material-symbols-outlined text-[20px]">
                       {showPassword ? "visibility_off" : "visibility"}
                     </span>
+                  </button>
+                </div>
+
+                {/* Forgot Password Link Below Password Field */}
+                <div className="flex justify-end mt-2">
+                  <button
+                    type="button"
+                    className="font-label-sm text-xs font-semibold text-primary hover:underline hover:text-primary-fixed-dim transition-colors cursor-pointer"
+                    onClick={async (e) => {
+                      e.preventDefault();
+                      setErrorMsg("");
+                      setSuccessMsg("");
+                      if (!email || !email.includes("@")) {
+                        setErrorMsg("Please enter your email address first to reset password.");
+                        return;
+                      }
+                      try {
+                        const res = await forgotPassword({ email }).unwrap();
+                        setSuccessMsg(res.message || "Password reset instructions sent to your email.");
+                      } catch (err: any) {
+                        const msg = err?.data?.message || "Could not process password reset request.";
+                        setErrorMsg(Array.isArray(msg) ? msg.join(", ") : msg);
+                      }
+                    }}
+                  >
+                    Forgot Password?
                   </button>
                 </div>
               </div>
