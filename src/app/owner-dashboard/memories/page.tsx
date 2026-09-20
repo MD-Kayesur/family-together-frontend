@@ -109,9 +109,13 @@ export default function MemoriesPage() {
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
               {memories.map((mem, idx) => {
                 const displayImg =
-                  mem.mediaUrl && mem.mediaUrl.startsWith("http")
+                  mem.mediaUrls && mem.mediaUrls.length > 0
+                    ? mem.mediaUrls[0]
+                    : mem.mediaUrl && mem.mediaUrl.startsWith("http")
                     ? mem.mediaUrl
                     : sampleImages[idx % sampleImages.length];
+
+                const totalMediaCount = mem.mediaUrls?.length || mem.photoCount || 1;
 
                 return (
                   <div
@@ -119,18 +123,49 @@ export default function MemoriesPage() {
                     onClick={() => handleOpenLightbox(idx)}
                     className="bg-white border border-slate-200/80 rounded-3xl p-5 shadow-sm flex flex-col justify-between space-y-4 hover:shadow-xl transition-all cursor-pointer group"
                   >
-                    <div className="h-48 rounded-2xl overflow-hidden relative border border-slate-100">
-                      <img
-                        src={displayImg}
-                        alt={mem.title}
-                        className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
-                      />
-                      <div className="absolute inset-0 bg-gradient-to-t from-slate-950/70 via-transparent to-transparent opacity-80" />
-                      <div className="absolute top-3 right-3 flex items-center gap-2">
-                        <span className="bg-white/90 backdrop-blur-md px-2.5 py-1 rounded-full text-[10px] font-bold text-slate-700 shadow-sm">
-                          Click to View
-                        </span>
+                    <div className="space-y-2">
+                      <div className="h-48 rounded-2xl overflow-hidden relative border border-slate-100">
+                        <img
+                          src={displayImg}
+                          alt={mem.title}
+                          className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                        />
+                        <div className="absolute inset-0 bg-gradient-to-t from-slate-950/70 via-transparent to-transparent opacity-80" />
+                        
+                        {/* Top Left Media Count Badge */}
+                        <div className="absolute top-3 left-3">
+                          <span className="bg-slate-900/80 backdrop-blur-md px-2.5 py-1 rounded-full text-[10px] font-bold text-white shadow-sm flex items-center gap-1.5 border border-white/20">
+                            <ImageIcon className="h-3 w-3 text-purple-400" />
+                            <span>{totalMediaCount} Media</span>
+                          </span>
+                        </div>
+
+                        {/* Top Right Click to View */}
+                        <div className="absolute top-3 right-3 flex items-center gap-2">
+                          <span className="bg-white/90 backdrop-blur-md px-2.5 py-1 rounded-full text-[10px] font-bold text-slate-700 shadow-sm">
+                            Click to View
+                          </span>
+                        </div>
                       </div>
+
+                      {/* Mini Thumbnails Strip if Multiple Media Items */}
+                      {mem.mediaUrls && mem.mediaUrls.length > 1 && (
+                        <div className="flex items-center gap-1.5 pt-1 overflow-hidden">
+                          {mem.mediaUrls.slice(0, 4).map((thumb, tIdx) => (
+                            <div
+                              key={tIdx}
+                              className="h-9 w-12 rounded-lg overflow-hidden border border-slate-200 shrink-0 bg-slate-100 shadow-xs"
+                            >
+                              <img src={thumb} alt="" className="w-full h-full object-cover" />
+                            </div>
+                          ))}
+                          {mem.mediaUrls.length > 4 && (
+                            <span className="text-[10px] font-bold text-slate-400 px-1">
+                              +{mem.mediaUrls.length - 4}
+                            </span>
+                          )}
+                        </div>
+                      )}
                     </div>
 
                     <div className="space-y-1">

@@ -63,14 +63,36 @@ function MemoryFormContent() {
   const [tagInputText, setTagInputText] = useState("");
   const [isTagDropdownOpen, setIsTagDropdownOpen] = useState(false);
 
-  // File Uploads
-  const [selectedFiles, setSelectedFiles] = useState<File[]>([]);
-  const [existingMediaUrl, setExistingMediaUrl] = useState<string | null>(null);
+  // Media Uploads & URLs State
+  const [mediaUrls, setMediaUrls] = useState<string[]>([]);
+  const [customMediaUrl, setCustomMediaUrl] = useState("");
+  const [isProcessingMedia, setIsProcessingMedia] = useState(false);
 
   // Alerts
   const [errorMsg, setErrorMsg] = useState("");
   const [successMsg, setSuccessMsg] = useState("");
   const [hasInitialized, setHasInitialized] = useState(false);
+
+  // Helper function to read file with Promise.race and timeout
+  const readFileWithPromiseRace = (file: File): Promise<string> => {
+    return Promise.race([
+      new Promise<string>((resolve, reject) => {
+        const reader = new FileReader();
+        reader.onload = () => {
+          if (typeof reader.result === "string") {
+            resolve(reader.result);
+          } else {
+            reject(new Error("File result is not a string"));
+          }
+        };
+        reader.onerror = () => reject(reader.error || new Error("Failed to read file"));
+        reader.readAsDataURL(file);
+      }),
+      new Promise<string>((_, reject) =>
+        setTimeout(() => reject(new Error(`Timeout reading file: ${file.name}`)), 5000),
+      ),
+    ]);
+  };
 
   // Pre-fill data if in Edit Mode
   useEffect(() => {
@@ -81,8 +103,26 @@ function MemoryFormContent() {
     if (!memory || hasInitialized) return;
 
     setTitle(memory.title || "");
-    if (memory.mediaUrl) {
-      setExistingMediaUrl(memory.mediaUrl);
+
+    // Pre-fill mediaUrls array
+    if (memory.mediaUrls && Array.isArray(memory.mediaUrls) && memory.mediaUrls.length > 0) {
+      setMediaUrls(memory.mediaUrls);
+    } else if (memory.mediaUrl) {
+      try {
+        const trimmed = memory.mediaUrl.trim();
+        if (trimmed.startsWith("[") && trimmed.endsWith("]")) {
+          const parsed = JSON.parse(trimmed);
+          if (Array.isArray(parsed)) {
+            setMediaUrls(parsed);
+          } else {
+            setMediaUrls([memory.mediaUrl]);
+          }
+        } else {
+          setMediaUrls([memory.mediaUrl]);
+        }
+      } catch {
+        setMediaUrls([memory.mediaUrl]);
+      }
     }
 
     if (memory.description) {
@@ -120,16 +160,50 @@ function MemoryFormContent() {
     setHasInitialized(true);
   }, [isEditMode, memoryId, fetchedMemory, allMemories, hasInitialized]);
 
-  // Handle File Selection
-  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  // Handle Multiple File Selection with Promise.race and try/catch
+  // If any single file fails or times out, the other files are safely added!
+  const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files.length > 0) {
       const filesArray = Array.from(e.target.files);
-      setSelectedFiles((prev) => [...prev, ...filesArray]);
+      setIsProcessingMedia(true);
+      setErrorMsg("");
+
+      const successfullyReadUrls: string[] = [];
+      const failedFiles: string[] = [];
+
+      for (const file of filesArray) {
+        try {
+          const dataUrl = await readFileWithPromiseRace(file);
+          successfullyReadUrls.push(dataUrl);
+        } catch (err) {
+          console.warn(`[Promise.race] Failed reading file "${file.name}":`, err);
+          failedFiles.push(file.name);
+        }
+      }
+
+      if (successfullyReadUrls.length > 0) {
+        setMediaUrls((prev) => [...prev, ...successfullyReadUrls]);
+      }
+
+      if (failedFiles.length > 0) {
+        setErrorMsg(
+          `Note: ${failedFiles.length} file(s) (${failedFiles.join(", ")}) could not be read, but ${successfullyReadUrls.length} file(s) were added successfully.`
+        );
+      }
+
+      setIsProcessingMedia(false);
+      e.target.value = "";
     }
   };
 
-  const handleRemoveFile = (index: number) => {
-    setSelectedFiles((prev) => prev.filter((_, i) => i !== index));
+  const handleAddCustomMediaUrl = () => {
+    if (!customMediaUrl.trim()) return;
+    setMediaUrls((prev) => [...prev, customMediaUrl.trim()]);
+    setCustomMediaUrl("");
+  };
+
+  const handleRemoveMedia = (index: number) => {
+    setMediaUrls((prev) => prev.filter((_, i) => i !== index));
   };
 
   // Autocomplete Relative Selection
@@ -168,15 +242,6 @@ function MemoryFormContent() {
     }
 
     try {
-      const mediaListStr =
-        selectedFiles.length > 0
-          ? selectedFiles.map((f) => f.name).join(", ")
-          : undefined;
-
-      const finalMediaUrl = mediaListStr
-        ? `Files [${selectedFiles.length}]: ${mediaListStr}`
-        : existingMediaUrl || undefined;
-
       const finalTaggedStr =
         taggedMembersList.length > 0
           ? taggedMembersList.join(", ")
@@ -191,12 +256,13 @@ function MemoryFormContent() {
           date: date || undefined,
           location: location.trim() || undefined,
           category: category || undefined,
-          mediaUrl: finalMediaUrl,
+          mediaUrls: mediaUrls.length > 0 ? mediaUrls : undefined,
+          mediaUrl: mediaUrls[0] || undefined,
           taggedMembers: finalTaggedStr,
           privacy: privacy || undefined,
         }).unwrap();
 
-        setSuccessMsg("Memory updated successfully! Redirecting...");
+        setSuccessMsg(`Memory updated successfully with ${mediaUrls.length} media item(s)! Redirecting...`);
       } else {
         await addMemory({
           title: title.trim(),
@@ -205,12 +271,13 @@ function MemoryFormContent() {
           date: date || undefined,
           location: location.trim() || undefined,
           category: category || undefined,
-          mediaUrl: finalMediaUrl,
+          mediaUrls: mediaUrls.length > 0 ? mediaUrls : undefined,
+          mediaUrl: mediaUrls[0] || undefined,
           taggedMembers: finalTaggedStr,
           privacy: privacy || undefined,
         }).unwrap();
 
-        setSuccessMsg("Memory created successfully! Redirecting...");
+        setSuccessMsg(`Memory created successfully with ${mediaUrls.length} media item(s)! Redirecting...`);
       }
 
       setTimeout(() => {
@@ -305,90 +372,145 @@ function MemoryFormContent() {
         )}
 
         <form onSubmit={handleSubmit} className="space-y-6 text-xs">
-          {/* Multiple File Upload Zone */}
-          <div className="space-y-2">
-            <label className="block font-bold text-slate-700 text-sm flex items-center justify-between">
-              <span className="flex items-center gap-2">
+          {/* Multiple Media Upload & URL Zone */}
+          <div className="space-y-4">
+            <div className="flex items-center justify-between">
+              <label className="block font-bold text-slate-700 text-sm flex items-center gap-2">
                 <Upload className="h-4 w-4 text-purple-600" />
-                <span>Upload Photos & Videos</span>
+                <span>Upload Photos & Videos (Multiple Media)</span>
+              </label>
+              <span className="text-xs text-purple-600 font-extrabold bg-purple-50 border border-purple-200 px-3 py-1 rounded-full">
+                {mediaUrls.length} Media Item(s) Attached
               </span>
-              <span className="text-xs text-purple-600 font-extrabold">
-                {selectedFiles.length} New File(s) Selected
-              </span>
-            </label>
+            </div>
 
+            {/* Dropzone for Multiple Local Files */}
             <div className="relative border-2 border-dashed border-purple-200 hover:border-purple-500 bg-purple-50/30 rounded-2xl p-6 text-center cursor-pointer transition-colors group">
               <input
                 type="file"
                 multiple
-                accept="image/*,video/*,.pdf"
+                accept="image/*,video/*"
                 onChange={handleFileChange}
-                className="absolute inset-0 opacity-0 cursor-pointer w-full h-full"
+                disabled={isProcessingMedia}
+                className="absolute inset-0 opacity-0 cursor-pointer w-full h-full disabled:cursor-not-allowed"
               />
               <div className="space-y-2">
                 <div className="flex items-center justify-center gap-3">
-                  <ImageIcon className="h-7 w-7 text-purple-500 group-hover:scale-110 transition-transform" />
-                  <Film className="h-7 w-7 text-purple-600 group-hover:scale-110 transition-transform" />
+                  {isProcessingMedia ? (
+                    <Loader2 className="h-8 w-8 text-purple-600 animate-spin" />
+                  ) : (
+                    <>
+                      <ImageIcon className="h-7 w-7 text-purple-500 group-hover:scale-110 transition-transform" />
+                      <Film className="h-7 w-7 text-purple-600 group-hover:scale-110 transition-transform" />
+                    </>
+                  )}
                 </div>
                 <p className="font-bold text-slate-800 text-sm">
-                  Click or drag & drop photos and videos here
+                  {isProcessingMedia
+                    ? "Processing and reading files via resilient Promise.race..."
+                    : "Click or drag & drop multiple photos and videos here"}
                 </p>
                 <p className="text-xs text-slate-400">
-                  Select multiple files at once (PNG, JPG, MP4, MOV, PDF)
+                  Select multiple files at once (PNG, JPG, WEBP, MP4, MOV). If any file fails, the rest will still be added!
                 </p>
               </div>
             </div>
 
-            {/* Existing Media Attached in Edit Mode */}
-            {isEditMode && existingMediaUrl && selectedFiles.length === 0 && (
-              <div className="p-3 rounded-xl bg-slate-50 border border-slate-200 flex items-center justify-between">
-                <div className="flex items-center gap-2.5 overflow-hidden">
-                  <FileCheck className="h-4 w-4 text-emerald-600 shrink-0" />
-                  <span className="font-bold text-slate-800 truncate">
-                    Currently Attached: {existingMediaUrl}
-                  </span>
+            {/* Add Media via Direct URL */}
+            <div className="flex items-center gap-2">
+              <input
+                type="url"
+                placeholder="Or paste media URL (e.g. Unsplash, Cloudinary, direct MP4 link)..."
+                value={customMediaUrl}
+                onChange={(e) => setCustomMediaUrl(e.target.value)}
+                onKeyDown={(e) => {
+                  if (e.key === "Enter") {
+                    e.preventDefault();
+                    handleAddCustomMediaUrl();
+                  }
+                }}
+                className="flex-1 px-4 py-2.5 rounded-xl border border-slate-200 bg-slate-50 text-slate-900 text-xs font-medium focus:ring-2 focus:ring-purple-500 focus:outline-none"
+              />
+              <button
+                type="button"
+                onClick={handleAddCustomMediaUrl}
+                className="px-4 py-2.5 rounded-xl bg-purple-600 hover:bg-purple-700 text-white font-bold text-xs shadow-sm transition-all cursor-pointer whitespace-nowrap"
+              >
+                + Add URL
+              </button>
+            </div>
+
+            {/* Attached Media Preview Gallery Grid */}
+            {mediaUrls.length > 0 ? (
+              <div className="space-y-2">
+                <div className="flex items-center justify-between text-xs text-slate-500 font-semibold px-1">
+                  <span>Attached Media Gallery Preview ({mediaUrls.length})</span>
+                  <button
+                    type="button"
+                    onClick={() => setMediaUrls([])}
+                    className="text-rose-500 hover:text-rose-700 hover:underline cursor-pointer text-[11px]"
+                  >
+                    Clear all media
+                  </button>
                 </div>
-                <span className="text-[10px] text-slate-400 font-medium shrink-0">
-                  (Choose new files above to replace)
-                </span>
-              </div>
-            )}
 
-            {/* Selected New Files Preview List */}
-            {selectedFiles.length > 0 && (
-              <div className="space-y-2 max-h-48 overflow-y-auto pr-1">
-                {selectedFiles.map((file, index) => {
-                  const isVideo = file.type.startsWith("video/");
-                  return (
-                    <div
-                      key={index}
-                      className="flex items-center justify-between p-2.5 rounded-xl bg-slate-50 border border-slate-200"
-                    >
-                      <div className="flex items-center gap-2.5 overflow-hidden">
-                        {isVideo ? (
-                          <Film className="h-4 w-4 text-amber-500 shrink-0" />
-                        ) : (
-                          <FileCheck className="h-4 w-4 text-purple-600 shrink-0" />
-                        )}
-                        <span className="font-bold text-slate-800 truncate text-xs">
-                          {file.name}
-                        </span>
-                        <span className="text-[11px] text-slate-400 shrink-0">
-                          ({(file.size / (1024 * 1024)).toFixed(2)} MB)
-                        </span>
-                      </div>
+                <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3 max-h-64 overflow-y-auto p-1 border border-slate-200 rounded-2xl bg-slate-50/50">
+                  {mediaUrls.map((url, index) => {
+                    const isVideo =
+                      url.startsWith("data:video/") ||
+                      url.endsWith(".mp4") ||
+                      url.endsWith(".mov") ||
+                      url.endsWith(".webm");
 
-                      <button
-                        type="button"
-                        onClick={() => handleRemoveFile(index)}
-                        className="p-1 text-slate-400 hover:text-rose-600 transition-colors cursor-pointer"
-                        title="Remove file"
+                    return (
+                      <div
+                        key={index}
+                        className="relative group/thumb rounded-xl overflow-hidden border border-slate-200 bg-black aspect-video flex items-center justify-center shadow-sm hover:shadow-md transition-all"
                       >
-                        <Trash2 className="h-4 w-4" />
-                      </button>
-                    </div>
-                  );
-                })}
+                        {isVideo ? (
+                          <video
+                            src={url}
+                            className="w-full h-full object-cover"
+                            controls={false}
+                          />
+                        ) : (
+                          <img
+                            src={url}
+                            alt={`Media ${index + 1}`}
+                            className="w-full h-full object-cover"
+                          />
+                        )}
+
+                        {/* Top Overlay Badges */}
+                        <div className="absolute top-1.5 left-1.5 right-1.5 flex items-center justify-between z-10">
+                          <span className="px-1.5 py-0.5 rounded-md bg-slate-900/80 text-white text-[9px] font-bold backdrop-blur-sm">
+                            #{index + 1}
+                          </span>
+
+                          <button
+                            type="button"
+                            onClick={() => handleRemoveMedia(index)}
+                            className="p-1 rounded-full bg-rose-600/90 hover:bg-rose-700 text-white transition-transform hover:scale-110 cursor-pointer shadow-md"
+                            title="Remove media"
+                          >
+                            <X className="h-3 w-3" />
+                          </button>
+                        </div>
+
+                        {/* Bottom Tag */}
+                        <div className="absolute bottom-1 left-1.5 z-10">
+                          <span className="px-1.5 py-0.5 rounded text-[8px] font-bold uppercase tracking-wider bg-slate-900/70 text-purple-300 backdrop-blur-sm">
+                            {isVideo ? "Video" : "Photo"}
+                          </span>
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
+            ) : (
+              <div className="p-3 text-center rounded-xl bg-slate-50 border border-slate-200 text-slate-400 text-xs">
+                No media attached yet. Select files or paste URLs above to add photos & videos.
               </div>
             )}
           </div>

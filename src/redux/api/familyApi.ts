@@ -35,6 +35,7 @@ export interface MemoryRecord {
   sharedBy?: string;
   photoCount?: number;
   mediaUrl?: string;
+  mediaUrls?: string[];
   createdAt?: string;
 }
 
@@ -139,21 +140,21 @@ export const familyApi = baseApi.injectEndpoints({
     }),
     updateMember: builder.mutation<
       FamilyMemberRecord,
-      { id: string; firstName?: string; lastName?: string; bio?: string }
+      { id: string; data: Partial<FamilyMemberRecord> }
     >({
-      query: ({ id, ...body }) => ({
+      query: ({ id, data }) => ({
         url: `/family/members/${id}`,
         method: "PATCH",
-        body,
+        body: data,
       }),
-      invalidatesTags: ["Sanctuary", "Members"],
+      invalidatesTags: ["Sanctuary", "Members", "Activity"],
     }),
-    deleteMember: builder.mutation<{ success: boolean }, string>({
+    deleteMember: builder.mutation<{ success: boolean; message: string }, string>({
       query: (id) => ({
         url: `/family/members/${id}`,
         method: "DELETE",
       }),
-      invalidatesTags: ["Sanctuary", "Members"],
+      invalidatesTags: ["Sanctuary", "Members", "Relationships", "Activity"],
     }),
     getMemories: builder.query<MemoryRecord[], void>({
       query: () => "/family/memories",
@@ -169,6 +170,7 @@ export const familyApi = baseApi.injectEndpoints({
         location?: string;
         category?: string;
         mediaUrl?: string;
+        mediaUrls?: string[];
         taggedMembers?: string;
         privacy?: string;
       }
@@ -195,6 +197,7 @@ export const familyApi = baseApi.injectEndpoints({
         location?: string;
         category?: string;
         mediaUrl?: string;
+        mediaUrls?: string[];
         taggedMembers?: string;
         privacy?: string;
       }
