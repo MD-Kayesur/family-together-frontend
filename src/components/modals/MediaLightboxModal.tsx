@@ -63,6 +63,14 @@ export default function MediaLightboxModal({
     activeMediaUrl.endsWith(".mov") ||
     activeMediaUrl.endsWith(".webm");
 
+  const handlePrevMedia = () => {
+    setMediaItemIndex((prev) => (prev - 1 + currentMediaList.length) % currentMediaList.length);
+  };
+
+  const handleNextMedia = () => {
+    setMediaItemIndex((prev) => (prev + 1) % currentMediaList.length);
+  };
+
   const handlePrevMemory = () => {
     onNavigate((currentIndex - 1 + memories.length) % memories.length);
   };
@@ -76,9 +84,27 @@ export default function MediaLightboxModal({
       {/* Top Action Bar */}
       <div className="absolute top-4 left-4 right-4 z-50 flex items-center justify-between text-white">
         <div className="flex items-center gap-2">
-          <span className="px-3 py-1 rounded-full bg-white/10 backdrop-blur-md text-xs font-bold border border-white/20">
-            Memory {currentIndex + 1} / {memories.length}
-          </span>
+          {/* Memory Counter with Next/Prev Memory controls */}
+          <div className="flex items-center gap-1.5 bg-white/10 backdrop-blur-md px-2.5 py-1 rounded-full border border-white/20 text-xs font-bold">
+            <button
+              type="button"
+              onClick={handlePrevMemory}
+              className="p-0.5 text-slate-300 hover:text-white cursor-pointer transition-colors"
+              title="Previous Memory"
+            >
+              <ChevronLeft className="h-3.5 w-3.5" />
+            </button>
+            <span>Memory {currentIndex + 1} / {memories.length}</span>
+            <button
+              type="button"
+              onClick={handleNextMemory}
+              className="p-0.5 text-slate-300 hover:text-white cursor-pointer transition-colors"
+              title="Next Memory"
+            >
+              <ChevronRight className="h-3.5 w-3.5" />
+            </button>
+          </div>
+
           {currentMediaList.length > 1 && (
             <span className="px-2.5 py-1 rounded-full bg-purple-600/60 backdrop-blur-md text-xs font-extrabold text-purple-200 border border-purple-400/30">
               Media {mediaItemIndex + 1} of {currentMediaList.length}
@@ -111,25 +137,31 @@ export default function MediaLightboxModal({
 
       {/* Main Lightbox Content Area */}
       <div className="w-full max-w-5xl h-[85vh] flex flex-col md:flex-row items-center bg-stone-900 rounded-3xl overflow-hidden shadow-2xl border border-stone-800 relative">
-        {/* Left / Right Slider Navigation Buttons */}
-        <button
-          type="button"
-          onClick={handlePrevMemory}
-          className="absolute left-3 top-1/2 -translate-y-1/2 z-40 p-3 rounded-full bg-slate-950/60 hover:bg-slate-900 text-white border border-white/20 backdrop-blur-md shadow-lg transition-transform hover:scale-110 cursor-pointer"
-        >
-          <ChevronLeft className="h-6 w-6" />
-        </button>
-
-        <button
-          type="button"
-          onClick={handleNextMemory}
-          className="absolute right-3 md:right-[380px] top-1/2 -translate-y-1/2 z-40 p-3 rounded-full bg-slate-950/60 hover:bg-slate-900 text-white border border-white/20 backdrop-blur-md shadow-lg transition-transform hover:scale-110 cursor-pointer"
-        >
-          <ChevronRight className="h-6 w-6" />
-        </button>
-
         {/* Media Preview Container */}
         <div className="w-full md:w-3/5 h-full bg-black flex flex-col items-center justify-center relative overflow-hidden group">
+          {/* Media Arrow Buttons - ONLY slides photos & videos of this memory */}
+          {currentMediaList.length > 1 && (
+            <>
+              <button
+                type="button"
+                onClick={handlePrevMedia}
+                className="absolute left-3 top-1/2 -translate-y-1/2 z-40 p-2.5 sm:p-3 rounded-full bg-slate-950/70 hover:bg-slate-900 text-white border border-white/20 backdrop-blur-md shadow-lg transition-transform hover:scale-110 cursor-pointer"
+                title="Previous Photo/Video"
+              >
+                <ChevronLeft className="h-5 w-5 sm:h-6 sm:w-6" />
+              </button>
+
+              <button
+                type="button"
+                onClick={handleNextMedia}
+                className="absolute right-3 top-1/2 -translate-y-1/2 z-40 p-2.5 sm:p-3 rounded-full bg-slate-950/70 hover:bg-slate-900 text-white border border-white/20 backdrop-blur-md shadow-lg transition-transform hover:scale-110 cursor-pointer"
+                title="Next Photo/Video"
+              >
+                <ChevronRight className="h-5 w-5 sm:h-6 sm:w-6" />
+              </button>
+            </>
+          )}
+
           {/* Main Photo / Video Media View */}
           <div className="flex-1 w-full h-full flex items-center justify-center p-2">
             {isVideo ? (
