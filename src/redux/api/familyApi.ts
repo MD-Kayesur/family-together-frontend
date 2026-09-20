@@ -180,6 +180,39 @@ export const familyApi = baseApi.injectEndpoints({
       }),
       invalidatesTags: ["Sanctuary", "Memories", "Activity"],
     }),
+    getMemoryById: builder.query<MemoryRecord, string>({
+      query: (id) => `/family/memories/${id}`,
+      providesTags: (_result, _error, id) => [{ type: "Memories", id }],
+    }),
+    updateMemory: builder.mutation<
+      MemoryRecord,
+      {
+        id: string;
+        title?: string;
+        description?: string;
+        sharedBy?: string;
+        date?: string;
+        location?: string;
+        category?: string;
+        mediaUrl?: string;
+        taggedMembers?: string;
+        privacy?: string;
+      }
+    >({
+      query: ({ id, ...body }) => ({
+        url: `/family/memories/${id}`,
+        method: "PATCH",
+        body,
+      }),
+      invalidatesTags: ["Sanctuary", "Memories", "Activity"],
+    }),
+    deleteMemory: builder.mutation<{ success: boolean; message: string }, string>({
+      query: (id) => ({
+        url: `/family/memories/${id}`,
+        method: "DELETE",
+      }),
+      invalidatesTags: ["Sanctuary", "Memories", "Activity"],
+    }),
     getEvents: builder.query<EventRecord[], void>({
       query: () => "/family/events",
       providesTags: ["Events"],
@@ -285,7 +318,10 @@ export const {
   useUpdateMemberMutation,
   useDeleteMemberMutation,
   useGetMemoriesQuery,
+  useGetMemoryByIdQuery,
   useAddMemoryMutation,
+  useUpdateMemoryMutation,
+  useDeleteMemoryMutation,
   useGetEventsQuery,
   useAddEventMutation,
   useGetRelationshipsQuery,
