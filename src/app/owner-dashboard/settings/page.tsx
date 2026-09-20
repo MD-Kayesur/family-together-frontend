@@ -890,7 +890,7 @@ export default function SettingsPage() {
 
       {/* 2FA Setup Modal */}
       {isSetup2FAModalOpen && (
-        <div className="fixed inset-0 bg-slate-950/70 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+        <div className="fixed inset-0 top-16 md:left-64 bg-slate-950/70 backdrop-blur-sm z-40 flex items-center justify-center p-4 overflow-y-auto">
           <div className="bg-slate-900 rounded-3xl border border-slate-800 p-6 max-w-lg w-full shadow-2xl space-y-5 relative">
             <div className="flex items-center justify-between border-b border-slate-800 pb-3">
               <h3 className="font-extrabold text-white text-base flex items-center gap-2">

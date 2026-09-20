@@ -38,7 +38,7 @@ export default function PdfViewportModal({
   const handleZoomOut = () => setZoomLevel((prev) => Math.max(prev - 20, 60));
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/80 backdrop-blur-md animate-fadeIn p-3 sm:p-6 overflow-hidden">
+    <div className="fixed inset-0 top-16 md:left-64 z-40 flex items-center justify-center bg-slate-950/80 backdrop-blur-md animate-fadeIn p-3 sm:p-6 overflow-hidden">
       <div className="bg-slate-900 border border-slate-800 rounded-3xl w-full max-w-5xl h-[88vh] shadow-2xl flex flex-col overflow-hidden relative">
         {/* Viewport Top Header */}
         <div className="px-5 py-3.5 bg-slate-900 text-white flex flex-wrap items-center justify-between gap-3 border-b border-slate-800 shrink-0">

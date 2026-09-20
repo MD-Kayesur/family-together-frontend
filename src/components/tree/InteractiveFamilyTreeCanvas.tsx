@@ -615,7 +615,7 @@ export default function InteractiveFamilyTreeCanvas({
 
       {/* Manual Link Connection Modal */}
       {isLinkModalOpen && selectedSourceId && pendingTargetId && (
-        <div className="fixed inset-0 bg-slate-950/80 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+        <div className="fixed inset-0 top-16 md:left-64 bg-slate-950/80 backdrop-blur-sm z-40 flex items-center justify-center p-4 overflow-y-auto">
           <div className="bg-slate-900 rounded-3xl border border-slate-800 p-6 max-w-sm w-full shadow-2xl space-y-4">
             <div className="flex items-center justify-between">
               <h3 className="font-extrabold text-white text-sm flex items-center gap-2">

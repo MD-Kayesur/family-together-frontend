@@ -90,7 +90,7 @@ export default function SanctuaryDashboardWrapper({
   return (
     <div className="h-screen overflow-hidden flex bg-slate-950 font-sans text-slate-100 antialiased transition-colors duration-200">
       {/* Left Sidebar Navigation */}
-      <aside className="w-64 bg-slate-900 border-r border-slate-800 flex flex-col justify-between p-6 shrink-0 h-screen transition-colors duration-200">
+      <aside className="w-64 bg-slate-900 border-r border-slate-800 flex flex-col justify-between p-6 shrink-0 h-screen transition-colors duration-200 relative z-50">
         <div className="space-y-7 overflow-y-auto">
           {/* Brand Logo */}
           <Link href="/" className="flex items-center gap-3 group">
@@ -147,7 +147,7 @@ export default function SanctuaryDashboardWrapper({
       {/* Main Area */}
       <div className="flex-1 flex flex-col h-screen min-w-0 overflow-hidden">
         {/* Top Header */}
-        <header className="h-16 shrink-0 bg-slate-900/90 backdrop-blur-md border-b border-slate-800 px-8 flex items-center justify-between sticky top-0 z-40 transition-colors duration-200">
+        <header className="h-16 shrink-0 bg-slate-900/90 backdrop-blur-md border-b border-slate-800 px-8 flex items-center justify-between sticky top-0 z-50 transition-colors duration-200">
           <div className="relative w-80">
             <Search className="h-4 w-4 absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
             <input

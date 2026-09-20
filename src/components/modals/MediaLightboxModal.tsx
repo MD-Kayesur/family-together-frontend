@@ -80,7 +80,7 @@ export default function MediaLightboxModal({
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/90 backdrop-blur-md animate-fadeIn p-4 sm:p-6 overflow-hidden">
+    <div className="fixed inset-0 top-16 md:left-64 z-40 flex items-center justify-center bg-slate-950/90 backdrop-blur-md animate-fadeIn p-4 sm:p-6 overflow-hidden">
       {/* Top Action Bar */}
       <div className="absolute top-4 left-4 right-4 z-50 flex items-center justify-between text-white">
         <div className="flex items-center gap-2">
