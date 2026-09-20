@@ -33,6 +33,7 @@ import {
   Layers,
   ChevronDown,
   ShieldCheck,
+  Shield,
 } from "lucide-react";
 import { useAppSelector } from "@/redux/store";
 import { useLogoutMutation } from "@/redux/api/authApi";
@@ -121,6 +122,7 @@ export default function DashboardPage() {
 
   const sidebarLinks = [
     { name: "Dashboard", href: "/owner-dashboard", icon: LayoutDashboard, badge: null },
+    { name: "User Accounts", href: "/owner-dashboard/users", icon: Shield, badge: null },
     { name: "My Family", href: "/owner-dashboard/family", icon: Users, badge: null },
     { name: "Family Tree", href: "/owner-dashboard/tree", icon: TreePine, badge: null },
     { name: "Members", href: "/owner-dashboard/members", icon: UserCheck, badge: null },

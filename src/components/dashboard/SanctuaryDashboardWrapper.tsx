@@ -63,10 +63,11 @@ export default function SanctuaryDashboardWrapper({
     );
   }
 
+  const roleUpper = user?.role?.toUpperCase();
   const isOwnerOrAdmin =
-    user?.role === "OWNER" ||
-    user?.role === "ADMIN" ||
-    user?.role === "SUPER_ADMIN";
+    roleUpper === "OWNER" ||
+    roleUpper === "ADMIN" ||
+    roleUpper === "SUPER_ADMIN";
 
   const sidebarLinks = isOwnerOrAdmin
     ? [
