@@ -1,12 +1,18 @@
 "use client";
 
-import React from "react";
+import React, { useEffect } from "react";
+import { useRouter } from "next/navigation";
 import { useAppSelector } from "@/redux/store";
 import SanctuaryDashboardWrapper from "@/components/dashboard/SanctuaryDashboardWrapper";
 import MessagesTab from "@/components/dashboard/tabs/MessagesTab";
 
 export default function UserMessagesPage() {
+  const router = useRouter();
   const { user } = useAppSelector((state) => state.auth);
+
+  useEffect(() => {
+    router.replace("/user-dashboard?tab=messages");
+  }, [router]);
 
   return (
     <SanctuaryDashboardWrapper

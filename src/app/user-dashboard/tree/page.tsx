@@ -2,19 +2,21 @@
 
 import React, { useEffect } from "react";
 import { useRouter } from "next/navigation";
+import { useAppSelector } from "@/redux/store";
 import SanctuaryDashboardWrapper from "@/components/dashboard/SanctuaryDashboardWrapper";
-import SettingsTab from "@/components/dashboard/tabs/SettingsTab";
+import TreeTab from "@/components/dashboard/tabs/TreeTab";
 
-export default function UserProfilePage() {
+export default function UserTreePage() {
   const router = useRouter();
+  const { user } = useAppSelector((state) => state.auth);
 
   useEffect(() => {
-    router.replace("/user-dashboard?tab=profile");
+    router.replace("/user-dashboard?tab=tree");
   }, [router]);
 
   return (
     <SanctuaryDashboardWrapper>
-      <SettingsTab />
+      <TreeTab role="MEMBER" currentUserId={user?.id} />
     </SanctuaryDashboardWrapper>
   );
 }

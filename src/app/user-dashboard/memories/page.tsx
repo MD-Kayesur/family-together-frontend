@@ -3,18 +3,18 @@
 import React, { useEffect } from "react";
 import { useRouter } from "next/navigation";
 import SanctuaryDashboardWrapper from "@/components/dashboard/SanctuaryDashboardWrapper";
-import SettingsTab from "@/components/dashboard/tabs/SettingsTab";
+import MemoriesTab from "@/components/dashboard/tabs/MemoriesTab";
 
-export default function UserProfilePage() {
+export default function UserMemoriesPage() {
   const router = useRouter();
 
   useEffect(() => {
-    router.replace("/user-dashboard?tab=profile");
+    router.replace("/user-dashboard?tab=memories");
   }, [router]);
 
   return (
     <SanctuaryDashboardWrapper>
-      <SettingsTab />
+      <MemoriesTab role="MEMBER" />
     </SanctuaryDashboardWrapper>
   );
 }

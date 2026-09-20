@@ -39,6 +39,7 @@ export function normalizeDashboardTab(rawTab?: string | null): string {
   if (cleaned === "invitations" || cleaned === "invites" || cleaned === "invite") return "invitations";
   if (cleaned === "messages" || cleaned === "message" || cleaned === "chat" || cleaned === "inbox") return "messages";
   if (cleaned === "settings" || cleaned === "setting") return "settings";
+  if (cleaned === "profile" || cleaned === "myprofile") return "profile";
   return cleaned;
 }
 
@@ -73,7 +74,8 @@ function SidebarNavLinks({ isOwnerOrAdmin, pathname }: SidebarNavLinksProps) {
         { name: "Messages", href: "/user-dashboard?tab=messages", tabKey: "messages", icon: MessageSquare, badge: "2" },
         { name: "Memory Vault", href: "/user-dashboard?tab=memories", tabKey: "memories", icon: ImageIcon, badge: null },
         { name: "Upcoming Events", href: "/user-dashboard?tab=events", tabKey: "events", icon: Calendar, badge: null },
-        { name: "My Profile", href: "/user-dashboard/profile", tabKey: "profile", icon: UserCheck, badge: null },
+        { name: "My Profile", href: "/user-dashboard?tab=profile", tabKey: "profile", icon: UserCheck, badge: null },
+        { name: "Settings", href: "/user-dashboard?tab=settings", tabKey: "settings", icon: Settings, badge: null },
       ];
 
   return (

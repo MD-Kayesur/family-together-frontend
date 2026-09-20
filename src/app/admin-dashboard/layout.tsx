@@ -1,8 +1,8 @@
 "use client";
 
-import React, { useEffect } from "react";
+import React, { useEffect, Suspense } from "react";
 import Link from "next/link";
-import { usePathname, useRouter } from "next/navigation";
+import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import {
   LayoutDashboard,
   Users,
@@ -13,9 +13,7 @@ import {
   HelpCircle,
   LogOut,
   Search,
-  Bell,
   TreePine,
-  ShieldAlert,
   UserCheck,
   MessageSquare,
 } from "lucide-react";
@@ -23,6 +21,51 @@ import { useAppSelector } from "@/redux/store";
 import { useLogoutMutation } from "@/redux/api/authApi";
 import NavbarNotificationMenu from "@/components/dashboard/NavbarNotificationMenu";
 import ThemeToggle from "@/components/theme/ThemeToggle";
+import { normalizeDashboardTab } from "@/components/dashboard/SanctuaryDashboardWrapper";
+
+function AdminSidebarNav({ pathname }: { pathname: string }) {
+  const searchParams = useSearchParams();
+  const rawTab = searchParams?.get("tab");
+  const currentTab = normalizeDashboardTab(rawTab);
+
+  const navItems = [
+    { name: "Dashboard", href: "/admin-dashboard?tab=dashboard", subHref: "/admin-dashboard", tabKey: "dashboard", icon: LayoutDashboard },
+    { name: "User Management", href: "/admin-dashboard?tab=users", subHref: "/admin-dashboard/users", tabKey: "users", icon: Users },
+    { name: "Family Members", href: "/admin-dashboard?tab=members", subHref: "/admin-dashboard/members", tabKey: "members", icon: UserCheck },
+    { name: "Messages", href: "/admin-dashboard?tab=messages", subHref: "/admin-dashboard/messages", tabKey: "messages", icon: MessageSquare },
+    { name: "Activity Monitor", href: "/admin-dashboard?tab=activity", subHref: "/admin-dashboard/activity", tabKey: "activity", icon: Activity },
+    { name: "Network Analytics", href: "/admin-dashboard?tab=analytics", subHref: "/admin-dashboard/analytics", tabKey: "analytics", icon: Network },
+    { name: "System Settings", href: "/admin-dashboard?tab=settings", subHref: "/admin-dashboard/settings", tabKey: "settings", icon: Settings },
+  ];
+
+  return (
+    <nav className="space-y-1.5">
+      {navItems.map((item) => {
+        const Icon = item.icon;
+        const isActive =
+          (pathname === "/admin-dashboard" && currentTab === item.tabKey) ||
+          (pathname === "/admin-dashboard" && !rawTab && item.tabKey === "dashboard") ||
+          pathname === item.subHref ||
+          pathname === item.href;
+
+        return (
+          <Link
+            key={item.href}
+            href={item.href}
+            className={`flex items-center gap-3 px-4 py-3 rounded-xl font-semibold text-sm transition-all ${
+              isActive
+                ? "bg-purple-600 text-white shadow-md shadow-purple-600/25"
+                : "text-slate-400 hover:text-white hover:bg-slate-800"
+            }`}
+          >
+            <Icon className={`h-4 w-4 ${isActive ? "text-white" : "text-slate-400"}`} />
+            <span>{item.name}</span>
+          </Link>
+        );
+      })}
+    </nav>
+  );
+}
 
 export default function AdminLayout({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
@@ -48,16 +91,6 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
     );
   }
 
-  const navItems = [
-    { name: "Dashboard", href: "/admin-dashboard", icon: LayoutDashboard },
-    { name: "User Management", href: "/admin-dashboard/users", icon: Users },
-    { name: "Family Members", href: "/admin-dashboard/members", icon: UserCheck },
-    { name: "Messages", href: "/admin-dashboard/messages", icon: MessageSquare },
-    { name: "Activity Monitor", href: "/admin-dashboard/activity", icon: Activity },
-    { name: "Network Analytics", href: "/admin-dashboard/analytics", icon: Network },
-    { name: "System Settings", href: "/admin-dashboard/settings", icon: Settings },
-  ];
-
   return (
     <div className="h-screen overflow-hidden flex bg-slate-950 font-sans text-slate-100 antialiased">
       {/* Sidebar Navigation */}
@@ -79,27 +112,10 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
             </div>
           </Link>
 
-          {/* Navigation Links */}
-          <nav className="space-y-1.5">
-            {navItems.map((item) => {
-              const Icon = item.icon;
-              const isActive = pathname === item.href;
-              return (
-                <Link
-                  key={item.href}
-                  href={item.href}
-                  className={`flex items-center gap-3 px-4 py-3 rounded-xl font-semibold text-sm transition-all ${
-                    isActive
-                      ? "bg-purple-600 text-white shadow-md shadow-purple-600/25"
-                      : "text-slate-400 hover:text-white hover:bg-slate-800"
-                  }`}
-                >
-                  <Icon className={`h-4 w-4 ${isActive ? "text-white" : "text-slate-400"}`} />
-                  <span>{item.name}</span>
-                </Link>
-              );
-            })}
-          </nav>
+          {/* Navigation Links with Suspense */}
+          <Suspense fallback={<div className="h-48 animate-pulse bg-slate-800/40 rounded-xl" />}>
+            <AdminSidebarNav pathname={pathname} />
+          </Suspense>
         </div>
 
         {/* Sidebar Footer */}
@@ -173,7 +189,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
 
             {/* Settings Gear */}
             <Link
-              href="/admin-dashboard/settings"
+              href="/admin-dashboard?tab=settings"
               className="p-2 rounded-full hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-600 dark:text-slate-300 transition-colors"
               aria-label="Settings"
             >

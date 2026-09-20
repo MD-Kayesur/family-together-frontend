@@ -3,18 +3,18 @@
 import React, { useEffect } from "react";
 import { useRouter } from "next/navigation";
 import SanctuaryDashboardWrapper from "@/components/dashboard/SanctuaryDashboardWrapper";
-import SettingsTab from "@/components/dashboard/tabs/SettingsTab";
+import FamilyTab from "@/components/dashboard/tabs/FamilyTab";
 
-export default function UserProfilePage() {
+export default function UserFamilyPage() {
   const router = useRouter();
 
   useEffect(() => {
-    router.replace("/user-dashboard?tab=profile");
+    router.replace("/user-dashboard?tab=family");
   }, [router]);
 
   return (
     <SanctuaryDashboardWrapper>
-      <SettingsTab />
+      <FamilyTab />
     </SanctuaryDashboardWrapper>
   );
 }

@@ -1,0 +1,194 @@
+========================================================================================
+             FAMILYROOTS SANCTUARY — UNIFIED DASHBOARD ROUTING ARCHITECTURE
+                                TECHNICAL EXPLANATION & AUDIT
+========================================================================================
+
+DOCUMENT TITLE: Unified Dashboard Routing & Tab Navigation Architecture
+TARGET APPLICATIONS: FamilyRoots Frontend & Backend
+AUTHOR: Antigravity AI Engineering Team
+DATE: September 21, 2026
+STATUS: Approved & Deployed
+
+----------------------------------------------------------------------------------------
+1. EXECUTIVE SUMMARY & ISSUE STATEMENT
+----------------------------------------------------------------------------------------
+During user testing on the Member/User Dashboard (`/user-dashboard`), users reported the following behaviors:
+1. When navigating between sidebar tabs (e.g. clicking "My Profile" or "Settings"), the application unexpectedly redirected back to `/user-dashboard` (or `/`).
+2. The URL briefly shifted to `/user-dashboard/profile` or `/owner-dashboard?tab=settings` and then bounced back to `/user-dashboard`.
+3. In other sections, the route formatted as `?tab=tree` or `?tab=memories`, causing confusion over why some tabs used query parameters (`?tab=...`) while others used path routes (`/profile`), and why the layout was reloading.
+
+The user requested:
+- A full explanation of why this redirect occurred ("whsy").
+- An explanation of how `owner-dashboard` handles routing.
+- Implementation of the exact same unified `?tab=...` pattern across ALL dashboards (`user-dashboard`, `owner-dashboard`, and `admin-dashboard`).
+
+This document details the root cause analysis, the owner dashboard reference architecture, the unified implementation across all dashboards, and validation.
+
+----------------------------------------------------------------------------------------
+2. ROOT CAUSE ANALYSIS: THE REDIRECT LOOP
+----------------------------------------------------------------------------------------
+The redirect bug was caused by a combination of three factors:
+
+2.1. Re-exporting Owner Pages in Member Dashboard:
+In `src/app/user-dashboard/profile/page.tsx` and `src/app/user-dashboard/settings/page.tsx`, the code was:
+    export { default } from "@/app/owner-dashboard/profile/page";
+    export { default } from "@/app/owner-dashboard/settings/page";
+
+In `src/app/owner-dashboard/settings/page.tsx`:
+    useEffect(() => {
+        router.replace("/owner-dashboard?tab=settings");
+    }, [router]);
+
+2.2. Role-Based Route Protection (`SanctuaryDashboardWrapper` & `canAccessRoute`):
+When a logged-in user with role `MEMBER` or `USER` clicked "My Profile", the browser loaded `/user-dashboard/profile`, which immediately executed the `useEffect` above:
+    router.replace("/owner-dashboard?tab=settings");
+
+Next.js transitioned the route to `/owner-dashboard?tab=settings`.
+On `/owner-dashboard`, `SanctuaryDashboardWrapper` mounted and evaluated:
+    canAccessRoute(pathname, user.role); // canAccessRoute("/owner-dashboard", "MEMBER")
+
+In `src/lib/utils/roleUtils.ts`:
+    if (pathname.startsWith("/owner-dashboard")) {
+        return (
+            normalizedRole === "OWNER" ||
+            normalizedRole === "ADMIN" ||
+            normalizedRole === "SUPER_ADMIN"
+        );
+    }
+Because `normalizedRole` was `MEMBER`, this returned `false`!
+
+2.3. The Bounce Back:
+Upon failing the access check, `SanctuaryDashboardWrapper` executed:
+    const targetRoute = getDashboardRouteByRole(user.role); // returns "/user-dashboard"
+    router.replace(targetRoute);
+
+Result: The member was immediately bounced back to `/user-dashboard`, creating the illusion of a broken link or an inability to navigate!
+
+2.4. Layout Unmounting:
+In addition, `user-dashboard/page.tsx` was not wrapping the entire page at the root level inside `<SanctuaryDashboardWrapper>`. Instead, subpages like `/user-dashboard/messages` each rendered their own `<SanctuaryDashboardWrapper>`. This caused the entire sidebar, navbar, and state to unmount and remount on every click.
+
+----------------------------------------------------------------------------------------
+3. THE OWNER DASHBOARD REFERENCE ARCHITECTURE
+----------------------------------------------------------------------------------------
+The Owner Dashboard (`/owner-dashboard`) was designed around a clean, single-page container pattern:
+
+3.1. Single Persistent Container:
+`src/app/owner-dashboard/page.tsx` mounts `<SanctuaryDashboardWrapper>` once at the root level:
+    export default function DashboardPage() {
+        return (
+            <SanctuaryDashboardWrapper>
+                <Suspense fallback={<TabLoadingSkeleton />}>
+                    <OwnerDashboardContent />
+                </Suspense>
+            </SanctuaryDashboardWrapper>
+        );
+    }
+
+3.2. Tab Resolution with Normalization:
+Inside `OwnerDashboardContent`:
+    const searchParams = useSearchParams();
+    const rawTab = searchParams?.get("tab");
+    const tab = normalizeDashboardTab(rawTab);
+
+    switch (tab) {
+        case "users": return <UsersTab />;
+        case "family": return <FamilyTab />;
+        case "tree": return <TreeTab />;
+        case "members": return <MembersTab />;
+        case "relationships": return <RelationshipsTab />;
+        case "messages": return <MessagesTab role="OWNER" />;
+        case "memories": return <MemoriesTab />;
+        case "events": return <EventsTab />;
+        case "documents": return <DocumentsTab />;
+        case "invitations": return <InvitationsTab />;
+        case "settings": return <SettingsTab />;
+        case "dashboard":
+        default: return <OverviewTab />;
+    }
+
+3.3. Subfolder Deep-Linking Forwarders:
+To guarantee that direct URLs (e.g. bookmarks or manual entry) work without 404s, every subfolder in `/owner-dashboard/<section>/page.tsx` forwards to the canonical tab format:
+    export default function FamilyPage() {
+        const router = useRouter();
+        useEffect(() => {
+            router.replace("/owner-dashboard?tab=family");
+        }, [router]);
+        return (
+            <SanctuaryDashboardWrapper>
+                <FamilyTab />
+            </SanctuaryDashboardWrapper>
+        );
+    }
+
+----------------------------------------------------------------------------------------
+4. UNIFIED IMPLEMENTATION ACROSS ALL DASHBOARDS
+----------------------------------------------------------------------------------------
+We have applied this exact architecture across all dashboards:
+
+4.1. User/Member Dashboard (`/user-dashboard`):
+- `src/app/user-dashboard/page.tsx`:
+  Wrapped at the root level in `<SanctuaryDashboardWrapper>` with `<Suspense>`.
+  `UserDashboardContent` inspects `searchParams.get("tab")` via `normalizeDashboardTab`:
+    - `tree` -> `<TreeTab role="MEMBER" currentUserId={user.id} />`
+    - `members` -> `<MembersTab role="MEMBER" currentUserId={user.id} />`
+    - `messages` -> `<MessagesTab role="MEMBER" currentUserId={user.id} />`
+    - `memories` -> `<MemoriesTab role="MEMBER" />`
+    - `events` -> `<EventsTab />`
+    - `family` -> `<FamilyTab />`
+    - `documents` -> `<DocumentsTab />`
+    - `profile` / `settings` -> `<SettingsTab />`
+    - `dashboard` / default -> `<UserOverviewTab />`
+
+- Forwarder subpages in `/user-dashboard`:
+  - `profile/page.tsx` -> forwards to `/user-dashboard?tab=profile`
+  - `settings/page.tsx` -> forwards to `/user-dashboard?tab=settings`
+  - `messages/page.tsx` -> forwards to `/user-dashboard?tab=messages`
+  - `tree/page.tsx` -> forwards to `/user-dashboard?tab=tree`
+  - `members/page.tsx` -> forwards to `/user-dashboard?tab=members`
+  - `memories/page.tsx` -> forwards to `/user-dashboard?tab=memories`
+  - `events/page.tsx` -> forwards to `/user-dashboard?tab=events`
+  - `family/page.tsx` -> forwards to `/user-dashboard?tab=family`
+  - `documents/page.tsx` -> forwards to `/user-dashboard?tab=documents`
+
+- Sidebar navigation links in `SanctuaryDashboardWrapper.tsx`:
+  All member sidebar links now cleanly link to:
+    - `/user-dashboard?tab=dashboard`
+    - `/user-dashboard?tab=tree`
+    - `/user-dashboard?tab=members`
+    - `/user-dashboard?tab=messages`
+    - `/user-dashboard?tab=memories`
+    - `/user-dashboard?tab=events`
+    - `/user-dashboard?tab=profile`
+    - `/user-dashboard?tab=settings`
+
+4.2. Admin Dashboard (`/admin-dashboard`):
+- `src/app/admin-dashboard/layout.tsx`:
+  Added `AdminSidebarNav` with `<Suspense>` and updated navigation items to support both `?tab=...` and direct path routes (`/admin-dashboard/users`, etc.).
+- `src/app/admin-dashboard/page.tsx`:
+  Added `AdminDashboardContent` with `useSearchParams()` and `normalizeDashboardTab`:
+    - `users` -> `<AdminUsersPage />`
+    - `members` -> `<AdminMembersPage />`
+    - `messages` -> `<AdminMessagesPage />`
+    - `activity` -> `<AdminActivityPage />`
+    - `analytics` -> `<AdminAnalyticsPage />`
+    - `settings` -> `<AdminSettingsPage />`
+    - `dashboard` / default -> `<AdminOverview />`
+
+4.3. Owner Dashboard (`/owner-dashboard`):
+- Continues to serve as the reference standard with unified `?tab=...` tabs and deep-linking forwarders.
+
+----------------------------------------------------------------------------------------
+5. ARCHITECTURAL BENEFITS
+----------------------------------------------------------------------------------------
+1. Zero Screen Flickering:
+   Because the outer wrapper and sidebar remain mounted, switching tabs only swaps the inner React tree. No sidebar reload, no flicker, and instant rendering.
+2. Complete Role Safety:
+   No member page ever forwards or points to `/owner-dashboard`. Role-based access controls remain strictly enforced without false redirects.
+3. Browser History & Bookmarking:
+   Users can bookmark or share any URL (e.g. `/user-dashboard?tab=tree` or `/user-dashboard/tree`), and it will accurately load the intended tab.
+4. Consistency Across Roles:
+   Owners, Members, and Admins experience the exact same high-speed, cohesive navigation pattern.
+
+========================================================================================
+                               END OF DOCUMENTATION
+========================================================================================

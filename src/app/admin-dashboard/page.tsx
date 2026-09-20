@@ -1,7 +1,8 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, Suspense } from "react";
 import Link from "next/link";
+import { useSearchParams } from "next/navigation";
 import {
   Users,
   LogIn,
@@ -14,23 +15,23 @@ import {
   ExternalLink,
   CheckCircle2,
   AlertCircle,
-  XCircle,
-  UserCheck
+  UserCheck,
 } from "lucide-react";
 import { useAppSelector } from "@/redux/store";
 import { useGetAdminStatsQuery, useGetUsersListQuery } from "@/redux/api/adminApi";
+import { normalizeDashboardTab } from "@/components/dashboard/SanctuaryDashboardWrapper";
 import SuperAdminDashboardPage from "./super/page";
+import AdminUsersPage from "./users/page";
+import AdminMembersPage from "./members/page";
+import AdminMessagesPage from "./messages/page";
+import AdminActivityPage from "./activity/page";
+import AdminAnalyticsPage from "./analytics/page";
+import AdminSettingsPage from "./settings/page";
 
-export default function AdminDashboardPage() {
-  const { user } = useAppSelector((state) => state.auth);
+function AdminOverview() {
   const [filterRole, setFilterRole] = useState<string>("ALL");
-
   const { data: stats } = useGetAdminStatsQuery();
   const { data: recentUsers = [] } = useGetUsersListQuery();
-
-  if (user?.role?.toUpperCase() === "SUPER_ADMIN") {
-    return <SuperAdminDashboardPage />;
-  }
 
   return (
     <div className="space-y-8">
@@ -46,7 +47,7 @@ export default function AdminDashboardPage() {
         </div>
 
         <Link
-          href="/admin-dashboard/members"
+          href="/admin-dashboard?tab=members"
           className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white font-bold text-xs shadow-md shadow-indigo-600/25 transition-all hover:scale-[1.02]"
         >
           <UserCheck className="h-4 w-4" />
@@ -212,7 +213,7 @@ export default function AdminDashboardPage() {
 
           <div className="pt-2 text-center border-t border-slate-100">
             <Link
-              href="/admin-dashboard/users"
+              href="/admin-dashboard?tab=users"
               className="text-xs font-bold text-indigo-600 hover:text-indigo-800 transition-colors inline-flex items-center gap-1"
             >
               <span>View All Families</span>
@@ -292,5 +293,50 @@ export default function AdminDashboardPage() {
         </div>
       </div>
     </div>
+  );
+}
+
+function AdminDashboardContent() {
+  const searchParams = useSearchParams();
+  const rawTab = searchParams?.get("tab");
+  const tab = normalizeDashboardTab(rawTab);
+
+  switch (tab) {
+    case "users":
+      return <AdminUsersPage />;
+    case "members":
+      return <AdminMembersPage />;
+    case "messages":
+      return <AdminMessagesPage />;
+    case "activity":
+      return <AdminActivityPage />;
+    case "analytics":
+      return <AdminAnalyticsPage />;
+    case "settings":
+      return <AdminSettingsPage />;
+    case "dashboard":
+    default:
+      return <AdminOverview />;
+  }
+}
+
+export default function AdminDashboardPage() {
+  const { user } = useAppSelector((state) => state.auth);
+
+  if (user?.role?.toUpperCase() === "SUPER_ADMIN") {
+    return <SuperAdminDashboardPage />;
+  }
+
+  return (
+    <Suspense
+      fallback={
+        <div className="flex items-center justify-center p-12 text-slate-400">
+          <span className="h-6 w-6 border-2 border-indigo-400 border-t-transparent rounded-full animate-spin mr-3" />
+          <span>Loading admin panel...</span>
+        </div>
+      }
+    >
+      <AdminDashboardContent />
+    </Suspense>
   );
 }
