@@ -136,6 +136,10 @@ export default function MediaLightboxModal({
               <video
                 src={activeMediaUrl}
                 controls
+                autoPlay
+                muted
+                loop
+                playsInline
                 className="w-full h-full object-contain max-h-[70vh]"
               />
             ) : (
