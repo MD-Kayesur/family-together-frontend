@@ -130,7 +130,7 @@ export default function UserProfilePage() {
     >
       <div className="space-y-8 max-w-4xl pb-12">
         {/* Header Profile Summary Card */}
-        <div className="p-6 sm:p-8 rounded-3xl bg-white border border-slate-200/80 shadow-sm flex flex-col sm:flex-row items-start sm:items-center justify-between gap-6">
+        <div className="p-6 sm:p-8 rounded-3xl bg-slate-900 border border-slate-800 shadow-xl flex flex-col sm:flex-row items-start sm:items-center justify-between gap-6">
           <div className="flex items-center gap-5">
             <div className="h-20 w-20 rounded-3xl bg-indigo-600 text-white font-extrabold text-3xl flex items-center justify-center shadow-lg shadow-indigo-600/30 shrink-0">
               {user?.fullName?.charAt(0)?.toUpperCase() || "U"}
@@ -138,21 +138,21 @@ export default function UserProfilePage() {
 
             <div className="space-y-1">
               <div className="flex items-center gap-3">
-                <h2 className="text-2xl font-extrabold text-slate-900 tracking-tight">
+                <h2 className="text-2xl font-extrabold text-white tracking-tight">
                   {user?.fullName}
                 </h2>
-                <span className="px-3 py-1 rounded-full text-xs font-extrabold bg-indigo-50 text-indigo-600 uppercase tracking-wider">
+                <span className="px-3 py-1 rounded-full text-xs font-extrabold bg-indigo-950/60 text-indigo-400 border border-indigo-800/60 uppercase tracking-wider">
                   {roleLabel}
                 </span>
               </div>
 
-              <div className="flex flex-wrap items-center gap-4 text-xs text-slate-500 font-medium">
+              <div className="flex flex-wrap items-center gap-4 text-xs text-slate-400 font-medium">
                 <div className="flex items-center gap-1.5">
                   <Mail className="h-4 w-4 text-slate-400" />
                   <span>{user?.email}</span>
                 </div>
-                <div className="flex items-center gap-1.5 text-emerald-600 font-bold">
-                  <Shield className="h-4 w-4 text-emerald-500" />
+                <div className="flex items-center gap-1.5 text-emerald-400 font-bold">
+                  <Shield className="h-4 w-4 text-emerald-400" />
                   <span>Verified & Active</span>
                 </div>
               </div>
@@ -160,10 +160,10 @@ export default function UserProfilePage() {
           </div>
 
           <div className="text-right">
-            <span className="text-[11px] font-bold text-slate-400 uppercase tracking-wider block">
+            <span className="text-[11px] font-bold text-slate-500 uppercase tracking-wider block">
               Access Permission
             </span>
-            <span className="text-xs font-bold text-slate-700">
+            <span className="text-xs font-bold text-slate-300">
               {roleLabel === "OWNER"
                 ? "Full Sanctuary Administration"
                 : "Family Member Sanctuary Explorer"}
@@ -172,29 +172,29 @@ export default function UserProfilePage() {
         </div>
 
         {/* Section 1: Update Profile & Gmail Account Information */}
-        <div className="p-6 sm:p-8 rounded-3xl bg-white border border-slate-200/80 shadow-sm space-y-6">
-          <div className="flex items-center justify-between border-b border-slate-100 pb-4">
+        <div className="p-6 sm:p-8 rounded-3xl bg-slate-900 border border-slate-800 shadow-xl space-y-6">
+          <div className="flex items-center justify-between border-b border-slate-800 pb-4">
             <div className="space-y-1">
-              <h3 className="font-extrabold text-lg text-slate-900 flex items-center gap-2">
-                <User className="h-5 w-5 text-indigo-600" />
+              <h3 className="font-extrabold text-lg text-white flex items-center gap-2">
+                <User className="h-5 w-5 text-purple-400" />
                 <span>Account & Personal Information</span>
               </h3>
-              <p className="text-xs text-slate-500">
+              <p className="text-xs text-slate-400">
                 Update your display name, login Gmail address, phone number, and biography.
               </p>
             </div>
           </div>
 
           {profileSuccess && (
-            <div className="p-3.5 rounded-2xl bg-emerald-50 border border-emerald-200 text-emerald-800 text-xs font-bold flex items-center gap-2">
-              <Check className="h-4 w-4 text-emerald-600" />
+            <div className="p-3.5 rounded-2xl bg-emerald-950/60 border border-emerald-800 text-emerald-300 text-xs font-bold flex items-center gap-2">
+              <Check className="h-4 w-4 text-emerald-400" />
               <span>{profileSuccess}</span>
             </div>
           )}
 
           {profileError && (
-            <div className="p-3.5 rounded-2xl bg-rose-50 border border-rose-200 text-rose-700 text-xs font-bold flex items-center gap-2">
-              <AlertCircle className="h-4 w-4 text-rose-600" />
+            <div className="p-3.5 rounded-2xl bg-rose-950/60 border border-rose-800 text-rose-300 text-xs font-bold flex items-center gap-2">
+              <AlertCircle className="h-4 w-4 text-rose-400" />
               <span>{profileError}</span>
             </div>
           )}
@@ -202,7 +202,7 @@ export default function UserProfilePage() {
           <form onSubmit={handleUpdateProfile} className="space-y-4 text-xs">
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div>
-                <label className="block font-bold text-slate-700 mb-1.5">
+                <label className="block font-bold text-slate-200 mb-1.5">
                   Full Name *
                 </label>
                 <div className="relative">
@@ -213,13 +213,13 @@ export default function UserProfilePage() {
                     value={fullName}
                     onChange={(e) => setFullName(e.target.value)}
                     placeholder="Your Full Name"
-                    className="w-full pl-9 pr-3.5 py-2.5 rounded-xl border border-slate-200 bg-slate-50 text-slate-800 font-medium focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                    className="w-full pl-9 pr-3.5 py-2.5 rounded-xl border border-slate-800 bg-slate-950 text-white placeholder:text-slate-500 font-medium focus:outline-none focus:ring-2 focus:ring-purple-500"
                   />
                 </div>
               </div>
 
               <div>
-                <label className="block font-bold text-slate-700 mb-1.5">
+                <label className="block font-bold text-slate-200 mb-1.5">
                   Login Email (Gmail) *
                 </label>
                 <div className="relative">
@@ -230,7 +230,7 @@ export default function UserProfilePage() {
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
                     placeholder="your-email@gmail.com"
-                    className="w-full pl-9 pr-3.5 py-2.5 rounded-xl border border-slate-200 bg-slate-50 text-slate-800 font-medium focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                    className="w-full pl-9 pr-3.5 py-2.5 rounded-xl border border-slate-800 bg-slate-950 text-white placeholder:text-slate-500 font-medium focus:outline-none focus:ring-2 focus:ring-purple-500"
                   />
                 </div>
               </div>
@@ -238,7 +238,7 @@ export default function UserProfilePage() {
 
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div>
-                <label className="block font-bold text-slate-700 mb-1.5">
+                <label className="block font-bold text-slate-200 mb-1.5">
                   Phone Number
                 </label>
                 <div className="relative">
@@ -248,13 +248,13 @@ export default function UserProfilePage() {
                     value={phoneNumber}
                     onChange={(e) => setPhoneNumber(e.target.value)}
                     placeholder="+1 555-0192"
-                    className="w-full pl-9 pr-3.5 py-2.5 rounded-xl border border-slate-200 bg-slate-50 text-slate-800 font-medium focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                    className="w-full pl-9 pr-3.5 py-2.5 rounded-xl border border-slate-800 bg-slate-950 text-white placeholder:text-slate-500 font-medium focus:outline-none focus:ring-2 focus:ring-purple-500"
                   />
                 </div>
               </div>
 
               <div>
-                <label className="block font-bold text-slate-700 mb-1.5">
+                <label className="block font-bold text-slate-200 mb-1.5">
                   About / Bio
                 </label>
                 <div className="relative">
@@ -264,7 +264,7 @@ export default function UserProfilePage() {
                     value={bio}
                     onChange={(e) => setBio(e.target.value)}
                     placeholder="Short bio or note about yourself..."
-                    className="w-full pl-9 pr-3.5 py-2.5 rounded-xl border border-slate-200 bg-slate-50 text-slate-800 font-medium focus:outline-none focus:ring-2 focus:ring-indigo-500 resize-none"
+                    className="w-full pl-9 pr-3.5 py-2.5 rounded-xl border border-slate-800 bg-slate-950 text-white placeholder:text-slate-500 font-medium focus:outline-none focus:ring-2 focus:ring-purple-500 resize-none"
                   />
                 </div>
               </div>
@@ -274,7 +274,7 @@ export default function UserProfilePage() {
               <button
                 type="submit"
                 disabled={isUpdatingProfile}
-                className="px-6 py-2.5 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white font-bold text-xs shadow-md shadow-indigo-600/25 transition-all inline-flex items-center gap-2 cursor-pointer disabled:opacity-50"
+                className="px-6 py-2.5 rounded-xl bg-purple-600 hover:bg-purple-700 text-white font-bold text-xs shadow-md shadow-purple-600/25 transition-all inline-flex items-center gap-2 cursor-pointer disabled:opacity-50"
               >
                 {isUpdatingProfile && <Loader2 className="h-4 w-4 animate-spin" />}
                 <span>Save Account Changes</span>
@@ -284,36 +284,36 @@ export default function UserProfilePage() {
         </div>
 
         {/* Section 2: Change Password & Security */}
-        <div className="p-6 sm:p-8 rounded-3xl bg-white border border-slate-200/80 shadow-sm space-y-6">
-          <div className="flex items-center justify-between border-b border-slate-100 pb-4">
+        <div className="p-6 sm:p-8 rounded-3xl bg-slate-900 border border-slate-800 shadow-xl space-y-6">
+          <div className="flex items-center justify-between border-b border-slate-800 pb-4">
             <div className="space-y-1">
-              <h3 className="font-extrabold text-lg text-slate-900 flex items-center gap-2">
-                <KeyRound className="h-5 w-5 text-indigo-600" />
+              <h3 className="font-extrabold text-lg text-white flex items-center gap-2">
+                <KeyRound className="h-5 w-5 text-purple-400" />
                 <span>Change Password</span>
               </h3>
-              <p className="text-xs text-slate-500">
+              <p className="text-xs text-slate-400">
                 Update your login password to keep your family sanctuary account secure.
               </p>
             </div>
           </div>
 
           {passwordSuccess && (
-            <div className="p-3.5 rounded-2xl bg-emerald-50 border border-emerald-200 text-emerald-800 text-xs font-bold flex items-center gap-2">
-              <Check className="h-4 w-4 text-emerald-600" />
+            <div className="p-3.5 rounded-2xl bg-emerald-950/60 border border-emerald-800 text-emerald-300 text-xs font-bold flex items-center gap-2">
+              <Check className="h-4 w-4 text-emerald-400" />
               <span>{passwordSuccess}</span>
             </div>
           )}
 
           {passwordError && (
-            <div className="p-3.5 rounded-2xl bg-rose-50 border border-rose-200 text-rose-700 text-xs font-bold flex items-center gap-2">
-              <AlertCircle className="h-4 w-4 text-rose-600" />
+            <div className="p-3.5 rounded-2xl bg-rose-950/60 border border-rose-800 text-rose-300 text-xs font-bold flex items-center gap-2">
+              <AlertCircle className="h-4 w-4 text-rose-400" />
               <span>{passwordError}</span>
             </div>
           )}
 
           <form onSubmit={handleChangePassword} className="space-y-4 text-xs">
             <div>
-              <label className="block font-bold text-slate-700 mb-1.5">
+              <label className="block font-bold text-slate-200 mb-1.5">
                 Current Password *
               </label>
               <div className="relative max-w-md">
@@ -324,14 +324,14 @@ export default function UserProfilePage() {
                   value={oldPassword}
                   onChange={(e) => setOldPassword(e.target.value)}
                   placeholder="Enter current password"
-                  className="w-full pl-9 pr-3.5 py-2.5 rounded-xl border border-slate-200 bg-slate-50 text-slate-800 font-medium focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                  className="w-full pl-9 pr-3.5 py-2.5 rounded-xl border border-slate-800 bg-slate-950 text-white placeholder:text-slate-500 font-medium focus:outline-none focus:ring-2 focus:ring-purple-500"
                 />
               </div>
             </div>
 
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 max-w-2xl">
               <div>
-                <label className="block font-bold text-slate-700 mb-1.5">
+                <label className="block font-bold text-slate-200 mb-1.5">
                   New Password * (Min 8 characters)
                 </label>
                 <div className="relative">
@@ -343,13 +343,13 @@ export default function UserProfilePage() {
                     value={newPassword}
                     onChange={(e) => setNewPassword(e.target.value)}
                     placeholder="Enter new secure password"
-                    className="w-full pl-9 pr-3.5 py-2.5 rounded-xl border border-slate-200 bg-slate-50 text-slate-800 font-medium focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                    className="w-full pl-9 pr-3.5 py-2.5 rounded-xl border border-slate-800 bg-slate-950 text-white placeholder:text-slate-500 font-medium focus:outline-none focus:ring-2 focus:ring-purple-500"
                   />
                 </div>
               </div>
 
               <div>
-                <label className="block font-bold text-slate-700 mb-1.5">
+                <label className="block font-bold text-slate-200 mb-1.5">
                   Confirm New Password *
                 </label>
                 <div className="relative">
@@ -361,7 +361,7 @@ export default function UserProfilePage() {
                     value={confirmPassword}
                     onChange={(e) => setConfirmPassword(e.target.value)}
                     placeholder="Confirm new password"
-                    className="w-full pl-9 pr-3.5 py-2.5 rounded-xl border border-slate-200 bg-slate-50 text-slate-800 font-medium focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                    className="w-full pl-9 pr-3.5 py-2.5 rounded-xl border border-slate-800 bg-slate-950 text-white placeholder:text-slate-500 font-medium focus:outline-none focus:ring-2 focus:ring-purple-500"
                   />
                 </div>
               </div>
@@ -371,7 +371,7 @@ export default function UserProfilePage() {
               <button
                 type="submit"
                 disabled={isChangingPassword}
-                className="px-6 py-2.5 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white font-bold text-xs shadow-md shadow-indigo-600/25 transition-all inline-flex items-center gap-2 cursor-pointer disabled:opacity-50"
+                className="px-6 py-2.5 rounded-xl bg-purple-600 hover:bg-purple-700 text-white font-bold text-xs shadow-md shadow-purple-600/25 transition-all inline-flex items-center gap-2 cursor-pointer disabled:opacity-50"
               >
                 {isChangingPassword && <Loader2 className="h-4 w-4 animate-spin" />}
                 <span>Update Password</span>

@@ -1098,10 +1098,10 @@ export default function LandingFamilyTreeCanvas({
           onPointerDown={(e) => e.stopPropagation()}
           className="fixed inset-0 bg-slate-900/50 backdrop-blur-sm z-50 flex items-center justify-center p-4 pointer-events-auto"
         >
-          <div className="bg-white dark:bg-slate-900 rounded-3xl border border-slate-200 dark:border-slate-800 p-6 max-w-sm w-full shadow-2xl space-y-4">
+          <div className="bg-slate-900 rounded-3xl border border-slate-800 p-6 max-w-sm w-full shadow-2xl space-y-4">
             <div className="flex items-center justify-between">
-              <h3 className="font-extrabold text-slate-900 dark:text-white text-sm flex items-center gap-2">
-                <GitMerge className="h-4 w-4 text-indigo-600 dark:text-indigo-400" />
+              <h3 className="font-extrabold text-white text-sm flex items-center gap-2">
+                <GitMerge className="h-4 w-4 text-indigo-400" />
                 <span>Connect Family Relationship</span>
               </h3>
               <button
@@ -1111,19 +1111,19 @@ export default function LandingFamilyTreeCanvas({
                   setLinkSourceId(null);
                   setLinkTargetId(null);
                 }}
-                className="text-slate-400 hover:text-slate-600 dark:hover:text-slate-200"
+                className="text-slate-400 hover:text-white"
               >
                 <X className="h-4 w-4" />
               </button>
             </div>
 
-            <p className="text-xs text-slate-600 dark:text-slate-300">
+            <p className="text-xs text-slate-300">
               Select relationship type between{" "}
-              <strong className="text-slate-900 dark:text-white">
+              <strong className="text-white">
                 {members.find((m) => m.id === linkSourceId)?.name}
               </strong>{" "}
               and{" "}
-              <strong className="text-slate-900 dark:text-white">
+              <strong className="text-white">
                 {members.find((m) => m.id === linkTargetId)?.name}
               </strong>
               :
@@ -1132,7 +1132,7 @@ export default function LandingFamilyTreeCanvas({
             <select
               value={linkType}
               onChange={(e) => setLinkType(e.target.value)}
-              className="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 text-xs font-bold text-slate-800 dark:text-slate-100 focus:ring-2 focus:ring-indigo-500 focus:outline-none"
+              className="w-full px-3.5 py-2.5 rounded-xl border border-slate-800 bg-slate-950 text-xs font-bold text-white focus:ring-2 focus:ring-indigo-500 focus:outline-none"
             >
               <option value="Parent ➔ Child">Parent ➔ Child</option>
               <option value="Spouse / Married">Spouse / Married</option>
@@ -1157,18 +1157,18 @@ export default function LandingFamilyTreeCanvas({
       {!readOnly && isAddModalOpen && (
         <div
           onPointerDown={(e) => e.stopPropagation()}
-          className="fixed inset-0 bg-slate-900/50 backdrop-blur-sm z-50 flex items-center justify-center p-4 pointer-events-auto"
+          className="fixed inset-0 bg-slate-950/80 backdrop-blur-sm z-50 flex items-center justify-center p-4 pointer-events-auto"
         >
-          <div className="bg-white dark:bg-slate-900 rounded-3xl border border-slate-200 dark:border-slate-800 p-6 max-w-md w-full shadow-2xl space-y-4">
+          <div className="bg-slate-900 rounded-3xl border border-slate-800 p-6 max-w-md w-full shadow-2xl space-y-4">
             <div className="flex items-center justify-between">
-              <h3 className="font-extrabold text-slate-900 dark:text-white text-base flex items-center gap-2">
-                <Plus className="h-4 w-4 text-indigo-600 dark:text-indigo-400" />
+              <h3 className="font-extrabold text-white text-base flex items-center gap-2">
+                <Plus className="h-4 w-4 text-indigo-400" />
                 <span>Add Family Relative</span>
               </h3>
               <button
                 type="button"
                 onClick={() => setIsAddModalOpen(false)}
-                className="text-slate-400 hover:text-slate-600 dark:hover:text-slate-200"
+                className="text-slate-400 hover:text-white"
               >
                 <X className="h-4 w-4" />
               </button>
@@ -1176,7 +1176,7 @@ export default function LandingFamilyTreeCanvas({
 
             <form onSubmit={handleAddRelative} className="space-y-4">
               <div>
-                <label className="text-xs font-bold text-slate-700 dark:text-slate-300 block mb-1">
+                <label className="text-xs font-bold text-slate-300 block mb-1">
                   Relative Name
                 </label>
                 <input
@@ -1185,19 +1185,19 @@ export default function LandingFamilyTreeCanvas({
                   placeholder="e.g. Mother, Uncle David, Baby Maya"
                   value={newRelativeName}
                   onChange={(e) => setNewRelativeName(e.target.value)}
-                  className="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 text-xs text-slate-900 dark:text-white placeholder:text-slate-400 focus:ring-2 focus:ring-indigo-500 focus:outline-none"
+                  className="w-full px-3.5 py-2.5 rounded-xl border border-slate-800 bg-slate-950 text-xs text-white placeholder:text-slate-500 focus:ring-2 focus:ring-indigo-500 focus:outline-none"
                 />
               </div>
 
               <div className="grid grid-cols-2 gap-3">
                 <div>
-                  <label className="text-xs font-bold text-slate-700 dark:text-slate-300 block mb-1">
+                  <label className="text-xs font-bold text-slate-300 block mb-1">
                     Relationship / Role
                   </label>
                   <select
                     value={newRelativeRole}
                     onChange={(e) => setNewRelativeRole(e.target.value)}
-                    className="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 text-xs font-bold text-slate-800 dark:text-slate-100 focus:ring-2 focus:ring-indigo-500 focus:outline-none"
+                    className="w-full px-3.5 py-2.5 rounded-xl border border-slate-800 bg-slate-950 text-xs font-bold text-white focus:ring-2 focus:ring-indigo-500 focus:outline-none"
                   >
                     <option value="Mother">Mother</option>
                     <option value="Father">Father</option>
@@ -1212,13 +1212,13 @@ export default function LandingFamilyTreeCanvas({
                 </div>
 
                 <div>
-                  <label className="text-xs font-bold text-slate-700 dark:text-slate-300 block mb-1">
+                  <label className="text-xs font-bold text-slate-300 block mb-1">
                     Gender
                   </label>
                   <select
                     value={newRelativeGender}
                     onChange={(e) => setNewRelativeGender(e.target.value as "MALE" | "FEMALE")}
-                    className="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 text-xs font-bold text-slate-800 dark:text-slate-100 focus:ring-2 focus:ring-indigo-500 focus:outline-none"
+                    className="w-full px-3.5 py-2.5 rounded-xl border border-slate-800 bg-slate-950 text-xs font-bold text-white focus:ring-2 focus:ring-indigo-500 focus:outline-none"
                   >
                     <option value="FEMALE">Female</option>
                     <option value="MALE">Male</option>
@@ -1227,7 +1227,7 @@ export default function LandingFamilyTreeCanvas({
               </div>
 
               <div>
-                <label className="text-xs font-bold text-slate-700 dark:text-slate-300 block mb-1.5">
+                <label className="text-xs font-bold text-slate-300 block mb-1.5">
                   Choose Avatar Emoji
                 </label>
                 <div className="flex flex-wrap gap-2">
@@ -1238,8 +1238,8 @@ export default function LandingFamilyTreeCanvas({
                       onClick={() => setNewRelativeEmoji(emoji)}
                       className={`h-10 w-10 rounded-xl border text-lg flex items-center justify-center cursor-pointer transition-all ${
                         newRelativeEmoji === emoji
-                          ? "border-indigo-600 bg-indigo-50 dark:bg-indigo-950/80 ring-2 ring-indigo-500 scale-110"
-                          : "border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 hover:bg-slate-100"
+                          ? "border-indigo-500 bg-indigo-950/80 ring-2 ring-indigo-500 scale-110"
+                          : "border-slate-800 bg-slate-950 hover:bg-slate-800 text-white"
                       }`}
                     >
                       {emoji}
@@ -1249,8 +1249,8 @@ export default function LandingFamilyTreeCanvas({
               </div>
 
               {selectedMember && (
-                <div className="p-3 rounded-xl bg-indigo-50 dark:bg-indigo-950/60 border border-indigo-200 dark:border-indigo-800 text-[11px] text-indigo-800 dark:text-indigo-200 flex items-center gap-2">
-                  <Info className="h-4 w-4 shrink-0 text-indigo-600 dark:text-indigo-400" />
+                <div className="p-3 rounded-xl bg-indigo-950/60 border border-indigo-800 text-[11px] text-indigo-200 flex items-center gap-2">
+                  <Info className="h-4 w-4 shrink-0 text-indigo-400" />
                   <span>
                     Will be connected to selected relative:{" "}
                     <strong>{selectedMember.name}</strong>
@@ -1273,18 +1273,18 @@ export default function LandingFamilyTreeCanvas({
       {!readOnly && editingMember && (
         <div
           onPointerDown={(e) => e.stopPropagation()}
-          className="fixed inset-0 bg-slate-900/50 backdrop-blur-sm z-50 flex items-center justify-center p-4 pointer-events-auto"
+          className="fixed inset-0 bg-slate-950/80 backdrop-blur-sm z-50 flex items-center justify-center p-4 pointer-events-auto"
         >
-          <div className="bg-white dark:bg-slate-900 rounded-3xl border border-slate-200 dark:border-slate-800 p-6 max-w-md w-full shadow-2xl space-y-4 animate-in fade-in zoom-in-95 duration-150">
+          <div className="bg-slate-900 rounded-3xl border border-slate-800 p-6 max-w-md w-full shadow-2xl space-y-4 animate-in fade-in zoom-in-95 duration-150">
             <div className="flex items-center justify-between">
-              <h3 className="font-extrabold text-slate-900 dark:text-white text-base flex items-center gap-2">
-                <Pencil className="h-4 w-4 text-indigo-600 dark:text-indigo-400" />
+              <h3 className="font-extrabold text-white text-base flex items-center gap-2">
+                <Pencil className="h-4 w-4 text-indigo-400" />
                 <span>Edit Relative: {editingMember.name}</span>
               </h3>
               <button
                 type="button"
                 onClick={() => setEditingMember(null)}
-                className="text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 cursor-pointer"
+                className="text-slate-400 hover:text-white cursor-pointer"
               >
                 <X className="h-4 w-4" />
               </button>
@@ -1292,7 +1292,7 @@ export default function LandingFamilyTreeCanvas({
 
             <form onSubmit={handleSaveEdit} className="space-y-4">
               <div>
-                <label className="text-xs font-bold text-slate-700 dark:text-slate-300 block mb-1">
+                <label className="text-xs font-bold text-slate-300 block mb-1">
                   Relative Name
                 </label>
                 <input
@@ -1300,13 +1300,13 @@ export default function LandingFamilyTreeCanvas({
                   required
                   value={editName}
                   onChange={(e) => setEditName(e.target.value)}
-                  className="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 text-xs text-slate-900 dark:text-white placeholder:text-slate-400 focus:ring-2 focus:ring-indigo-500 focus:outline-none font-semibold"
+                  className="w-full px-3.5 py-2.5 rounded-xl border border-slate-800 bg-slate-950 text-xs text-white placeholder:text-slate-500 focus:ring-2 focus:ring-indigo-500 focus:outline-none font-semibold"
                 />
               </div>
 
               <div className="grid grid-cols-2 gap-3">
                 <div>
-                  <label className="text-xs font-bold text-slate-700 dark:text-slate-300 block mb-1">
+                  <label className="text-xs font-bold text-slate-300 block mb-1">
                     Relationship / Role
                   </label>
                   <input
@@ -1315,18 +1315,18 @@ export default function LandingFamilyTreeCanvas({
                     value={editRole}
                     onChange={(e) => setEditRole(e.target.value)}
                     placeholder="e.g. Father, Mother, Sibling"
-                    className="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 text-xs font-bold text-slate-800 dark:text-slate-100 focus:ring-2 focus:ring-indigo-500 focus:outline-none"
+                    className="w-full px-3.5 py-2.5 rounded-xl border border-slate-800 bg-slate-950 text-xs font-bold text-white focus:ring-2 focus:ring-indigo-500 focus:outline-none"
                   />
                 </div>
 
                 <div>
-                  <label className="text-xs font-bold text-slate-700 dark:text-slate-300 block mb-1">
+                  <label className="text-xs font-bold text-slate-300 block mb-1">
                     Gender
                   </label>
                   <select
                     value={editGender}
                     onChange={(e) => setEditGender(e.target.value as "MALE" | "FEMALE")}
-                    className="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 text-xs font-bold text-slate-800 dark:text-slate-100 focus:ring-2 focus:ring-indigo-500 focus:outline-none"
+                    className="w-full px-3.5 py-2.5 rounded-xl border border-slate-800 bg-slate-950 text-xs font-bold text-white focus:ring-2 focus:ring-indigo-500 focus:outline-none"
                   >
                     <option value="FEMALE">Female</option>
                     <option value="MALE">Male</option>
@@ -1335,7 +1335,7 @@ export default function LandingFamilyTreeCanvas({
               </div>
 
               <div>
-                <label className="text-xs font-bold text-slate-700 dark:text-slate-300 block mb-1.5">
+                <label className="text-xs font-bold text-slate-300 block mb-1.5">
                   Choose Avatar Emoji
                 </label>
                 <div className="flex flex-wrap gap-2">
@@ -1346,8 +1346,8 @@ export default function LandingFamilyTreeCanvas({
                       onClick={() => setEditEmoji(emoji)}
                       className={`h-10 w-10 rounded-xl border text-lg flex items-center justify-center cursor-pointer transition-all ${
                         editEmoji === emoji
-                          ? "border-indigo-600 bg-indigo-50 dark:bg-indigo-950/80 ring-2 ring-indigo-500 scale-110"
-                          : "border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 hover:bg-slate-100"
+                          ? "border-indigo-500 bg-indigo-950/80 ring-2 ring-indigo-500 scale-110"
+                          : "border-slate-800 bg-slate-950 hover:bg-slate-800 text-white"
                       }`}
                     >
                       {emoji}

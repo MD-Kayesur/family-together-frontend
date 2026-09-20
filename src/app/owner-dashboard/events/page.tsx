@@ -17,10 +17,10 @@ export default function EventsPage() {
     >
       <div className="space-y-6">
         {/* Action Header */}
-        <div className="flex items-center justify-between p-4 rounded-2xl bg-white border border-slate-200/80 shadow-sm">
+        <div className="flex items-center justify-between p-4 rounded-2xl bg-slate-900 border border-slate-800 shadow-sm">
           <div className="flex items-center gap-2">
-            <Calendar className="h-5 w-5 text-emerald-600" />
-            <span className="font-bold text-xs text-slate-800">
+            <Calendar className="h-5 w-5 text-emerald-400" />
+            <span className="font-bold text-xs text-white">
               {events.length} Upcoming Events
             </span>
           </div>
@@ -37,21 +37,21 @@ export default function EventsPage() {
 
         {/* Events Cards */}
         {isLoading ? (
-          <div className="p-12 text-center flex items-center justify-center gap-3 text-slate-500 text-sm">
-            <Loader2 className="h-5 w-5 animate-spin text-emerald-600" />
+          <div className="p-12 text-center flex items-center justify-center gap-3 text-slate-400 text-sm">
+            <Loader2 className="h-5 w-5 animate-spin text-emerald-400" />
             <span>Loading family events from database...</span>
           </div>
         ) : events.length === 0 ? (
-          <div className="p-12 text-center bg-white rounded-3xl border border-slate-200/80 space-y-3">
-            <Calendar className="h-10 w-10 text-slate-300 mx-auto" />
-            <h3 className="font-bold text-base text-slate-800">No events scheduled</h3>
-            <p className="text-xs text-slate-500 max-w-sm mx-auto">
+          <div className="p-12 text-center bg-slate-900 rounded-3xl border border-slate-800 space-y-3">
+            <Calendar className="h-10 w-10 text-slate-600 mx-auto" />
+            <h3 className="font-bold text-base text-white">No events scheduled</h3>
+            <p className="text-xs text-slate-400 max-w-sm mx-auto">
               Schedule an upcoming birthday or virtual reunion for your family members.
             </p>
             <button
               type="button"
               onClick={() => setIsAddEventOpen(true)}
-              className="px-4 py-2 rounded-xl bg-emerald-600 text-white font-bold text-xs shadow-md"
+              className="px-4 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs shadow-md cursor-pointer"
             >
               + Create Event
             </button>
@@ -61,9 +61,9 @@ export default function EventsPage() {
             {events.map((evt) => (
               <div
                 key={evt.id}
-                className="bg-white border border-slate-200/80 rounded-2xl p-6 shadow-sm flex items-start gap-4 hover:shadow-md transition-all"
+                className="bg-slate-900 border border-slate-800 rounded-2xl p-6 shadow-sm flex items-start gap-4 hover:border-slate-700 transition-all"
               >
-                <div className="h-14 w-14 rounded-2xl bg-emerald-50 text-emerald-600 flex flex-col items-center justify-center shrink-0 border border-emerald-200/60">
+                <div className="h-14 w-14 rounded-2xl bg-emerald-950/80 text-emerald-400 flex flex-col items-center justify-center shrink-0 border border-emerald-800/60">
                   <span className="text-xs font-black uppercase">
                     {new Date(evt.date).toLocaleString("default", { month: "short" })}
                   </span>
@@ -73,18 +73,18 @@ export default function EventsPage() {
                 </div>
 
                 <div className="space-y-2 flex-1">
-                  <h4 className="font-extrabold text-slate-900 text-base leading-tight">
+                  <h4 className="font-extrabold text-white text-base leading-tight">
                     {evt.title}
                   </h4>
-                  <div className="flex items-center gap-2 text-xs text-slate-500 font-medium">
+                  <div className="flex items-center gap-2 text-xs text-slate-400 font-medium">
                     {evt.isVirtual ? (
                       <>
-                        <Video className="h-4 w-4 text-indigo-500" />
+                        <Video className="h-4 w-4 text-indigo-400" />
                         <span>Virtual Event ({evt.location || "Online Link"})</span>
                       </>
                     ) : (
                       <>
-                        <MapPin className="h-4 w-4 text-emerald-600" />
+                        <MapPin className="h-4 w-4 text-emerald-400" />
                         <span>{evt.location || "Location TBD"}</span>
                       </>
                     )}

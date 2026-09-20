@@ -26,19 +26,19 @@ export default function SupportPage() {
     >
       <div className="space-y-8 max-w-4xl">
         {/* Contact Form */}
-        <div className="p-8 rounded-3xl bg-white border border-slate-200/80 shadow-sm space-y-6">
+        <div className="p-8 rounded-3xl bg-slate-900 border border-slate-800 shadow-xl space-y-6">
           <div className="flex items-center gap-3">
             <div className="h-10 w-10 rounded-2xl bg-indigo-600 text-white flex items-center justify-center shadow-md">
               <Mail className="h-5 w-5" />
             </div>
             <div>
-              <h3 className="font-extrabold text-slate-900 text-base">Contact Support Team</h3>
-              <p className="text-xs text-slate-500">We typically respond within 2-4 hours.</p>
+              <h3 className="font-extrabold text-white text-base">Contact Support Team</h3>
+              <p className="text-xs text-slate-400">We typically respond within 2-4 hours.</p>
             </div>
           </div>
 
           {sent && (
-            <div className="p-4 rounded-2xl bg-emerald-50 border border-emerald-200 text-emerald-700 text-xs font-bold flex items-center gap-2">
+            <div className="p-4 rounded-2xl bg-emerald-950/60 border border-emerald-800/80 text-emerald-300 text-xs font-bold flex items-center gap-2">
               <Sparkles className="h-4 w-4" />
               <span>Thank you! Your support ticket has been submitted successfully.</span>
             </div>
@@ -46,24 +46,24 @@ export default function SupportPage() {
 
           <form onSubmit={handleSubmit} className="space-y-4 text-xs">
             <div>
-              <label className="block font-bold text-slate-700 mb-1">Subject</label>
+              <label className="block font-bold text-slate-300 mb-1">Subject</label>
               <input
                 type="text"
                 placeholder="e.g. Question about adding extended family members"
                 value={subject}
                 onChange={(e) => setSubject(e.target.value)}
-                className="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 bg-slate-50 text-slate-800 focus:ring-2 focus:ring-indigo-500 focus:outline-none font-medium"
+                className="w-full px-3.5 py-2.5 rounded-xl border border-slate-800 bg-slate-950 text-white placeholder:text-slate-500 focus:ring-2 focus:ring-indigo-500 focus:outline-none font-medium"
               />
             </div>
 
             <div>
-              <label className="block font-bold text-slate-700 mb-1">Message</label>
+              <label className="block font-bold text-slate-300 mb-1">Message</label>
               <textarea
                 rows={4}
                 placeholder="Describe your issue or question in detail..."
                 value={message}
                 onChange={(e) => setMessage(e.target.value)}
-                className="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 bg-slate-50 text-slate-800 focus:ring-2 focus:ring-indigo-500 focus:outline-none font-medium resize-none"
+                className="w-full px-3.5 py-2.5 rounded-xl border border-slate-800 bg-slate-950 text-white placeholder:text-slate-500 focus:ring-2 focus:ring-indigo-500 focus:outline-none font-medium resize-none"
               />
             </div>
 

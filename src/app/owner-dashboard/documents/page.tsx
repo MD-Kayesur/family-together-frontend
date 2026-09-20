@@ -97,16 +97,16 @@ export default function DocumentsPage() {
     >
       <div className="space-y-6 pb-12">
         {/* Top Header Card */}
-        <div className="flex items-center justify-between p-4 rounded-2xl bg-white border border-slate-200/80 shadow-sm">
+        <div className="flex items-center justify-between p-4 rounded-2xl bg-slate-900 border border-slate-800 shadow-sm">
           <div className="flex items-center gap-3">
-            <div className="h-10 w-10 rounded-xl bg-indigo-50 text-indigo-600 flex items-center justify-center">
+            <div className="h-10 w-10 rounded-xl bg-indigo-950/80 text-indigo-400 border border-indigo-800/60 flex items-center justify-center">
               <FolderLock className="h-5 w-5" />
             </div>
             <div>
-              <h3 className="font-extrabold text-slate-900 text-sm">
+              <h3 className="font-extrabold text-white text-sm">
                 {documents.length} Encrypted Vault Documents
               </h3>
-              <p className="text-xs text-slate-500 font-medium">
+              <p className="text-xs text-slate-400 font-medium">
                 256-bit AES Encrypted • Click any document card to view PDF in viewport
               </p>
             </div>
@@ -126,14 +126,14 @@ export default function DocumentsPage() {
         {isUploading && (
           <form
             onSubmit={handleUpload}
-            className="p-6 rounded-3xl bg-white border border-indigo-200 shadow-xl space-y-5 max-w-xl animate-fadeIn"
+            className="p-6 rounded-3xl bg-slate-900 border border-slate-800 shadow-xl space-y-5 max-w-xl animate-fadeIn"
           >
-            <div className="flex items-center justify-between border-b border-slate-100 pb-3">
-              <h3 className="font-extrabold text-slate-900 text-base flex items-center gap-2">
-                <FileCode className="h-5 w-5 text-indigo-600" />
+            <div className="flex items-center justify-between border-b border-slate-800 pb-3">
+              <h3 className="font-extrabold text-white text-base flex items-center gap-2">
+                <FileCode className="h-5 w-5 text-purple-400" />
                 <span>Upload New PDF Document to Vault</span>
               </h3>
-              <span className="px-2.5 py-0.5 rounded-md bg-emerald-50 text-emerald-700 font-bold text-[10px] border border-emerald-200">
+              <span className="px-2.5 py-0.5 rounded-md bg-emerald-950/60 text-emerald-300 font-bold text-[10px] border border-emerald-800/60">
                 Encrypted Vault
               </span>
             </div>
@@ -141,12 +141,12 @@ export default function DocumentsPage() {
             <div className="space-y-4 text-xs">
               {/* PDF File Dropzone */}
               <div>
-                <label className="block font-bold text-slate-700 mb-1.5 flex items-center gap-1.5">
-                  <Upload className="h-3.5 w-3.5 text-indigo-600" />
+                <label className="block font-bold text-slate-200 mb-1.5 flex items-center gap-1.5">
+                  <Upload className="h-3.5 w-3.5 text-purple-400" />
                   <span>Choose PDF / Document File *</span>
                 </label>
 
-                <div className="relative border-2 border-dashed border-indigo-200 hover:border-indigo-500 bg-indigo-50/40 rounded-2xl p-5 text-center cursor-pointer transition-colors group">
+                <div className="relative border-2 border-dashed border-slate-800 hover:border-purple-500 bg-slate-950/60 rounded-2xl p-5 text-center cursor-pointer transition-colors group">
                   <input
                     type="file"
                     accept=".pdf,.doc,.docx,.png,.jpg,.jpeg"
@@ -154,17 +154,17 @@ export default function DocumentsPage() {
                     className="absolute inset-0 opacity-0 cursor-pointer w-full h-full"
                   />
                   {selectedFile ? (
-                    <div className="flex items-center justify-center gap-2 text-indigo-700 font-bold">
-                      <FileCheck className="h-5 w-5 text-indigo-600" />
+                    <div className="flex items-center justify-center gap-2 text-purple-300 font-bold">
+                      <FileCheck className="h-5 w-5 text-purple-400" />
                       <span className="truncate max-w-xs">{selectedFile.name}</span>
-                      <span className="text-[10px] text-indigo-500 font-normal">
+                      <span className="text-[10px] text-slate-400 font-normal">
                         ({fileSizeStr})
                       </span>
                     </div>
                   ) : (
                     <div className="space-y-1">
-                      <FileText className="h-7 w-7 text-indigo-500 mx-auto group-hover:scale-110 transition-transform" />
-                      <p className="font-bold text-slate-800 text-xs">
+                      <FileText className="h-7 w-7 text-purple-400 mx-auto group-hover:scale-110 transition-transform" />
+                      <p className="font-bold text-white text-xs">
                         Click or drag & drop PDF document file here
                       </p>
                       <p className="text-[10px] text-slate-400">
@@ -177,7 +177,7 @@ export default function DocumentsPage() {
 
               {/* Title Input */}
               <div>
-                <label className="block font-bold text-slate-700 mb-1">
+                <label className="block font-bold text-slate-200 mb-1">
                   Document Title / Description *
                 </label>
                 <input
@@ -185,24 +185,24 @@ export default function DocumentsPage() {
                   placeholder="e.g. Birth_Certificate_1965.pdf"
                   value={docName}
                   onChange={(e) => setDocName(e.target.value)}
-                  className="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 bg-slate-50 text-slate-800 focus:ring-2 focus:ring-indigo-500 focus:outline-none font-medium"
+                  className="w-full px-3.5 py-2.5 rounded-xl border border-slate-800 bg-slate-950 text-white placeholder:text-slate-500 focus:ring-2 focus:ring-purple-500 focus:outline-none font-medium"
                   required
                 />
               </div>
 
               {/* Category Dropdown */}
               <div>
-                <label className="block font-bold text-slate-700 mb-1">Category</label>
+                <label className="block font-bold text-slate-200 mb-1">Category</label>
                 <select
                   value={category}
                   onChange={(e) => setCategory(e.target.value)}
-                  className="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 bg-slate-50 text-slate-800 focus:ring-2 focus:ring-indigo-500 focus:outline-none font-medium"
+                  className="w-full px-3.5 py-2.5 rounded-xl border border-slate-800 bg-slate-950 text-white focus:ring-2 focus:ring-purple-500 focus:outline-none font-medium"
                 >
-                  <option value="Legal Records">Legal Records</option>
-                  <option value="Vital Records">Vital Records (Birth/Marriage)</option>
-                  <option value="Immigration">Immigration & Passports</option>
-                  <option value="Property & Deeds">Property & Land Deeds</option>
-                  <option value="Photos & Letters">Photos & Historical Letters</option>
+                  <option value="Legal Records" className="bg-slate-950 text-white">Legal Records</option>
+                  <option value="Vital Records" className="bg-slate-950 text-white">Vital Records (Birth/Marriage)</option>
+                  <option value="Immigration" className="bg-slate-950 text-white">Immigration & Passports</option>
+                  <option value="Property & Deeds" className="bg-slate-950 text-white">Property & Land Deeds</option>
+                  <option value="Photos & Letters" className="bg-slate-950 text-white">Photos & Historical Letters</option>
                 </select>
               </div>
             </div>
@@ -212,7 +212,7 @@ export default function DocumentsPage() {
               <button
                 type="button"
                 onClick={() => setIsUploading(false)}
-                className="px-4 py-2 rounded-xl border border-slate-200 text-slate-600 font-bold hover:bg-slate-100"
+                className="px-4 py-2 rounded-xl border border-slate-800 text-slate-300 font-bold hover:bg-slate-800 cursor-pointer"
               >
                 Cancel
               </button>
@@ -220,7 +220,7 @@ export default function DocumentsPage() {
               <button
                 type="submit"
                 disabled={isSubmitting}
-                className="px-5 py-2 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white font-bold shadow-md shadow-indigo-600/25 flex items-center gap-2 cursor-pointer disabled:opacity-50"
+                className="px-5 py-2 rounded-xl bg-purple-600 hover:bg-purple-700 text-white font-bold shadow-md shadow-purple-600/25 flex items-center gap-2 cursor-pointer disabled:opacity-50"
               >
                 {isSubmitting && <Loader2 className="h-4 w-4 animate-spin" />}
                 <span>Confirm & Upload PDF</span>
@@ -231,15 +231,15 @@ export default function DocumentsPage() {
 
         {/* Document Cards */}
         {isLoading ? (
-          <div className="p-12 text-center flex items-center justify-center gap-3 text-slate-500 text-sm bg-white rounded-2xl border border-slate-200/80">
-            <Loader2 className="h-5 w-5 animate-spin text-indigo-600" />
+          <div className="p-12 text-center flex items-center justify-center gap-3 text-slate-400 text-sm bg-slate-900 rounded-2xl border border-slate-800">
+            <Loader2 className="h-5 w-5 animate-spin text-indigo-400" />
             <span>Loading document vault from database...</span>
           </div>
         ) : documents.length === 0 ? (
-          <div className="p-12 text-center bg-white rounded-3xl border border-slate-200/80 space-y-3">
-            <FolderLock className="h-10 w-10 text-slate-300 mx-auto" />
-            <h3 className="font-bold text-base text-slate-800">Vault is empty</h3>
-            <p className="text-xs text-slate-500 max-w-sm mx-auto">
+          <div className="p-12 text-center bg-slate-900 rounded-3xl border border-slate-800 space-y-3">
+            <FolderLock className="h-10 w-10 text-slate-600 mx-auto" />
+            <h3 className="font-bold text-base text-white">Vault is empty</h3>
+            <p className="text-xs text-slate-400 max-w-sm mx-auto">
               Upload legal documents, birth records, or historic family certificates.
             </p>
           </div>
@@ -248,16 +248,16 @@ export default function DocumentsPage() {
             {documents.map((doc) => (
               <div
                 key={doc.id}
-                className="bg-white border border-slate-200/80 rounded-3xl p-6 shadow-sm flex flex-col justify-between space-y-4 hover:shadow-xl transition-all cursor-pointer group"
+                className="bg-slate-900 border border-slate-800 rounded-3xl p-6 shadow-sm flex flex-col justify-between space-y-4 hover:border-slate-700 hover:shadow-xl transition-all cursor-pointer group"
                 onClick={() => handleOpenPdfViewer(doc)}
               >
                 <div className="flex items-start justify-between gap-3">
                   <div className="flex items-start gap-3">
-                    <div className="h-12 w-12 rounded-2xl bg-indigo-50 group-hover:bg-indigo-600 text-indigo-600 group-hover:text-white flex items-center justify-center shrink-0 shadow-sm transition-colors">
+                    <div className="h-12 w-12 rounded-2xl bg-indigo-950/80 group-hover:bg-indigo-600 text-indigo-400 group-hover:text-white border border-indigo-800/60 flex items-center justify-center shrink-0 shadow-sm transition-colors">
                       <FileText className="h-6 w-6" />
                     </div>
                     <div>
-                      <h4 className="font-bold text-slate-900 group-hover:text-indigo-600 transition-colors text-xs leading-snug break-all">
+                      <h4 className="font-bold text-white group-hover:text-indigo-400 transition-colors text-xs leading-snug break-all">
                         {doc.name}
                       </h4>
                       <span className="text-[10px] font-semibold text-slate-400">
@@ -272,15 +272,15 @@ export default function DocumentsPage() {
                       e.stopPropagation();
                       handleDelete(doc.id, doc.name);
                     }}
-                    className="p-1 text-slate-400 hover:text-rose-600 transition-colors"
+                    className="p-1 text-slate-400 hover:text-rose-400 transition-colors"
                     title="Delete document"
                   >
                     <Trash2 className="h-4 w-4" />
                   </button>
                 </div>
 
-                <div className="pt-3 border-t border-slate-100 flex items-center justify-between">
-                  <span className="text-[10px] font-semibold text-emerald-600 flex items-center gap-1">
+                <div className="pt-3 border-t border-slate-800 flex items-center justify-between">
+                  <span className="text-[10px] font-semibold text-emerald-400 flex items-center gap-1">
                     <ShieldCheck className="h-3.5 w-3.5" /> 256-bit Encrypted
                   </span>
                   <button
@@ -289,7 +289,7 @@ export default function DocumentsPage() {
                       e.stopPropagation();
                       handleOpenPdfViewer(doc);
                     }}
-                    className="px-3 py-1.5 rounded-xl text-indigo-600 bg-indigo-50 hover:bg-indigo-100 font-bold transition-colors flex items-center gap-1.5 text-xs cursor-pointer shadow-sm"
+                    className="px-3 py-1.5 rounded-xl text-indigo-300 bg-indigo-950/80 hover:bg-indigo-900 border border-indigo-800/60 font-bold transition-colors flex items-center gap-1.5 text-xs cursor-pointer shadow-sm"
                     title="View PDF in Viewport"
                   >
                     <Eye className="h-4 w-4" />

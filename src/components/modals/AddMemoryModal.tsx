@@ -143,19 +143,19 @@ export default function AddMemoryModal({ isOpen, onClose }: AddMemoryModalProps)
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/60 backdrop-blur-sm animate-fadeIn overflow-y-auto">
-      <div className="bg-white dark:bg-stone-900 border border-slate-200 dark:border-stone-800 rounded-3xl w-full max-w-xl shadow-2xl p-6 sm:p-7 space-y-5 relative my-8">
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/70 backdrop-blur-sm animate-fadeIn overflow-y-auto">
+      <div className="bg-slate-900 border border-slate-800 rounded-3xl w-full max-w-xl shadow-2xl p-6 sm:p-7 space-y-5 relative my-8">
         {/* Modal Header */}
-        <div className="flex items-center justify-between border-b border-slate-100 dark:border-stone-800 pb-4">
+        <div className="flex items-center justify-between border-b border-slate-800 pb-4">
           <div className="flex items-center gap-3">
             <div className="h-11 w-11 rounded-2xl bg-purple-600 text-white flex items-center justify-center shadow-lg shadow-purple-600/25">
               <ImageIcon className="h-5 w-5" />
             </div>
             <div>
-              <h2 className="font-extrabold text-lg text-slate-900 dark:text-white leading-tight">
+              <h2 className="font-extrabold text-lg text-white leading-tight">
                 Upload Family Memories
               </h2>
-              <p className="text-xs text-slate-500 font-medium">
+              <p className="text-xs text-slate-400 font-medium">
                 Add multiple photos, videos, or milestone stories to your family archive.
               </p>
             </div>
@@ -164,31 +164,31 @@ export default function AddMemoryModal({ isOpen, onClose }: AddMemoryModalProps)
           <button
             type="button"
             onClick={onClose}
-            className="p-2 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 rounded-full hover:bg-slate-100 dark:hover:bg-stone-800 transition-colors"
+            className="p-2 text-slate-400 hover:text-slate-200 rounded-full hover:bg-slate-800 transition-colors cursor-pointer"
           >
             <X className="h-5 w-5" />
           </button>
         </div>
 
         {/* Auto Uploader Indicator */}
-        <div className="px-3.5 py-2 rounded-xl bg-purple-50 dark:bg-purple-950/40 border border-purple-200 dark:border-purple-900/50 flex items-center justify-between text-xs">
-          <div className="flex items-center gap-2 text-purple-800 dark:text-purple-300 font-bold">
-            <UserCheck className="h-4 w-4 text-purple-600" />
+        <div className="px-3.5 py-2 rounded-xl bg-purple-950/40 border border-purple-900/50 flex items-center justify-between text-xs">
+          <div className="flex items-center gap-2 text-purple-300 font-bold">
+            <UserCheck className="h-4 w-4 text-purple-400" />
             <span>Adding as: Sanctuary Owner (Authenticated User)</span>
           </div>
-          <span className="text-[10px] bg-purple-200 dark:bg-purple-900 text-purple-800 dark:text-purple-200 font-extrabold px-2 py-0.5 rounded-md">
+          <span className="text-[10px] bg-purple-900/60 text-purple-200 font-extrabold px-2 py-0.5 rounded-md">
             Auto
           </span>
         </div>
 
         {errorMsg && (
-          <div className="p-3 rounded-xl bg-rose-50 border border-rose-200 text-rose-700 text-xs font-semibold">
+          <div className="p-3 rounded-xl bg-rose-950/60 border border-rose-800 text-rose-300 text-xs font-semibold">
             {errorMsg}
           </div>
         )}
 
         {successMsg && (
-          <div className="p-3 rounded-xl bg-emerald-50 border border-emerald-200 text-emerald-700 text-xs font-semibold flex items-center gap-2">
+          <div className="p-3 rounded-xl bg-emerald-950/60 border border-emerald-800 text-emerald-300 text-xs font-semibold flex items-center gap-2">
             <Sparkles className="h-4 w-4" />
             <span>{successMsg}</span>
           </div>
@@ -197,17 +197,17 @@ export default function AddMemoryModal({ isOpen, onClose }: AddMemoryModalProps)
         <form onSubmit={handleSubmit} className="space-y-4 text-xs">
           {/* Multiple File Upload Zone */}
           <div>
-            <label className="block font-bold text-slate-700 dark:text-slate-200 mb-1.5 flex items-center justify-between">
+            <label className="block font-bold text-slate-200 mb-1.5 flex items-center justify-between">
               <span className="flex items-center gap-1.5">
-                <Upload className="h-3.5 w-3.5 text-purple-600" />
+                <Upload className="h-3.5 w-3.5 text-purple-400" />
                 <span>Upload Multiple Photos & Videos</span>
               </span>
-              <span className="text-[10px] text-purple-600 font-extrabold">
+              <span className="text-[10px] text-purple-400 font-extrabold">
                 {selectedFiles.length} File(s) Selected
               </span>
             </label>
 
-            <div className="relative border-2 border-dashed border-purple-200 dark:border-purple-900/50 hover:border-purple-500 bg-purple-50/40 dark:bg-purple-950/20 rounded-2xl p-5 text-center cursor-pointer transition-colors group">
+            <div className="relative border-2 border-dashed border-slate-800 hover:border-purple-500 bg-slate-950/60 rounded-2xl p-5 text-center cursor-pointer transition-colors group">
               <input
                 type="file"
                 multiple
@@ -217,10 +217,10 @@ export default function AddMemoryModal({ isOpen, onClose }: AddMemoryModalProps)
               />
               <div className="space-y-1">
                 <div className="flex items-center justify-center gap-2">
-                  <ImageIcon className="h-6 w-6 text-purple-500 group-hover:scale-110 transition-transform" />
-                  <Film className="h-6 w-6 text-purple-600 group-hover:scale-110 transition-transform" />
+                  <ImageIcon className="h-6 w-6 text-purple-400 group-hover:scale-110 transition-transform" />
+                  <Film className="h-6 w-6 text-purple-500 group-hover:scale-110 transition-transform" />
                 </div>
-                <p className="font-bold text-slate-700 dark:text-slate-200 text-xs">
+                <p className="font-bold text-slate-200 text-xs">
                   Click or drag & drop multiple photos and videos here
                 </p>
                 <p className="text-[10px] text-slate-400">
@@ -237,18 +237,18 @@ export default function AddMemoryModal({ isOpen, onClose }: AddMemoryModalProps)
                   return (
                     <div
                       key={index}
-                      className="flex items-center justify-between p-2 rounded-xl bg-slate-50 dark:bg-stone-800 border border-slate-200 dark:border-stone-700"
+                      className="flex items-center justify-between p-2 rounded-xl bg-slate-950 border border-slate-800 text-slate-200"
                     >
                       <div className="flex items-center gap-2 overflow-hidden">
                         {isVideo ? (
-                          <Film className="h-4 w-4 text-amber-500 shrink-0" />
+                          <Film className="h-4 w-4 text-amber-400 shrink-0" />
                         ) : (
-                          <FileCheck className="h-4 w-4 text-purple-600 shrink-0" />
+                          <FileCheck className="h-4 w-4 text-purple-400 shrink-0" />
                         )}
-                        <span className="font-bold text-slate-800 dark:text-slate-200 truncate">
+                        <span className="font-bold text-slate-200 truncate">
                           {file.name}
                         </span>
-                        <span className="text-[10px] text-slate-400 shrink-0">
+                        <span className="text-[10px] text-slate-500 shrink-0">
                           ({(file.size / (1024 * 1024)).toFixed(2)} MB)
                         </span>
                       </div>
@@ -256,7 +256,7 @@ export default function AddMemoryModal({ isOpen, onClose }: AddMemoryModalProps)
                       <button
                         type="button"
                         onClick={() => handleRemoveFile(index)}
-                        className="p-1 text-slate-400 hover:text-rose-600 transition-colors"
+                        className="p-1 text-slate-400 hover:text-rose-400 transition-colors cursor-pointer"
                         title="Remove file"
                       >
                         <Trash2 className="h-3.5 w-3.5" />
@@ -270,7 +270,7 @@ export default function AddMemoryModal({ isOpen, onClose }: AddMemoryModalProps)
 
           {/* Memory Title */}
           <div>
-            <label className="block font-bold text-slate-700 dark:text-slate-200 mb-1">
+            <label className="block font-bold text-slate-200 mb-1">
               Memory Title *
             </label>
             <input
@@ -278,7 +278,7 @@ export default function AddMemoryModal({ isOpen, onClose }: AddMemoryModalProps)
               placeholder="e.g. Eid al-Fitr Family Celebration 2026"
               value={title}
               onChange={(e) => setTitle(e.target.value)}
-              className="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 dark:border-stone-700 bg-slate-50 dark:bg-stone-800 text-slate-800 dark:text-white focus:ring-2 focus:ring-purple-500 focus:outline-none font-medium"
+              className="w-full px-3.5 py-2.5 rounded-xl border border-slate-800 bg-slate-950 text-white placeholder:text-slate-500 focus:ring-2 focus:ring-purple-500 focus:outline-none font-medium"
               required
             />
           </div>
@@ -286,21 +286,21 @@ export default function AddMemoryModal({ isOpen, onClose }: AddMemoryModalProps)
           {/* Row 1: Date & Location */}
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div>
-              <label className="block font-bold text-slate-700 dark:text-slate-200 mb-1 flex items-center gap-1">
-                <Calendar className="h-3.5 w-3.5 text-purple-600" />
+              <label className="block font-bold text-slate-200 mb-1 flex items-center gap-1">
+                <Calendar className="h-3.5 w-3.5 text-purple-400" />
                 <span>Date of Memory</span>
               </label>
               <input
                 type="date"
                 value={date}
                 onChange={(e) => setDate(e.target.value)}
-                className="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 dark:border-stone-700 bg-slate-50 dark:bg-stone-800 text-slate-800 dark:text-white focus:ring-2 focus:ring-purple-500 focus:outline-none font-medium"
+                className="w-full px-3.5 py-2.5 rounded-xl border border-slate-800 bg-slate-950 text-white focus:ring-2 focus:ring-purple-500 focus:outline-none font-medium"
               />
             </div>
 
             <div>
-              <label className="block font-bold text-slate-700 dark:text-slate-200 mb-1 flex items-center gap-1">
-                <MapPin className="h-3.5 w-3.5 text-purple-600" />
+              <label className="block font-bold text-slate-200 mb-1 flex items-center gap-1">
+                <MapPin className="h-3.5 w-3.5 text-purple-400" />
                 <span>Location / City</span>
               </label>
               <input
@@ -308,7 +308,7 @@ export default function AddMemoryModal({ isOpen, onClose }: AddMemoryModalProps)
                 placeholder="e.g. Dhaka, Bangladesh"
                 value={location}
                 onChange={(e) => setLocation(e.target.value)}
-                className="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 dark:border-stone-700 bg-slate-50 dark:bg-stone-800 text-slate-800 dark:text-white focus:ring-2 focus:ring-purple-500 focus:outline-none font-medium"
+                className="w-full px-3.5 py-2.5 rounded-xl border border-slate-800 bg-slate-950 text-white placeholder:text-slate-500 focus:ring-2 focus:ring-purple-500 focus:outline-none font-medium"
               />
             </div>
           </div>
@@ -316,56 +316,56 @@ export default function AddMemoryModal({ isOpen, onClose }: AddMemoryModalProps)
           {/* Row 2: Category & Privacy */}
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div>
-              <label className="block font-bold text-slate-700 dark:text-slate-200 mb-1 flex items-center gap-1">
-                <Tag className="h-3.5 w-3.5 text-purple-600" />
+              <label className="block font-bold text-slate-200 mb-1 flex items-center gap-1">
+                <Tag className="h-3.5 w-3.5 text-purple-400" />
                 <span>Category / Album</span>
               </label>
               <select
                 value={category}
                 onChange={(e) => setCategory(e.target.value)}
-                className="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 dark:border-stone-700 bg-slate-50 dark:bg-stone-800 text-slate-800 dark:text-white focus:ring-2 focus:ring-purple-500 focus:outline-none font-medium"
+                className="w-full px-3.5 py-2.5 rounded-xl border border-slate-800 bg-slate-950 text-white focus:ring-2 focus:ring-purple-500 focus:outline-none font-medium"
               >
-                <option value="Reunion & Gathering">Reunion & Gathering</option>
-                <option value="Vacation & Travel">Vacation & Travel</option>
-                <option value="Wedding & Celebration">Wedding & Celebration</option>
-                <option value="Birthday & Milestones">Birthday & Milestones</option>
-                <option value="Historic Archive & Deeds">Historic Archive & Deeds</option>
-                <option value="General Story">General Story</option>
+                <option value="Reunion & Gathering" className="bg-slate-950 text-white">Reunion & Gathering</option>
+                <option value="Vacation & Travel" className="bg-slate-950 text-white">Vacation & Travel</option>
+                <option value="Wedding & Celebration" className="bg-slate-950 text-white">Wedding & Celebration</option>
+                <option value="Birthday & Milestones" className="bg-slate-950 text-white">Birthday & Milestones</option>
+                <option value="Historic Archive & Deeds" className="bg-slate-950 text-white">Historic Archive & Deeds</option>
+                <option value="General Story" className="bg-slate-950 text-white">General Story</option>
               </select>
             </div>
 
             <div>
-              <label className="block font-bold text-slate-700 dark:text-slate-200 mb-1 flex items-center gap-1">
-                <Lock className="h-3.5 w-3.5 text-purple-600" />
+              <label className="block font-bold text-slate-200 mb-1 flex items-center gap-1">
+                <Lock className="h-3.5 w-3.5 text-purple-400" />
                 <span>Sanctuary Visibility</span>
               </label>
               <select
                 value={privacy}
                 onChange={(e) => setPrivacy(e.target.value)}
-                className="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 dark:border-stone-700 bg-slate-50 dark:bg-stone-800 text-slate-800 dark:text-white focus:ring-2 focus:ring-purple-500 focus:outline-none font-medium"
+                className="w-full px-3.5 py-2.5 rounded-xl border border-slate-800 bg-slate-950 text-white focus:ring-2 focus:ring-purple-500 focus:outline-none font-medium"
               >
-                <option value="Entire Family Sanctuary">Entire Family Sanctuary</option>
-                <option value="Owners & Admins Only">Owners & Admins Only</option>
-                <option value="Private / Only Me">Private / Only Me</option>
+                <option value="Entire Family Sanctuary" className="bg-slate-950 text-white">Entire Family Sanctuary</option>
+                <option value="Owners & Admins Only" className="bg-slate-950 text-white">Owners & Admins Only</option>
+                <option value="Private / Only Me" className="bg-slate-950 text-white">Private / Only Me</option>
               </select>
             </div>
           </div>
 
           {/* Row 3: Tagged Relatives Autocomplete */}
           <div className="relative">
-            <label className="block font-bold text-slate-700 dark:text-slate-200 mb-1 flex items-center justify-between">
+            <label className="block font-bold text-slate-200 mb-1 flex items-center justify-between">
               <span className="flex items-center gap-1">
-                <Users className="h-3.5 w-3.5 text-purple-600" />
+                <Users className="h-3.5 w-3.5 text-purple-400" />
                 <span>Tagged Relatives</span>
               </span>
-              <span className="text-[10px] text-purple-600 font-semibold">
-                Type <code className="bg-purple-100 text-purple-800 px-1 py-0.5 rounded">@name</code> to autocomplete
+              <span className="text-[10px] text-purple-400 font-semibold">
+                Type <code className="bg-purple-950/60 text-purple-300 border border-purple-800/60 px-1 py-0.5 rounded">@name</code> to autocomplete
               </span>
             </label>
 
             {/* Tag Badges Container */}
             {taggedMembersList.length > 0 && (
-              <div className="flex flex-wrap gap-1.5 mb-2 p-2 rounded-xl bg-purple-50/60 border border-purple-100">
+              <div className="flex flex-wrap gap-1.5 mb-2 p-2 rounded-xl bg-purple-950/30 border border-purple-800/50">
                 {taggedMembersList.map((name) => (
                   <span
                     key={name}
@@ -375,7 +375,7 @@ export default function AddMemoryModal({ isOpen, onClose }: AddMemoryModalProps)
                     <button
                       type="button"
                       onClick={() => handleRemoveRelativeTag(name)}
-                      className="hover:text-rose-200"
+                      className="hover:text-rose-200 cursor-pointer"
                     >
                       <X className="h-3 w-3" />
                     </button>
@@ -394,18 +394,18 @@ export default function AddMemoryModal({ isOpen, onClose }: AddMemoryModalProps)
                 setTagInputText(e.target.value);
                 setIsTagDropdownOpen(true);
               }}
-              className="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 dark:border-stone-700 bg-slate-50 dark:bg-stone-800 text-slate-800 dark:text-white focus:ring-2 focus:ring-purple-500 focus:outline-none font-medium"
+              className="w-full px-3.5 py-2.5 rounded-xl border border-slate-800 bg-slate-950 text-white placeholder:text-slate-500 focus:ring-2 focus:ring-purple-500 focus:outline-none font-medium"
             />
 
             {/* Autocomplete Dropdown List */}
             {isTagDropdownOpen && (
-              <div className="absolute left-0 right-0 top-full mt-1.5 z-50 bg-white dark:bg-stone-900 border border-slate-200 dark:border-stone-700 rounded-2xl shadow-2xl max-h-48 overflow-y-auto p-1.5 space-y-1">
-                <div className="px-2 py-1 text-[10px] font-bold uppercase tracking-wider text-slate-400 border-b border-slate-100 dark:border-stone-800 flex items-center justify-between">
+              <div className="absolute left-0 right-0 top-full mt-1.5 z-50 bg-slate-900 border border-slate-800 rounded-2xl shadow-2xl max-h-48 overflow-y-auto p-1.5 space-y-1">
+                <div className="px-2 py-1 text-[10px] font-bold uppercase tracking-wider text-slate-400 border-b border-slate-800 flex items-center justify-between">
                   <span>Sanctuary Family Members</span>
                   <button
                     type="button"
                     onClick={() => setIsTagDropdownOpen(false)}
-                    className="text-slate-400 hover:text-slate-600"
+                    className="text-slate-400 hover:text-slate-200 cursor-pointer"
                   >
                     <X className="h-3 w-3" />
                   </button>
@@ -424,16 +424,18 @@ export default function AddMemoryModal({ isOpen, onClose }: AddMemoryModalProps)
                         key={m.id}
                         type="button"
                         onClick={() => handleSelectRelative(fullName)}
-                        className={`w-full flex items-center justify-between p-2 rounded-xl transition-colors text-left text-xs ${
+                        className={`w-full flex items-center justify-between p-2 rounded-xl transition-colors text-left text-xs cursor-pointer ${
                           isAlreadyTagged
-                            ? "bg-purple-50 text-purple-900 dark:bg-purple-950/40 dark:text-purple-200 font-bold"
-                            : "hover:bg-slate-100 dark:hover:bg-stone-800 text-slate-800 dark:text-slate-200"
+                            ? "bg-purple-950/60 text-purple-200 font-bold"
+                            : "hover:bg-slate-800 text-slate-200"
                         }`}
                       >
                         <div className="flex items-center gap-2.5">
                           <div
                             className={`h-7 w-7 rounded-full flex items-center justify-center font-bold text-xs ${
-                              m.gender === "FEMALE" ? "bg-rose-100 text-rose-700" : "bg-indigo-100 text-indigo-700"
+                              m.gender === "FEMALE"
+                                ? "bg-rose-950/60 text-rose-300 border border-rose-800/50"
+                                : "bg-indigo-950/60 text-indigo-300 border border-indigo-800/50"
                             }`}
                           >
                             {m.gender === "FEMALE" ? "👩" : "👨"}
@@ -447,9 +449,9 @@ export default function AddMemoryModal({ isOpen, onClose }: AddMemoryModalProps)
                         </div>
 
                         {isAlreadyTagged ? (
-                          <Check className="h-4 w-4 text-purple-600" />
+                          <Check className="h-4 w-4 text-purple-400" />
                         ) : (
-                          <span className="text-[10px] font-bold text-purple-600 hover:underline">
+                          <span className="text-[10px] font-bold text-purple-400 hover:underline">
                             + Tag
                           </span>
                         )}
@@ -463,7 +465,7 @@ export default function AddMemoryModal({ isOpen, onClose }: AddMemoryModalProps)
 
           {/* Story Description */}
           <div>
-            <label className="block font-bold text-slate-700 dark:text-slate-200 mb-1">
+            <label className="block font-bold text-slate-200 mb-1">
               Description / Memory Story
             </label>
             <textarea
@@ -471,16 +473,16 @@ export default function AddMemoryModal({ isOpen, onClose }: AddMemoryModalProps)
               placeholder="Write a description or memory story..."
               value={description}
               onChange={(e) => setDescription(e.target.value)}
-              className="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 dark:border-stone-700 bg-slate-50 dark:bg-stone-800 text-slate-800 dark:text-white focus:ring-2 focus:ring-purple-500 focus:outline-none font-medium resize-none"
+              className="w-full px-3.5 py-2.5 rounded-xl border border-slate-800 bg-slate-950 text-white placeholder:text-slate-500 focus:ring-2 focus:ring-purple-500 focus:outline-none font-medium resize-none"
             />
           </div>
 
           {/* Action Buttons */}
-          <div className="flex items-center justify-end gap-3 pt-4 border-t border-slate-100 dark:border-stone-800">
+          <div className="flex items-center justify-end gap-3 pt-4 border-t border-slate-800">
             <button
               type="button"
               onClick={onClose}
-              className="px-4 py-2.5 rounded-xl border border-slate-200 text-slate-600 font-bold hover:bg-slate-100 transition-colors"
+              className="px-4 py-2.5 rounded-xl border border-slate-800 text-slate-300 font-bold hover:bg-slate-800 transition-colors cursor-pointer"
             >
               Cancel
             </button>

@@ -166,15 +166,15 @@ export default function MyFamilyPage() {
 
         {/* 2. Key Stats Grid */}
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
-          <div className="p-5 rounded-2xl bg-white border border-slate-200/80 shadow-sm space-y-2">
+          <div className="p-5 rounded-2xl bg-slate-900 border border-slate-800 shadow-sm space-y-2">
             <div className="flex items-center justify-between">
-              <span className="text-xs font-bold text-slate-500">Sanctuary Members</span>
-              <div className="h-9 w-9 rounded-xl bg-indigo-50 text-indigo-600 flex items-center justify-center">
+              <span className="text-xs font-bold text-slate-400">Sanctuary Members</span>
+              <div className="h-9 w-9 rounded-xl bg-indigo-950/80 text-indigo-400 border border-indigo-800/60 flex items-center justify-center">
                 <Users className="h-4 w-4" />
               </div>
             </div>
             <div className="flex items-baseline gap-2">
-              <span className="text-3xl font-extrabold text-slate-900">
+              <span className="text-3xl font-extrabold text-white">
                 {stats?.totalMembers ?? members.length}
               </span>
               <span className="text-[11px] font-bold text-slate-400">
@@ -184,54 +184,54 @@ export default function MyFamilyPage() {
             <p className="text-[11px] text-slate-400">Fetched live from PostgreSQL</p>
           </div>
 
-          <div className="p-5 rounded-2xl bg-white border border-slate-200/80 shadow-sm space-y-2">
+          <div className="p-5 rounded-2xl bg-slate-900 border border-slate-800 shadow-sm space-y-2">
             <div className="flex items-center justify-between">
-              <span className="text-xs font-bold text-slate-500">Lineage Connections</span>
-              <div className="h-9 w-9 rounded-xl bg-amber-50 text-amber-600 flex items-center justify-center">
+              <span className="text-xs font-bold text-slate-400">Lineage Connections</span>
+              <div className="h-9 w-9 rounded-xl bg-amber-950/80 text-amber-400 border border-amber-800/60 flex items-center justify-center">
                 <Heart className="h-4 w-4" />
               </div>
             </div>
-            <span className="text-3xl font-extrabold text-slate-900">
+            <span className="text-3xl font-extrabold text-white">
               {stats?.relationships ?? relationships.length}
             </span>
             <p className="text-[11px] text-slate-400">Biological & Marital Links</p>
           </div>
 
-          <div className="p-5 rounded-2xl bg-white border border-slate-200/80 shadow-sm space-y-2">
+          <div className="p-5 rounded-2xl bg-slate-900 border border-slate-800 shadow-sm space-y-2">
             <div className="flex items-center justify-between">
-              <span className="text-xs font-bold text-slate-500">Memories Archived</span>
-              <div className="h-9 w-9 rounded-xl bg-emerald-50 text-emerald-600 flex items-center justify-center">
+              <span className="text-xs font-bold text-slate-400">Memories Archived</span>
+              <div className="h-9 w-9 rounded-xl bg-emerald-950/80 text-emerald-400 border border-emerald-800/60 flex items-center justify-center">
                 <Calendar className="h-4 w-4" />
               </div>
             </div>
-            <span className="text-3xl font-extrabold text-slate-900">
+            <span className="text-3xl font-extrabold text-white">
               {stats?.totalMemories ?? memories.length}
             </span>
             <p className="text-[11px] text-slate-400">Photos & Historic Records</p>
           </div>
 
-          <div className="p-5 rounded-2xl bg-white border border-slate-200/80 shadow-sm space-y-2">
+          <div className="p-5 rounded-2xl bg-slate-900 border border-slate-800 shadow-sm space-y-2">
             <div className="flex items-center justify-between">
-              <span className="text-xs font-bold text-slate-500">Global Locations</span>
-              <div className="h-9 w-9 rounded-xl bg-purple-50 text-purple-600 flex items-center justify-center">
+              <span className="text-xs font-bold text-slate-400">Global Locations</span>
+              <div className="h-9 w-9 rounded-xl bg-purple-950/80 text-purple-400 border border-purple-800/60 flex items-center justify-center">
                 <Globe className="h-4 w-4" />
               </div>
             </div>
-            <span className="text-3xl font-extrabold text-slate-900">3 Regions</span>
+            <span className="text-3xl font-extrabold text-white">3 Regions</span>
             <p className="text-[11px] text-slate-400">Dhaka • London • Toronto</p>
           </div>
         </div>
 
         {/* 3. Interactive Family Tree 2D Canvas Overview */}
-        <div className="p-6 rounded-2xl bg-white border border-slate-200/80 shadow-sm space-y-6 w-full">
+        <div className="p-6 rounded-2xl bg-slate-900 border border-slate-800 shadow-sm space-y-6 w-full">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2">
-              <TreePine className="h-5 w-5 text-indigo-600" />
-              <h2 className="font-bold text-xl text-slate-900">Family Tree Overview</h2>
+              <TreePine className="h-5 w-5 text-indigo-400" />
+              <h2 className="font-bold text-xl text-white">Family Tree Overview</h2>
             </div>
             <Link
               href="/owner-dashboard/tree"
-              className="text-xs font-bold text-indigo-600 hover:text-indigo-800 transition-colors inline-flex items-center gap-1"
+              className="text-xs font-bold text-indigo-400 hover:text-indigo-300 transition-colors inline-flex items-center gap-1"
             >
               <span>Open Full Tree Canvas</span>
               <ExternalLink className="h-3.5 w-3.5" />
@@ -244,43 +244,43 @@ export default function MyFamilyPage() {
 
         {/* 4. Ancestral Lineage & Heritage Cards */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-          <div className="p-6 rounded-2xl bg-white border border-slate-200/80 shadow-sm space-y-3">
+          <div className="p-6 rounded-2xl bg-slate-900 border border-slate-800 shadow-sm space-y-3">
             <div className="flex items-center gap-2">
-              <Award className="h-5 w-5 text-indigo-600" />
-              <h3 className="font-bold text-sm text-slate-900">Ancestral Roots</h3>
+              <Award className="h-5 w-5 text-indigo-400" />
+              <h3 className="font-bold text-sm text-white">Ancestral Roots</h3>
             </div>
-            <p className="text-xs text-slate-600 leading-relaxed">
+            <p className="text-xs text-slate-300 leading-relaxed">
               Rooted in deep lineage heritage. Documenting family origins from historic Lahore and Dhaka to modern settlements in London and Toronto.
             </p>
           </div>
 
-          <div className="p-6 rounded-2xl bg-white border border-slate-200/80 shadow-sm space-y-3">
+          <div className="p-6 rounded-2xl bg-slate-900 border border-slate-800 shadow-sm space-y-3">
             <div className="flex items-center gap-2">
-              <TreePine className="h-5 w-5 text-indigo-600" />
-              <h3 className="font-bold text-sm text-slate-900">3 Active Generations</h3>
+              <TreePine className="h-5 w-5 text-indigo-400" />
+              <h3 className="font-bold text-sm text-white">3 Active Generations</h3>
             </div>
-            <p className="text-xs text-slate-600 leading-relaxed">
+            <p className="text-xs text-slate-300 leading-relaxed">
               Connecting Generation 1 (Patriarchs & Matriarchs), Generation 2 (Parents & Aunts), and Generation 3 (Children & Cousins).
             </p>
           </div>
 
-          <div className="p-6 rounded-2xl bg-white border border-slate-200/80 shadow-sm space-y-3">
+          <div className="p-6 rounded-2xl bg-slate-900 border border-slate-800 shadow-sm space-y-3">
             <div className="flex items-center gap-2">
-              <ShieldCheck className="h-5 w-5 text-emerald-600" />
-              <h3 className="font-bold text-sm text-slate-900">Private & Encrypted</h3>
+              <ShieldCheck className="h-5 w-5 text-emerald-400" />
+              <h3 className="font-bold text-sm text-white">Private & Encrypted</h3>
             </div>
-            <p className="text-xs text-slate-600 leading-relaxed">
+            <p className="text-xs text-slate-300 leading-relaxed">
               Your sanctuary is strictly private. Only invited family members with authenticated roles can view or manage lineage data.
             </p>
           </div>
         </div>
 
         {/* 4. Family Members Directory Preview Section */}
-        <div className="p-6 rounded-2xl bg-white border border-slate-200/80 shadow-sm space-y-6">
+        <div className="p-6 rounded-2xl bg-slate-900 border border-slate-800 shadow-sm space-y-6">
           <div className="flex flex-wrap items-center justify-between gap-4">
             <div>
-              <h3 className="font-extrabold text-slate-900 text-lg">Family Relatives Directory</h3>
-              <p className="text-xs text-slate-500">Search and explore registered family members in your sanctuary.</p>
+              <h3 className="font-extrabold text-white text-lg">Family Relatives Directory</h3>
+              <p className="text-xs text-slate-400">Search and explore registered family members in your sanctuary.</p>
             </div>
 
             {/* Search Input */}
@@ -291,7 +291,7 @@ export default function MyFamilyPage() {
                 placeholder="Search relative by name..."
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                className="w-full pl-9 pr-4 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs text-slate-800 focus:outline-none focus:ring-2 focus:ring-indigo-500 placeholder:text-slate-400"
+                className="w-full pl-9 pr-4 py-2 bg-slate-950 border border-slate-800 rounded-xl text-xs text-white placeholder:text-slate-500 focus:outline-none focus:ring-2 focus:ring-purple-500"
               />
             </div>
           </div>
@@ -309,18 +309,18 @@ export default function MyFamilyPage() {
               {filteredMembers.map((m, idx) => (
                 <div
                   key={m.id}
-                  className="p-4 rounded-2xl bg-slate-50/70 border border-slate-200/80 hover:bg-slate-50 transition-all space-y-3"
+                  className="p-4 rounded-2xl bg-slate-950/70 border border-slate-800 hover:bg-slate-950 transition-all space-y-3"
                 >
                   <div className="flex items-center gap-3">
                     <div
                       className={`h-11 w-11 rounded-full font-bold text-base flex items-center justify-center shrink-0 shadow-sm ${
-                        m.gender === "FEMALE" ? "bg-rose-100 text-rose-700" : "bg-indigo-100 text-indigo-700"
+                        m.gender === "FEMALE" ? "bg-rose-950/60 text-rose-300 border border-rose-800/60" : "bg-indigo-950/60 text-indigo-300 border border-indigo-800/60"
                       }`}
                     >
                       {m.gender === "FEMALE" ? "👩" : "👨"}
                     </div>
                     <div className="overflow-hidden space-y-0.5">
-                      <h4 className="font-extrabold text-slate-900 text-xs truncate">
+                      <h4 className="font-extrabold text-white text-xs truncate">
                         {m.firstName} {m.lastName}
                       </h4>
                       <span className="text-[10px] font-semibold text-slate-400 block truncate">
@@ -329,11 +329,11 @@ export default function MyFamilyPage() {
                     </div>
                   </div>
 
-                  <div className="pt-2 border-t border-slate-200/60 flex items-center justify-between text-[11px] font-bold text-indigo-600">
+                  <div className="pt-2 border-t border-slate-800 flex items-center justify-between text-[11px] font-bold text-purple-400">
                     <Link href="/owner-dashboard/tree" className="hover:underline">
                       View Node ➔
                     </Link>
-                    <Link href="/owner-dashboard/members" className="hover:underline text-slate-500">
+                    <Link href="/owner-dashboard/members" className="hover:underline text-slate-400">
                       Details
                     </Link>
                   </div>
@@ -346,24 +346,24 @@ export default function MyFamilyPage() {
 
       {/* Edit Family Details Modal */}
       {isEditFamilyOpen && (
-        <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-          <div className="bg-white rounded-3xl border border-slate-200 p-6 max-w-md w-full shadow-2xl space-y-4">
+        <div className="fixed inset-0 bg-slate-950/70 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+          <div className="bg-slate-900 rounded-3xl border border-slate-800 p-6 max-w-md w-full shadow-2xl space-y-4">
             <div className="flex items-center justify-between">
-              <h3 className="font-extrabold text-slate-900 text-sm flex items-center gap-2">
-                <Edit3 className="h-4 w-4 text-indigo-600" />
+              <h3 className="font-extrabold text-white text-sm flex items-center gap-2">
+                <Edit3 className="h-4 w-4 text-purple-400" />
                 <span>Edit Family Details</span>
               </h3>
               <button
                 type="button"
                 onClick={() => setIsEditFamilyOpen(false)}
-                className="text-slate-400 hover:text-slate-600"
+                className="text-slate-400 hover:text-slate-200 cursor-pointer"
               >
                 <X className="h-4 w-4" />
               </button>
             </div>
 
             {editSuccessMsg && (
-              <div className="p-3 rounded-xl bg-emerald-50 border border-emerald-200 text-emerald-700 text-xs font-semibold flex items-center gap-2">
+              <div className="p-3 rounded-xl bg-emerald-950/60 border border-emerald-800 text-emerald-300 text-xs font-semibold flex items-center gap-2">
                 <Check className="h-4 w-4" />
                 <span>{editSuccessMsg}</span>
               </div>
@@ -371,23 +371,23 @@ export default function MyFamilyPage() {
 
             <form onSubmit={handleSaveFamily} className="space-y-4 text-xs">
               <div>
-                <label className="block font-bold text-slate-700 mb-1">Family Name *</label>
+                <label className="block font-bold text-slate-200 mb-1">Family Name *</label>
                 <input
                   type="text"
                   value={familyName}
                   onChange={(e) => setFamilyName(e.target.value)}
-                  className="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 bg-slate-50 text-slate-800 focus:ring-2 focus:ring-indigo-500 focus:outline-none font-medium"
+                  className="w-full px-3.5 py-2.5 rounded-xl border border-slate-800 bg-slate-950 text-white placeholder:text-slate-500 focus:ring-2 focus:ring-purple-500 focus:outline-none font-medium"
                   required
                 />
               </div>
 
               <div>
-                <label className="block font-bold text-slate-700 mb-1">Sanctuary Description</label>
+                <label className="block font-bold text-slate-200 mb-1">Sanctuary Description</label>
                 <textarea
                   rows={4}
                   value={familyDesc}
                   onChange={(e) => setFamilyDesc(e.target.value)}
-                  className="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 bg-slate-50 text-slate-800 focus:ring-2 focus:ring-indigo-500 focus:outline-none font-medium resize-none"
+                  className="w-full px-3.5 py-2.5 rounded-xl border border-slate-800 bg-slate-950 text-white placeholder:text-slate-500 focus:ring-2 focus:ring-purple-500 focus:outline-none font-medium resize-none"
                 />
               </div>
 
@@ -395,14 +395,14 @@ export default function MyFamilyPage() {
                 <button
                   type="button"
                   onClick={() => setIsEditFamilyOpen(false)}
-                  className="px-4 py-2 rounded-xl border border-slate-200 text-slate-600 font-bold hover:bg-slate-100"
+                  className="px-4 py-2 rounded-xl border border-slate-800 text-slate-300 font-bold hover:bg-slate-800 cursor-pointer"
                 >
                   Cancel
                 </button>
                 <button
                   type="submit"
                   disabled={isUpdating}
-                  className="px-5 py-2 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white font-bold shadow-md shadow-indigo-600/25 flex items-center gap-2 cursor-pointer disabled:opacity-50"
+                  className="px-5 py-2 rounded-xl bg-purple-600 hover:bg-purple-700 text-white font-bold shadow-md shadow-purple-600/25 flex items-center gap-2 cursor-pointer disabled:opacity-50"
                 >
                   {isUpdating && <Loader2 className="h-4 w-4 animate-spin" />}
                   <span>Save Changes</span>

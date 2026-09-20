@@ -14,10 +14,10 @@ export default function RelationshipsPage() {
       subtitle="View biological and marital connection nodes mapped across generations live from PostgreSQL."
     >
       <div className="space-y-6">
-        <div className="flex items-center justify-between p-4 rounded-2xl bg-white border border-slate-200/80 shadow-sm">
+        <div className="flex items-center justify-between p-4 rounded-2xl bg-slate-900 border border-slate-800 shadow-sm">
           <div className="flex items-center gap-2">
-            <Heart className="h-5 w-5 text-rose-500" />
-            <span className="font-bold text-xs text-slate-800">
+            <Heart className="h-5 w-5 text-rose-400" />
+            <span className="font-bold text-xs text-white">
               {relationships.length} Active Relationship Connections
             </span>
           </div>
@@ -32,22 +32,22 @@ export default function RelationshipsPage() {
         </div>
 
         {isLoading ? (
-          <div className="p-12 text-center flex items-center justify-center gap-3 text-slate-500 text-sm bg-white rounded-2xl border border-slate-200/80">
-            <Loader2 className="h-5 w-5 animate-spin text-indigo-600" />
+          <div className="p-12 text-center flex items-center justify-center gap-3 text-slate-400 text-sm bg-slate-900 rounded-2xl border border-slate-800">
+            <Loader2 className="h-5 w-5 animate-spin text-indigo-400" />
             <span>Loading relationships matrix from database...</span>
           </div>
         ) : relationships.length === 0 ? (
-          <div className="p-12 text-center bg-white rounded-3xl border border-slate-200/80 space-y-3">
-            <Heart className="h-10 w-10 text-slate-300 mx-auto" />
-            <h3 className="font-bold text-base text-slate-800">No relationships mapped</h3>
-            <p className="text-xs text-slate-500 max-w-sm mx-auto">
+          <div className="p-12 text-center bg-slate-900 rounded-3xl border border-slate-800 space-y-3">
+            <Heart className="h-10 w-10 text-slate-600 mx-auto" />
+            <h3 className="font-bold text-base text-white">No relationships mapped</h3>
+            <p className="text-xs text-slate-400 max-w-sm mx-auto">
               Map family ties between parents, children, spouses, and siblings.
             </p>
           </div>
         ) : (
-          <div className="bg-white border border-slate-200/80 rounded-2xl overflow-hidden shadow-sm">
-            <table className="w-full text-left text-xs text-slate-700">
-              <thead className="bg-slate-50 border-b border-slate-200/80 text-slate-500 font-bold uppercase tracking-wider">
+          <div className="bg-slate-900 border border-slate-800 rounded-2xl overflow-hidden shadow-sm">
+            <table className="w-full text-left text-xs text-slate-300">
+              <thead className="bg-slate-950 border-b border-slate-800 text-slate-400 font-bold uppercase tracking-wider">
                 <tr>
                   <th className="px-6 py-3.5">From Relative</th>
                   <th className="px-6 py-3.5">Relationship Type</th>
@@ -55,19 +55,19 @@ export default function RelationshipsPage() {
                   <th className="px-6 py-3.5">Verification Status</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-slate-100 font-medium">
+              <tbody className="divide-y divide-slate-800 font-medium">
                 {relationships.map((rel) => (
-                  <tr key={rel.id} className="hover:bg-slate-50/80 transition-colors">
-                    <td className="px-6 py-4 font-bold text-slate-900">{rel.from || "Relative A"}</td>
+                  <tr key={rel.id} className="hover:bg-slate-800/60 transition-colors">
+                    <td className="px-6 py-4 font-bold text-white">{rel.from || "Relative A"}</td>
                     <td className="px-6 py-4">
-                      <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-indigo-50 text-indigo-700 font-bold text-[11px]">
+                      <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-indigo-950/80 border border-indigo-800/60 text-indigo-300 font-bold text-[11px]">
                         <GitMerge className="h-3.5 w-3.5" />
                         {rel.type}
                       </span>
                     </td>
-                    <td className="px-6 py-4 font-bold text-slate-900">{rel.to || "Relative B"}</td>
+                    <td className="px-6 py-4 font-bold text-white">{rel.to || "Relative B"}</td>
                     <td className="px-6 py-4">
-                      <span className="inline-flex items-center gap-1 text-emerald-600 font-bold">
+                      <span className="inline-flex items-center gap-1 text-emerald-400 font-bold">
                         <ShieldCheck className="h-4 w-4" />
                         {rel.status}
                       </span>

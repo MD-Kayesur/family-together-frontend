@@ -39,7 +39,7 @@ export default function PdfViewportModal({
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/80 backdrop-blur-md animate-fadeIn p-3 sm:p-6 overflow-hidden">
-      <div className="bg-white dark:bg-stone-900 border border-slate-200 dark:border-stone-800 rounded-3xl w-full max-w-5xl h-[88vh] shadow-2xl flex flex-col overflow-hidden relative">
+      <div className="bg-slate-900 border border-slate-800 rounded-3xl w-full max-w-5xl h-[88vh] shadow-2xl flex flex-col overflow-hidden relative">
         {/* Viewport Top Header */}
         <div className="px-5 py-3.5 bg-slate-900 text-white flex flex-wrap items-center justify-between gap-3 border-b border-slate-800 shrink-0">
           <div className="flex items-center gap-3">
@@ -115,9 +115,9 @@ export default function PdfViewportModal({
         </div>
 
         {/* Viewport Render Area */}
-        <div className="flex-1 bg-slate-100 dark:bg-stone-950 p-4 sm:p-6 overflow-auto flex items-center justify-center relative">
+        <div className="flex-1 bg-slate-950 p-4 sm:p-6 overflow-auto flex items-center justify-center relative">
           <div
-            className="w-full h-full max-w-4xl bg-white dark:bg-stone-900 rounded-2xl shadow-2xl border border-slate-200 dark:border-stone-800 overflow-hidden flex flex-col transition-all duration-300"
+            className="w-full h-full max-w-4xl bg-slate-900 rounded-2xl shadow-2xl border border-slate-800 overflow-hidden flex flex-col transition-all duration-300"
             style={{ transform: `scale(${zoomLevel / 100})`, transformOrigin: "top center" }}
           >
             {/* Native Iframe PDF Viewer / Preview Canvas */}
