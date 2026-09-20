@@ -283,7 +283,7 @@ function MemoryFormContent() {
       }
 
       setTimeout(() => {
-        router.push("/owner-dashboard/memories");
+        router.push("/owner-dashboard?tab=memories");
       }, 1200);
     } catch (err: any) {
       setErrorMsg(err?.data?.message || "Failed to save memory.");
@@ -296,7 +296,7 @@ function MemoryFormContent() {
       <div className="flex flex-wrap items-center justify-between gap-4 p-5 rounded-2xl bg-slate-900 border border-slate-800 shadow-lg">
         <div className="flex items-center gap-3">
           <Link
-            href="/owner-dashboard/memories"
+            href="/owner-dashboard?tab=memories"
             className="p-2.5 rounded-xl border border-slate-700 text-slate-300 hover:text-white hover:bg-slate-800 transition-all flex items-center justify-center cursor-pointer"
             title="Back to Memories Vault"
           >
@@ -327,7 +327,7 @@ function MemoryFormContent() {
         </div>
 
         <Link
-          href="/owner-dashboard/memories"
+          href="/owner-dashboard?tab=memories"
           className="px-4 py-2 rounded-xl border border-slate-700 text-slate-300 hover:bg-slate-800 font-bold text-xs transition-colors"
         >
           Cancel & Return
@@ -729,7 +729,7 @@ function MemoryFormContent() {
           {/* Action Buttons */}
           <div className="flex items-center justify-end gap-3 pt-4 border-t border-slate-800">
             <Link
-              href="/owner-dashboard/memories"
+              href="/owner-dashboard?tab=memories"
               className="px-5 py-3 rounded-xl border border-slate-800 text-slate-300 font-bold hover:bg-slate-800 transition-colors text-xs"
             >
               Cancel

@@ -67,16 +67,16 @@ export default function ViewerDashboardPage() {
   const familyName = user.fullName.split(" ").slice(-1)[0] || "Rahman";
 
   const sidebarLinks = [
-    { name: "Dashboard", href: "/owner-dashboard", icon: LayoutDashboard, badge: null },
-    { name: "My Family", href: "/owner-dashboard/family", icon: Users, badge: null },
-    { name: "Family Tree", href: "/owner-dashboard/tree", icon: TreePine, badge: null },
-    { name: "Members", href: "/owner-dashboard/members", icon: UserCheck, badge: null },
-    { name: "Relationships", href: "/owner-dashboard/relationships", icon: Heart, badge: null },
-    { name: "Memories", href: "/owner-dashboard/memories", icon: ImageIcon, badge: null },
-    { name: "Events", href: "/owner-dashboard/events", icon: Calendar, badge: null },
-    { name: "Documents", href: "/owner-dashboard/documents", icon: FolderLock, badge: null },
-    { name: "Invitations", href: "/owner-dashboard/invitations", icon: Mail, badge: null },
-    { name: "Settings", href: "/owner-dashboard/settings", icon: Settings, badge: null },
+    { name: "Dashboard", href: "/owner-dashboard?tab=dashboard", icon: LayoutDashboard, badge: null },
+    { name: "My Family", href: "/owner-dashboard?tab=family", icon: Users, badge: null },
+    { name: "Family Tree", href: "/owner-dashboard?tab=tree", icon: TreePine, badge: null },
+    { name: "Members", href: "/owner-dashboard?tab=members", icon: UserCheck, badge: null },
+    { name: "Relationships", href: "/owner-dashboard?tab=relationships", icon: Heart, badge: null },
+    { name: "Memories", href: "/owner-dashboard?tab=memories", icon: ImageIcon, badge: null },
+    { name: "Events", href: "/owner-dashboard?tab=events", icon: Calendar, badge: null },
+    { name: "Documents", href: "/owner-dashboard?tab=documents", icon: FolderLock, badge: null },
+    { name: "Invitations", href: "/owner-dashboard?tab=invitations", icon: Mail, badge: null },
+    { name: "Settings", href: "/owner-dashboard?tab=settings", icon: Settings, badge: null },
   ];
 
   return (
@@ -229,7 +229,7 @@ export default function ViewerDashboardPage() {
                   {memories[0]?.description || "Shared by Amina Rahman • A wonderful weekend celebrating with extended family."}
                 </p>
                 <Link
-                  href="/owner-dashboard/memories"
+                  href="/owner-dashboard?tab=memories"
                   className="inline-flex items-center gap-2 text-xs font-bold text-white hover:text-indigo-300 transition-colors pt-1"
                 >
                   <span>View Gallery</span>
@@ -245,7 +245,7 @@ export default function ViewerDashboardPage() {
                 <div className="flex items-center justify-between">
                   <h3 className="font-bold text-sm text-white">Lineage Preview</h3>
                   <Link
-                    href="/owner-dashboard/tree"
+                    href="/owner-dashboard?tab=tree"
                     className="text-xs font-bold text-indigo-400 hover:text-indigo-300 transition-colors"
                   >
                     Explore Tree
@@ -336,7 +336,7 @@ export default function ViewerDashboardPage() {
 
                 <div className="pt-2 text-center border-t border-slate-800">
                   <Link
-                    href="/owner-dashboard/events"
+                    href="/owner-dashboard?tab=events"
                     className="text-xs font-bold text-indigo-400 hover:text-indigo-300 transition-colors"
                   >
                     View Full Calendar
@@ -351,7 +351,7 @@ export default function ViewerDashboardPage() {
             <div className="flex items-center justify-between">
               <h2 className="font-bold text-lg text-white">Key Family Members</h2>
               <Link
-                href="/owner-dashboard/members"
+                href="/owner-dashboard?tab=members"
                 className="text-xs font-bold text-indigo-400 hover:text-indigo-300 transition-colors inline-flex items-center gap-1"
               >
                 <span>View Directory</span>
@@ -380,7 +380,7 @@ export default function ViewerDashboardPage() {
               ))}
 
               <Link
-                href="/owner-dashboard/members"
+                href="/owner-dashboard?tab=members"
                 className="p-4 rounded-xl bg-indigo-950/40 border border-indigo-800/60 flex flex-col items-center text-center justify-center space-y-1 cursor-pointer hover:bg-indigo-900/40 transition-colors"
               >
                 <span className="text-xl font-extrabold text-indigo-400">+{members.length}</span>

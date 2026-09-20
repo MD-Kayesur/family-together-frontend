@@ -63,7 +63,7 @@ export default function MemoryDetailPage() {
             This memory may have been removed or does not exist.
           </p>
           <Link
-            href="/owner-dashboard/memories"
+            href="/owner-dashboard?tab=memories"
             className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-purple-600 text-white font-bold text-xs hover:bg-purple-700 transition-colors"
           >
             <ArrowLeft className="h-4 w-4" />
@@ -131,7 +131,7 @@ export default function MemoryDetailPage() {
         <div className="flex flex-wrap items-center justify-between gap-4 p-5 rounded-2xl bg-slate-900 border border-slate-800 shadow-xl">
           <div className="flex items-center gap-3">
             <Link
-              href="/owner-dashboard/memories"
+              href="/owner-dashboard?tab=memories"
               className="p-2.5 rounded-xl border border-slate-800 text-slate-400 hover:text-white hover:bg-slate-800 transition-all flex items-center justify-center cursor-pointer"
               title="Back to Memories"
             >

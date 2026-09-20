@@ -81,7 +81,7 @@ export default function UserDashboardPage() {
 
             <div className="pt-2 flex flex-wrap gap-3">
               <Link
-                href={isOwnerOrAdmin ? "/owner-dashboard/tree" : "/user-dashboard/profile"}
+                href={isOwnerOrAdmin ? "/owner-dashboard?tab=tree" : "/user-dashboard/profile"}
                 className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-white text-indigo-950 font-bold text-xs hover:bg-indigo-50 shadow-md transition-all group"
               >
                 <TreePine className="h-4 w-4 text-indigo-600 group-hover:scale-110 transition-transform" />
@@ -89,7 +89,7 @@ export default function UserDashboardPage() {
                 <ArrowRight className="h-3.5 w-3.5 opacity-70 group-hover:translate-x-0.5 transition-transform" />
               </Link>
               <Link
-                href={isOwnerOrAdmin ? "/owner-dashboard/memories" : "#memories-feed"}
+                href={isOwnerOrAdmin ? "/owner-dashboard?tab=memories" : "#memories-feed"}
                 className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-white/10 backdrop-blur-md text-white font-semibold text-xs hover:bg-white/20 border border-white/20 transition-all"
               >
                 <ImageIcon className="h-4 w-4" />
@@ -117,7 +117,7 @@ export default function UserDashboardPage() {
             <div className="mt-4 pt-3 border-t border-slate-800 flex items-center justify-between text-xs font-semibold text-purple-400">
               <span>{isOwnerOrAdmin ? "View Canvas" : "Sanctuary Lineage"}</span>
               {isOwnerOrAdmin ? (
-                <Link href="/owner-dashboard/tree" className="inline-flex items-center gap-1 hover:underline">
+                <Link href="/owner-dashboard?tab=tree" className="inline-flex items-center gap-1 hover:underline">
                   <span>Open</span>
                   <ArrowRight className="h-3.5 w-3.5 group-hover:translate-x-1 transition-transform" />
                 </Link>
@@ -143,7 +143,7 @@ export default function UserDashboardPage() {
             <div className="mt-4 pt-3 border-t border-slate-800 flex items-center justify-between text-xs font-semibold text-purple-400">
               <span>{memories.length} Memories Saved</span>
               {isOwnerOrAdmin ? (
-                <Link href="/owner-dashboard/memories" className="inline-flex items-center gap-1 hover:underline">
+                <Link href="/owner-dashboard?tab=memories" className="inline-flex items-center gap-1 hover:underline">
                   <span>Vault</span>
                   <ArrowRight className="h-3.5 w-3.5 group-hover:translate-x-1 transition-transform" />
                 </Link>
@@ -172,7 +172,7 @@ export default function UserDashboardPage() {
             <div className="mt-4 pt-3 border-t border-slate-800 flex items-center justify-between text-xs font-semibold text-purple-400">
               <span>{events.length} Upcoming Events</span>
               {isOwnerOrAdmin ? (
-                <Link href="/owner-dashboard/events" className="inline-flex items-center gap-1 hover:underline">
+                <Link href="/owner-dashboard?tab=events" className="inline-flex items-center gap-1 hover:underline">
                   <span>Manage</span>
                   <ArrowRight className="h-3.5 w-3.5 group-hover:translate-x-1 transition-transform" />
                 </Link>
@@ -201,7 +201,7 @@ export default function UserDashboardPage() {
             <div className="mt-4 pt-3 border-t border-slate-800 flex items-center justify-between text-xs font-semibold text-purple-400">
               <span>{members.length} Members Listed</span>
               {isOwnerOrAdmin ? (
-                <Link href="/owner-dashboard/members" className="inline-flex items-center gap-1 hover:underline">
+                <Link href="/owner-dashboard?tab=members" className="inline-flex items-center gap-1 hover:underline">
                   <span>Directory</span>
                   <ArrowRight className="h-3.5 w-3.5 group-hover:translate-x-1 transition-transform" />
                 </Link>
@@ -259,7 +259,7 @@ export default function UserDashboardPage() {
                   <p className="text-xs text-slate-400">Upcoming celebrations and anniversaries</p>
                 </div>
                 <Link
-                  href="/owner-dashboard/events"
+                  href="/owner-dashboard?tab=events"
                   className="text-xs font-semibold text-purple-400 hover:text-purple-300 transition-colors"
                 >
                   Calendar →

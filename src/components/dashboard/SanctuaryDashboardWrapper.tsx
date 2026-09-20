@@ -1,8 +1,8 @@
 "use client";
 
-import React, { useEffect } from "react";
+import React, { useEffect, Suspense } from "react";
 import Link from "next/link";
-import { usePathname, useRouter } from "next/navigation";
+import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import {
   LayoutDashboard,
   Users,
@@ -15,7 +15,6 @@ import {
   Mail,
   Settings,
   Shield,
-  Bell,
   Search,
 } from "lucide-react";
 import { useAppSelector } from "@/redux/store";
@@ -23,6 +22,86 @@ import NavbarNotificationMenu from "@/components/dashboard/NavbarNotificationMen
 import UserNavbarAvatarMenu from "@/components/dashboard/UserNavbarAvatarMenu";
 import ThemeToggle from "@/components/theme/ThemeToggle";
 import { getDashboardRouteByRole, canAccessRoute } from "@/lib/utils/roleUtils";
+
+export function normalizeDashboardTab(rawTab?: string | null): string {
+  if (!rawTab) return "dashboard";
+  const cleaned = rawTab.toLowerCase().trim().replace(/[\s_-]+/g, "");
+  if (cleaned === "dahsbord" || cleaned === "dashboard" || cleaned === "overview") return "dashboard";
+  if (cleaned === "users" || cleaned === "allusers" || cleaned === "alllusers" || cleaned === "useraccounts") return "users";
+  if (cleaned === "family" || cleaned === "myfamily") return "family";
+  if (cleaned === "tree" || cleaned === "familytree") return "tree";
+  if (cleaned === "members" || cleaned === "member") return "members";
+  if (cleaned === "relationships" || cleaned === "relation" || cleaned === "relations") return "relationships";
+  if (cleaned === "memories" || cleaned === "memory") return "memories";
+  if (cleaned === "events" || cleaned === "event") return "events";
+  if (cleaned === "documents" || cleaned === "document" || cleaned === "docs") return "documents";
+  if (cleaned === "invitations" || cleaned === "invites" || cleaned === "invite") return "invitations";
+  if (cleaned === "settings" || cleaned === "setting") return "settings";
+  return cleaned;
+}
+
+interface SidebarNavLinksProps {
+  isOwnerOrAdmin: boolean;
+  pathname: string;
+}
+
+function SidebarNavLinks({ isOwnerOrAdmin, pathname }: SidebarNavLinksProps) {
+  const searchParams = useSearchParams();
+  const currentTab = normalizeDashboardTab(searchParams?.get("tab"));
+
+  const sidebarLinks = isOwnerOrAdmin
+    ? [
+        { name: "Dashboard", href: "/owner-dashboard?tab=dashboard", tabKey: "dashboard", icon: LayoutDashboard, badge: null },
+        { name: "User Accounts", href: "/owner-dashboard?tab=users", tabKey: "users", icon: Shield, badge: null },
+        { name: "My Family", href: "/owner-dashboard?tab=family", tabKey: "family", icon: Users, badge: null },
+        { name: "Family Tree", href: "/owner-dashboard?tab=tree", tabKey: "tree", icon: TreePine, badge: null },
+        { name: "Members", href: "/owner-dashboard?tab=members", tabKey: "members", icon: UserCheck, badge: null },
+        { name: "Relationships", href: "/owner-dashboard?tab=relationships", tabKey: "relationships", icon: Heart, badge: null },
+        { name: "Memories", href: "/owner-dashboard?tab=memories", tabKey: "memories", icon: ImageIcon, badge: null },
+        { name: "Events", href: "/owner-dashboard?tab=events", tabKey: "events", icon: Calendar, badge: null },
+        { name: "Documents", href: "/owner-dashboard?tab=documents", tabKey: "documents", icon: FolderLock, badge: null },
+        { name: "Invitations", href: "/owner-dashboard?tab=invitations", tabKey: "invitations", icon: Mail, badge: "2" },
+        { name: "Settings", href: "/owner-dashboard?tab=settings", tabKey: "settings", icon: Settings, badge: null },
+      ]
+    : [
+        { name: "Member Sanctuary", href: "/user-dashboard", tabKey: "dashboard", icon: LayoutDashboard, badge: null },
+        { name: "My Profile", href: "/user-dashboard/profile", tabKey: "profile", icon: UserCheck, badge: null },
+      ];
+
+  return (
+    <nav className="space-y-1">
+      {sidebarLinks.map((item) => {
+        const Icon = item.icon;
+        const isActive = isOwnerOrAdmin
+          ? (pathname === "/owner-dashboard" && currentTab === item.tabKey) ||
+            pathname === `/owner-dashboard/${item.tabKey}`
+          : pathname === item.href;
+
+        return (
+          <Link
+            key={item.name}
+            href={item.href}
+            className={`flex items-center justify-between px-3.5 py-2.5 rounded-xl font-medium text-xs transition-all ${
+              isActive
+                ? "bg-purple-600 text-white shadow-md shadow-purple-600/20 font-semibold"
+                : "text-slate-400 hover:text-white hover:bg-slate-800"
+            }`}
+          >
+            <div className="flex items-center gap-3">
+              <Icon className={`h-4 w-4 ${isActive ? "text-white" : "text-slate-400"}`} />
+              <span>{item.name}</span>
+            </div>
+            {item.badge && (
+              <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-rose-500 text-white">
+                {item.badge}
+              </span>
+            )}
+          </Link>
+        );
+      })}
+    </nav>
+  );
+}
 
 interface SanctuaryDashboardWrapperProps {
   children: React.ReactNode;
@@ -69,25 +148,6 @@ export default function SanctuaryDashboardWrapper({
     roleUpper === "ADMIN" ||
     roleUpper === "SUPER_ADMIN";
 
-  const sidebarLinks = isOwnerOrAdmin
-    ? [
-        { name: "Dashboard", href: getDashboardRouteByRole(user?.role), icon: LayoutDashboard, badge: null },
-        { name: "User Accounts", href: "/owner-dashboard/users", icon: Shield, badge: null },
-        { name: "My Family", href: "/owner-dashboard/family", icon: Users, badge: null },
-        { name: "Family Tree", href: "/owner-dashboard/tree", icon: TreePine, badge: null },
-        { name: "Members", href: "/owner-dashboard/members", icon: UserCheck, badge: null },
-        { name: "Relationships", href: "/owner-dashboard/relationships", icon: Heart, badge: null },
-        { name: "Memories", href: "/owner-dashboard/memories", icon: ImageIcon, badge: null },
-        { name: "Events", href: "/owner-dashboard/events", icon: Calendar, badge: null },
-        { name: "Documents", href: "/owner-dashboard/documents", icon: FolderLock, badge: null },
-        { name: "Invitations", href: "/owner-dashboard/invitations", icon: Mail, badge: "2" },
-        { name: "Settings", href: "/owner-dashboard/settings", icon: Settings, badge: null },
-      ]
-    : [
-        { name: "Member Sanctuary", href: "/user-dashboard", icon: LayoutDashboard, badge: null },
-        { name: "My Profile", href: "/user-dashboard/profile", icon: UserCheck, badge: null },
-      ];
-
   return (
     <div className="h-screen overflow-hidden flex bg-slate-950 font-sans text-slate-100 antialiased transition-colors duration-200">
       {/* Left Sidebar Navigation */}
@@ -108,34 +168,16 @@ export default function SanctuaryDashboardWrapper({
             </div>
           </Link>
 
-          {/* Navigation Links */}
-          <nav className="space-y-1">
-            {sidebarLinks.map((item) => {
-              const Icon = item.icon;
-              const isActive = pathname === item.href;
-              return (
-                <Link
-                  key={item.name}
-                  href={item.href}
-                  className={`flex items-center justify-between px-3.5 py-2.5 rounded-xl font-medium text-xs transition-all ${
-                    isActive
-                      ? "bg-purple-600 text-white shadow-md shadow-purple-600/20 font-semibold"
-                      : "text-slate-400 hover:text-white hover:bg-slate-800"
-                  }`}
-                >
-                  <div className="flex items-center gap-3">
-                    <Icon className={`h-4 w-4 ${isActive ? "text-white" : "text-slate-400"}`} />
-                    <span>{item.name}</span>
-                  </div>
-                  {item.badge && (
-                    <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-rose-500 text-white">
-                      {item.badge}
-                    </span>
-                  )}
-                </Link>
-              );
-            })}
-          </nav>
+          {/* Navigation Links with Suspense */}
+          <Suspense
+            fallback={
+              <div className="space-y-1 py-2 text-xs text-slate-500">
+                Loading navigation...
+              </div>
+            }
+          >
+            <SidebarNavLinks isOwnerOrAdmin={isOwnerOrAdmin} pathname={pathname} />
+          </Suspense>
         </div>
 
         {/* Clean Sidebar Footer */}
