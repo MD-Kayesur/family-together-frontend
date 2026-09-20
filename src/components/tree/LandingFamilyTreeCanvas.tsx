@@ -218,7 +218,7 @@ export default function LandingFamilyTreeCanvas({
     return () => window.removeEventListener("resize", updateDimensions);
   }, [calculateCenteredPositions, isCard, storageKey]);
 
-  // 2. Real-time Synchronization across sections (when relatives added/edited in top section)
+  // 2. Real-time Synchronization across sections
   useEffect(() => {
     const handleSync = () => {
       const savedPositions = localStorage.getItem(`${storageKey}_positions`);
@@ -250,9 +250,8 @@ export default function LandingFamilyTreeCanvas({
     };
   }, [storageKey]);
 
-  // 3. Mouse Wheel Zoom In / Out (disabled in readOnly mode)
+  // 3. Mouse Wheel Zoom In / Out (Enabled for both full-screen and view-only modes!)
   useEffect(() => {
-    if (readOnly) return;
     const surface = canvasSurfaceRef.current;
     if (!surface) return;
 
@@ -266,7 +265,7 @@ export default function LandingFamilyTreeCanvas({
     return () => {
       surface.removeEventListener("wheel", handleWheel);
     };
-  }, [readOnly]);
+  }, []);
 
   // Save to LocalStorage and broadcast update event to synced view-only sections
   const persistTree = (
@@ -309,7 +308,7 @@ export default function LandingFamilyTreeCanvas({
     }
   };
 
-  // Zoom controls (interactive mode only)
+  // Zoom controls (Available in both interactive and read-only modes)
   const handleZoomIn = () => setZoomLevel((z) => Math.min(z + 15, 200));
   const handleZoomOut = () => setZoomLevel((z) => Math.max(z - 15, 30));
   const handleResetZoom = () => {
@@ -335,9 +334,8 @@ export default function LandingFamilyTreeCanvas({
     };
   };
 
-  // Pointer Down on Canvas Background -> Panning (disabled in readOnly)
+  // Pointer Down on Canvas Background -> Panning
   const handleCanvasBackgroundPointerDown = (e: React.PointerEvent) => {
-    if (readOnly) return;
     if (e.button !== 0 && e.button !== 1) return;
 
     setIsPanningCanvas(true);
@@ -392,9 +390,9 @@ export default function LandingFamilyTreeCanvas({
 
   // Pointer Move on canvas
   const handleCanvasPointerMove = (e: React.PointerEvent) => {
-    if (readOnly || !canvasSurfaceRef.current) return;
+    if (!canvasSurfaceRef.current) return;
 
-    // 1. Canvas background panning
+    // 1. Canvas background panning (Allowed in both modes so user can explore when zoomed)
     if (isPanningCanvas) {
       const dx = e.clientX - panStartRef.current.x;
       const dy = e.clientY - panStartRef.current.y;
@@ -404,6 +402,8 @@ export default function LandingFamilyTreeCanvas({
       });
       return;
     }
+
+    if (readOnly) return;
 
     const coords = getCanvasCoords(e.clientX, e.clientY);
 
@@ -428,11 +428,11 @@ export default function LandingFamilyTreeCanvas({
 
   // Pointer Up on canvas
   const handleCanvasPointerUp = (e: React.PointerEvent) => {
-    if (readOnly) return;
-
     if (isPanningCanvas) {
       setIsPanningCanvas(false);
     }
+
+    if (readOnly) return;
 
     if (draggingNodeId) {
       setDraggingNodeId(null);
@@ -614,7 +614,7 @@ export default function LandingFamilyTreeCanvas({
           : "h-screen min-h-screen p-0 m-0"
       } ${className}`}
     >
-      {/* 2D Interactive / View-Only Canvas Surface */}
+      {/* 2D Canvas Surface (Zoom in / Zoom out & Panning supported) */}
       <div
         ref={canvasSurfaceRef}
         onPointerDown={handleCanvasBackgroundPointerDown}
@@ -623,9 +623,7 @@ export default function LandingFamilyTreeCanvas({
         style={{
           backgroundPosition: `${panOffset.x}px ${panOffset.y}px`,
         }}
-        className={`w-full relative overflow-hidden select-none touch-none bg-[radial-gradient(#cbd5e1_1.2px,transparent_1.2px)] dark:bg-[radial-gradient(#334155_1.2px,transparent_1.2px)] [background-size:24px_24px] transition-colors ${
-          readOnly ? "cursor-default" : "cursor-grab active:cursor-grabbing"
-        } ${
+        className={`w-full relative overflow-hidden select-none touch-none bg-[radial-gradient(#cbd5e1_1.2px,transparent_1.2px)] dark:bg-[radial-gradient(#334155_1.2px,transparent_1.2px)] [background-size:24px_24px] cursor-grab active:cursor-grabbing transition-colors ${
           isFullScreen
             ? "flex-1 h-full min-h-[600px] rounded-2xl"
             : isCard
@@ -650,8 +648,44 @@ export default function LandingFamilyTreeCanvas({
           </span>
         </div>
 
-        {/* Top-Right Floating Controls Bar (Hidden in readOnly mode) */}
-        {!readOnly && (
+        {/* Top-Right Controls: Only Zoom In and Zoom Out for readOnly mode */}
+        {readOnly ? (
+          <div
+            onPointerDown={(e) => e.stopPropagation()}
+            className="absolute top-3.5 right-3.5 z-30 flex items-center gap-1 p-1 rounded-2xl bg-white/95 dark:bg-slate-900/95 backdrop-blur-xl border border-slate-200/90 dark:border-slate-800 shadow-xl pointer-events-auto"
+          >
+            {/* Zoom Out (-) Button */}
+            <button
+              type="button"
+              onClick={handleZoomOut}
+              className="h-7 w-7 rounded-lg border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 hover:bg-slate-100 dark:hover:bg-slate-700 text-slate-800 dark:text-slate-100 font-bold text-sm flex items-center justify-center cursor-pointer transition-colors"
+              title="Zoom Out (-)"
+            >
+              <Minus className="h-3.5 w-3.5 stroke-[2.5]" />
+            </button>
+
+            {/* Current Zoom % / Reset Zoom */}
+            <button
+              type="button"
+              onClick={handleResetZoom}
+              className="px-2 py-0.5 rounded-lg border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 hover:bg-slate-100 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 font-extrabold text-[11px] cursor-pointer transition-colors"
+              title="Click to reset zoom"
+            >
+              {zoomLevel}%
+            </button>
+
+            {/* Zoom In (+) Button */}
+            <button
+              type="button"
+              onClick={handleZoomIn}
+              className="h-7 w-7 rounded-lg border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 hover:bg-slate-100 dark:hover:bg-slate-700 text-slate-800 dark:text-slate-100 font-bold text-sm flex items-center justify-center cursor-pointer transition-colors"
+              title="Zoom In (+)"
+            >
+              <Plus className="h-3.5 w-3.5 stroke-[2.5]" />
+            </button>
+          </div>
+        ) : (
+          /* Full toolbar for interactive mode */
           <div
             onPointerDown={(e) => e.stopPropagation()}
             className="absolute top-3.5 right-3.5 z-30 flex flex-wrap items-center gap-1 sm:gap-1.5 p-1.5 rounded-2xl bg-white/95 dark:bg-slate-900/95 backdrop-blur-xl border border-slate-200/90 dark:border-slate-800 shadow-2xl transition-all max-w-[calc(100%-28px)] pointer-events-auto"
@@ -779,6 +813,23 @@ export default function LandingFamilyTreeCanvas({
           </div>
         )}
 
+        {/* Bottom Tips Pill: Zoom in and out for readOnly mode */}
+        {readOnly && (
+          <div
+            onPointerDown={(e) => e.stopPropagation()}
+            className="absolute bottom-3 left-1/2 -translate-x-1/2 z-20 hidden md:flex items-center gap-2.5 px-3.5 py-1.5 rounded-2xl bg-white/95 dark:bg-slate-900/95 backdrop-blur-xl border border-slate-200/90 dark:border-slate-800 shadow-md text-[10px] font-medium text-slate-600 dark:text-slate-300 pointer-events-none"
+          >
+            <span className="flex items-center gap-1 font-bold text-indigo-600 dark:text-indigo-400">
+              <Sparkles className="h-3 w-3" />
+              Zoomable Tree
+            </span>
+            <span className="text-slate-300 dark:text-slate-700">|</span>
+            <span>🖱️ Mouse wheel to zoom in & out ({zoomLevel}%)</span>
+            <span className="text-slate-300 dark:text-slate-700">•</span>
+            <span>🖐️ Drag to pan</span>
+          </div>
+        )}
+
         {/* Transformed Inner Canvas Layer: Panning & Zooming around exact middle (cx, cy) */}
         <div
           style={{
@@ -787,7 +838,7 @@ export default function LandingFamilyTreeCanvas({
             width: "100%",
             height: "100%",
           }}
-          className={`absolute inset-0 ${readOnly ? "pointer-events-none" : "pointer-events-auto"}`}
+          className="absolute inset-0 pointer-events-auto"
         >
           {/* SVG Dynamic Connecting Lines Layer */}
           <svg className="absolute inset-0 w-full h-full pointer-events-none z-0">
