@@ -10,6 +10,7 @@ import {
 } from "@/redux/api/authApi";
 import { useAppSelector } from "@/redux/store";
 import { getDashboardRouteByRole } from "@/lib/utils/roleUtils";
+import { Eye, EyeOff } from "lucide-react";
 
 function SignUpContent() {
   const router = useRouter();
@@ -355,9 +356,7 @@ function SignUpContent() {
                       className="absolute inset-y-0 right-0 pr-3 flex items-center text-outline hover:text-on-surface transition-colors cursor-pointer"
                       aria-label={showPassword ? "Hide password" : "Show password"}
                     >
-                      <span className="material-symbols-outlined text-[20px]">
-                        {showPassword ? "visibility_off" : "visibility"}
-                      </span>
+                      {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
                     </button>
                   </div>
                   <p className="font-body-sm text-xs text-on-surface-variant mt-1.5">

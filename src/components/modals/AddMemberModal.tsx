@@ -19,6 +19,7 @@ import {
   Mail,
   ShieldCheck,
   Eye,
+  EyeOff,
   UserCheck,
   Info,
   Link2,
@@ -56,6 +57,7 @@ export default function AddMemberModal({ isOpen, onClose }: AddMemberModalProps)
   // Platform User Account & Login Credentials
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [showPassword, setShowPassword] = useState(false);
 
   // Professional & Residence Details
   const [occupation, setOccupation] = useState("");
@@ -569,12 +571,20 @@ export default function AddMemberModal({ isOpen, onClose }: AddMemberModalProps)
                 <div className="relative">
                   <KeyRound className="h-4 w-4 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2" />
                   <input
-                    type="text"
+                    type={showPassword ? "text" : "password"}
                     placeholder="e.g. Family@123 (Defaults if blank)"
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
-                    className="w-full pl-9 pr-3.5 py-2.5 rounded-xl border border-slate-800 bg-slate-950 text-white placeholder:text-slate-500 focus:ring-2 focus:ring-purple-500 focus:outline-none font-medium"
+                    className="w-full pl-9 pr-10 py-2.5 rounded-xl border border-slate-800 bg-slate-950 text-white placeholder:text-slate-500 focus:ring-2 focus:ring-purple-500 focus:outline-none font-medium"
                   />
+                  <button
+                    type="button"
+                    onClick={() => setShowPassword(!showPassword)}
+                    className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-200 cursor-pointer"
+                    aria-label={showPassword ? "Hide password" : "Show password"}
+                  >
+                    {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                  </button>
                 </div>
               </div>
             </div>
