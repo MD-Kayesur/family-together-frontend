@@ -1,60 +1,121 @@
-# Dynamic Role-Based Family Tree & Add Family Architecture for User Dashboard
+# FamilyRoots — Member Dashboard Family Tree & Relative Permission Architecture
 
-## 1. Executive Summary & Feasibility Confirmation
-**Yes, it is 100% possible and straightforward to implement!**
+## 1. Executive Summary: Answers to User Inquiries
 
-The Family Tree visualizer and "Add Family" (member addition & linking) capabilities can be shared seamlessly between the **Owner Dashboard** and the **User Dashboard**, dynamically driven by the logged-in user's role (`OWNER` vs. `USER` / `MEMBER`).
-
----
-
-## 2. Architecture: How Dynamic Role-Based Handling Works
-
-### A. Dynamic Component Reusability
-Instead of creating duplicate code, our existing components can be parameterized by role:
-1. **`<InteractiveFamilyTreeCanvas />`**:
-   - **When `role === 'OWNER'`**:
-     - Displays all members across the entire family sanctuary.
-     - Full administrative capabilities: add nodes, link relationships, delete or reposition any node, assign roles.
-   - **When `role === 'USER'` or `'MEMBER'`**:
-     - Centers the canvas around the logged-in user's own person node (Root Node).
-     - Visualizes their immediate lineage: parents, siblings, spouse, children, and grandparents.
-     - Allows dragging, zooming, and adding immediate relatives (e.g., Parent, Child, Spouse, Sibling).
-     - Restricts destructive actions (cannot delete the sanctuary owner or unrelated branches).
-
-2. **`<AddMemberModal />`**:
-   - **When `role === 'OWNER'`**:
-     - Can add members at any generation, set any sanctuary role (OWNER, ADMIN, MEMBER, VIEWER), and manage system credentials.
-   - **When `role === 'USER'` / `'MEMBER'`**:
-     - Automatically presets relationship to the current user (e.g. "Add my child", "Add my parent", "Add my spouse").
-     - Sets default member role to `MEMBER` or `VIEWER`.
-     - Prompts only for relevant family details (Name, Relation, DOB, Gender, Photo).
+### Question 1: "in member dashboard as member tree?"
+**Answer: YES.** 
+The Member Dashboard can and should have a dedicated **Interactive Family Tree**. 
+- **Owner Family Tree**: Shows the complete sanctuary across all branches with full administrative controls (repositioning, deleting any node, global relationship linking).
+- **Member Family Tree**: Personalized and centered on the **logged-in member's node**. It displays their immediate family lineage (parents, grandparents, spouse, children, siblings) in a clean, interactive canvas with zoom, pan, and focus capabilities.
 
 ---
 
-## 3. Query-Tab Navigation Integration in User Dashboard
-Following the unified query-tab routing pattern established for the Owner Dashboard, the User Dashboard will also support:
+### Question 2: "and has permission for add user or member his relative?"
+**Answer: YES.** 
+A Member has permission to add their own relatives and invite them as platform users:
+- **Direct Relative Addition**: A member can add their immediate relatives (Father, Mother, Spouse, Son, Daughter, Brother, Sister).
+- **Automatic Relationship Linking**: When the member submits the relative's information, the system automatically creates the `Person` record and establishes the `Relationship` record in the database connecting the logged-in member to the new relative.
+- **Optional Platform Account Creation**: The member can provide the relative's email address. The backend creates an active `User` account with the `USER` / `MEMBER` role and emails them their login credentials so they can access their own family dashboard.
+- **Permission Guardrails**: Normal members **cannot** delete the Sanctuary Owner, modify unrelated branches, or assign elevated administrative roles (`OWNER` or `ADMIN`).
+
+---
+
+## 2. Comprehensive Permission Matrix (Owner vs. Member)
+
+| Feature / Action | Sanctuary Owner (`OWNER` / `ADMIN`) | Family Member (`MEMBER` / `USER`) |
+| :--- | :---: | :---: |
+| **Family Tree View** | Global sanctuary view (all branches, all generations) | Focused personal lineage (centered on member node) |
+| **Add Family Relative** | Can add any person anywhere in the tree | Can add immediate relatives (parent, child, spouse, sibling) |
+| **Automatic Relationship** | Manually links any two people | Automatically links relative to the logged-in member |
+| **Invite / Create User Account** | Can create accounts with any role (`OWNER`, `ADMIN`, `MEMBER`) | Can create accounts with `MEMBER` / `USER` role only |
+| **Edit Family Profiles** | Can edit all member profiles | Can edit own profile and profiles of direct dependents |
+| **Delete Profiles / Nodes** | Can remove any member or node | Cannot delete sanctuary owner or other branches |
+| **Documents & Vault** | Full administrative access (upload, delete, categories) | View shared family documents |
+| **Sanctuary Settings & Audit Logs** | Full control over sanctuary settings and audit logs | No access to administrative settings |
+
+---
+
+## 3. How the "Add Relative" Flow Works for Members
+
+```
++-------------------------------------------------------------+
+| 1. Member clicks "Add Relative" on their Family Tree        |
++-------------------------------------------------------------+
+                              |
+                              v
++-------------------------------------------------------------+
+| 2. Member selects relationship type:                        |
+|    - Parent (Father / Mother)                               |
+|    - Spouse / Partner                                       |
+|    - Child (Son / Daughter)                                 |
+|    - Sibling (Brother / Sister)                             |
++-------------------------------------------------------------+
+                              |
+                              v
++-------------------------------------------------------------+
+| 3. Member enters Relative Details:                          |
+|    - First Name, Last Name, Gender, Birth Date              |
+|    - Optional: Photo, Occupation, Bio                       |
+|    - Optional: Email (to invite as a platform user)         |
++-------------------------------------------------------------+
+                              |
+                              v
++-------------------------------------------------------------+
+| 4. Backend Processing (POST /family/members):               |
+|    a. Creates Person record for relative                    |
+|    b. Links to Family (FamilyMember record)                 |
+|    c. Creates Relationship record linking Member <-> Relative|
+|    d. If email provided: Creates User account (role: USER)  |
+|       and sends welcome email with login credentials        |
++-------------------------------------------------------------+
+                              |
+                              v
++-------------------------------------------------------------+
+| 5. Tree re-renders with new relative node connected!        |
++-------------------------------------------------------------+
+```
+
+---
+
+## 4. Frontend Routing & Tab Structure
+
+Following the unified query-tab routing pattern established for the platform:
+
+### Owner Dashboard:
+- `/owner-dashboard?tab=dashboard` -> Overview & Metrics
+- `/owner-dashboard?tab=users` -> System User Accounts
+- `/owner-dashboard?tab=family` -> Family Management
+- `/owner-dashboard?tab=tree` -> Global Family Tree Canvas
+- `/owner-dashboard?tab=members` -> Full Member Directory
+- `/owner-dashboard?tab=relationships` -> Relationship Matrix
+- `/owner-dashboard?tab=memories` -> Memory Vault
+- `/owner-dashboard?tab=events` -> Gatherings & Calendar
+- `/owner-dashboard?tab=documents` -> Document Vault
+- `/owner-dashboard?tab=invitations` -> Pending Join Requests
+- `/owner-dashboard?tab=settings` -> Sanctuary Settings
+
+### Member Dashboard:
 - `/user-dashboard?tab=dashboard` -> Member Sanctuary Portal Overview
-- `/user-dashboard?tab=tree` -> Dynamic Interactive Family Tree Canvas (Personal / Lineage view)
-- `/user-dashboard?tab=members` -> Family Directory & Add Family Member
-- `/user-dashboard?tab=memories` -> Shared Memories Vault
+- `/user-dashboard?tab=tree` -> Personal Interactive Family Tree (Centered on Member)
+- `/user-dashboard?tab=members` -> Family Directory & "Add Relative" action
+- `/user-dashboard?tab=memories` -> Shared Family Memories
+- `/user-dashboard?tab=events` -> Upcoming Gatherings & Birthdays
 - `/user-dashboard?tab=profile` -> Personal Account & Security Settings
 
 ---
 
-## 4. Backend Data Isolation & Permissions
-The backend can handle queries conditionally:
-1. **`GET /family/tree` or `GET /family/members`**:
-   - If user is `OWNER` or `ADMIN`: Returns complete sanctuary members.
-   - If user is `USER` / `MEMBER`:
-     - Can return the family tree with the current user identified (`isCurrentUser: true`).
-     - Or filter to the user's connected family circle (parents, spouse, children, siblings).
-2. **`POST /family/members`**:
-   - Accessible by both Owner and Member.
-   - When a Member adds a relative, it automatically establishes the relationship link between the member and the new relative in `relationships` table.
+## 5. Backend Database Schema Support
+
+The existing Prisma schema already supports this architecture:
+1. **`Person` table**: Stores personal profile details (firstName, lastName, gender, birthDate, bio, photoUrl, userId).
+2. **`User` table**: Stores authentication credentials, email, password, and role (`USER`).
+3. **`Relationship` table**: Stores directional relationships (`fromPersonId`, `toPersonId`, `relationshipTypeId`).
+4. **`FamilyMember` table**: Connects the `Person` to the `Family` sanctuary with role `MEMBER`.
 
 ---
 
-## 5. Summary & Next Steps
-- **Feasibility**: 100% Possible and clean to implement without code duplication.
-- **Components**: Reusable, parameterized with `role={user.role}`.
-- **Safety**: Robust role-based guardrails ensure normal users only modify their own family connections.
+## 6. Implementation Readiness
+All necessary database models and endpoints exist. To activate this for the user:
+1. Enable `Family Tree` and `Members` tabs in `SanctuaryDashboardWrapper.tsx` for member accounts.
+2. Render `<TreeTab role="MEMBER" currentUserId={user.id} />` in `/user-dashboard`.
+3. Provide the member-scoped "Add Relative" modal with automatic relationship binding.
