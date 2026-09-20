@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect, useRef } from "react";
+import React, { useState, useEffect, useRef, useCallback } from "react";
 import {
   Move,
   Link2,
@@ -63,9 +63,33 @@ const DEFAULT_CONNECTIONS: DemoConnection[] = [
   { id: "c9", fromId: "mother", toId: "sister", type: "Parent ➔ Child" },
 ];
 
+// Offsets from exact center (cx, cy) to keep all relatives perfectly in the middle
+const DEFAULT_NODE_OFFSETS: Record<string, { dx: number; dy: number }> = {
+  // Top Row: Paternal & Maternal Grandparents
+  pat_grandfather: { dx: -440, dy: -180 },
+  pat_grandmother: { dx: -280, dy: -180 },
+  mat_grandfather: { dx: 140, dy: -180 },
+  mat_grandmother: { dx: 300, dy: -180 },
+
+  // Middle Row: Father & Mother
+  father: { dx: -190, dy: -30 },
+  mother: { dx: 55, dy: -30 },
+
+  // Bottom Row: Brother, You, Sister
+  brother: { dx: -230, dy: 120 },
+  you: { dx: -67, dy: 115 },
+  sister: { dx: 95, dy: 120 },
+};
+
 export default function LandingFamilyTreeCanvas() {
   const canvasContainerRef = useRef<HTMLDivElement>(null);
   const canvasSurfaceRef = useRef<HTMLDivElement>(null);
+
+  // Surface Dimensions for perfect middle alignment
+  const [surfaceDimensions, setSurfaceDimensions] = useState<{ width: number; height: number }>({
+    width: typeof window !== "undefined" ? window.innerWidth : 1200,
+    height: typeof window !== "undefined" ? window.innerHeight : 800,
+  });
 
   // Tree Data State
   const [members, setMembers] = useState<DemoMember[]>(DEFAULT_MEMBERS);
@@ -78,15 +102,10 @@ export default function LandingFamilyTreeCanvas() {
   const [zoomLevel, setZoomLevel] = useState<number>(100);
   const [isFullScreen, setIsFullScreen] = useState<boolean>(false);
 
-  // Canvas Panning State (dbdiagram / Figma style)
+  // Canvas Panning State
   const [panOffset, setPanOffset] = useState<{ x: number; y: number }>({ x: 0, y: 0 });
   const [isPanningCanvas, setIsPanningCanvas] = useState<boolean>(false);
 
-  // Refs for smooth wheel zooming towards mouse cursor & drag tracking
-  const zoomLevelRef = useRef(zoomLevel);
-  zoomLevelRef.current = zoomLevel;
-  const panOffsetRef = useRef(panOffset);
-  panOffsetRef.current = panOffset;
   const panStartRef = useRef<{ x: number; y: number; startPanX: number; startPanY: number }>({
     x: 0,
     y: 0,
@@ -122,37 +141,36 @@ export default function LandingFamilyTreeCanvas() {
   const [editGender, setEditGender] = useState<"MALE" | "FEMALE">("FEMALE");
   const [editEmoji, setEditEmoji] = useState("👩");
 
-  // Calculate default centered positions based on canvas surface dimensions
-  const calculateDefaultPositions = (width: number, height: number = 700) => {
-    const cx = Math.max(width / 2, 500);
-    const startY = Math.max(height * 0.12, 70);
-    const rowGap = Math.max(height * 0.24, 150);
+  // Calculate centered positions around (cx, cy)
+  const calculateCenteredPositions = useCallback((width: number, height: number) => {
+    const cx = width / 2;
+    const cy = height / 2;
+    const positions: Record<string, { x: number; y: number }> = {};
 
-    return {
-      // Top Row: Paternal & Maternal Grandparents
-      pat_grandfather: { x: cx - 440, y: startY },
-      pat_grandmother: { x: cx - 280, y: startY },
-      mat_grandfather: { x: cx + 130, y: startY },
-      mat_grandmother: { x: cx + 290, y: startY },
+    for (const [id, offset] of Object.entries(DEFAULT_NODE_OFFSETS)) {
+      positions[id] = {
+        x: cx + offset.dx,
+        y: cy + offset.dy,
+      };
+    }
+    return positions;
+  }, []);
 
-      // Middle Row: Father & Mother
-      father: { x: cx - 200, y: startY + rowGap },
-      mother: { x: cx + 60, y: startY + rowGap },
-
-      // Bottom Row: Brother, You, Sister
-      brother: { x: cx - 230, y: startY + rowGap * 2 },
-      you: { x: cx - 65, y: startY + rowGap * 2 - 5 },
-      sister: { x: cx + 100, y: startY + rowGap * 2 },
-    };
-  };
-
-  // 1. Initialize Positions on Mount / Window Resize
+  // 1. Initialize Surface Dimensions and Tree on Mount & Resize
   useEffect(() => {
-    const width = canvasSurfaceRef.current?.clientWidth || window.innerWidth || 1200;
-    const height = canvasSurfaceRef.current?.clientHeight || 700;
-    const savedPositions = localStorage.getItem("landing_tree_positions_v5");
-    const savedMembers = localStorage.getItem("landing_tree_members_v5");
-    const savedConnections = localStorage.getItem("landing_tree_connections_v5");
+    const updateDimensions = () => {
+      const surface = canvasSurfaceRef.current;
+      const w = surface?.clientWidth || window.innerWidth || 1200;
+      const h = surface?.clientHeight || window.innerHeight || 800;
+      setSurfaceDimensions({ width: w, height: h });
+      return { w, h };
+    };
+
+    const { w, h } = updateDimensions();
+
+    const savedPositions = localStorage.getItem("landing_tree_positions_v6");
+    const savedMembers = localStorage.getItem("landing_tree_members_v6");
+    const savedConnections = localStorage.getItem("landing_tree_connections_v6");
 
     if (savedMembers) {
       try {
@@ -175,43 +193,25 @@ export default function LandingFamilyTreeCanvas() {
         setNodePositions(JSON.parse(savedPositions));
       } catch (e) {
         console.error("Failed to parse saved positions", e);
-        setNodePositions(calculateDefaultPositions(width, height));
+        setNodePositions(calculateCenteredPositions(w, h));
       }
     } else {
-      setNodePositions(calculateDefaultPositions(width, height));
+      setNodePositions(calculateCenteredPositions(w, h));
     }
-  }, []);
 
-  // 2. Attach Non-Passive Mouse Wheel Event Listener for Zoom In / Zoom Out
-  // Zooms smoothly towards the mouse cursor like Figma, dbdiagram, and Miro
+    window.addEventListener("resize", updateDimensions);
+    return () => window.removeEventListener("resize", updateDimensions);
+  }, [calculateCenteredPositions]);
+
+  // 2. Mouse Wheel Zoom In / Out - Always Centered in the Middle
   useEffect(() => {
     const surface = canvasSurfaceRef.current;
     if (!surface) return;
 
     const handleWheel = (e: WheelEvent) => {
-      e.preventDefault(); // Stop outer page from scrolling
-
-      const rect = surface.getBoundingClientRect();
-      const mx = e.clientX - rect.left;
-      const my = e.clientY - rect.top;
-
-      const oldScale = zoomLevelRef.current / 100;
-      // Step: 6% per wheel tick
+      e.preventDefault(); // Stop outer page scroll
       const zoomStep = e.deltaY < 0 ? 8 : -8;
-      const newZoom = Math.min(Math.max(zoomLevelRef.current + zoomStep, 30), 200);
-      const newScale = newZoom / 100;
-
-      if (newScale !== oldScale) {
-        // Zoom towards mouse cursor coordinates
-        const px = (mx - panOffsetRef.current.x) / oldScale;
-        const py = (my - panOffsetRef.current.y) / oldScale;
-
-        const newPanX = mx - px * newScale;
-        const newPanY = my - py * newScale;
-
-        setZoomLevel(newZoom);
-        setPanOffset({ x: newPanX, y: newPanY });
-      }
+      setZoomLevel((prev) => Math.min(Math.max(prev + zoomStep, 30), 200));
     };
 
     surface.addEventListener("wheel", handleWheel, { passive: false });
@@ -227,25 +227,25 @@ export default function LandingFamilyTreeCanvas() {
     newPositions = nodePositions
   ) => {
     try {
-      localStorage.setItem("landing_tree_members_v5", JSON.stringify(newMembers));
-      localStorage.setItem("landing_tree_connections_v5", JSON.stringify(newConnections));
-      localStorage.setItem("landing_tree_positions_v5", JSON.stringify(newPositions));
+      localStorage.setItem("landing_tree_members_v6", JSON.stringify(newMembers));
+      localStorage.setItem("landing_tree_connections_v6", JSON.stringify(newConnections));
+      localStorage.setItem("landing_tree_positions_v6", JSON.stringify(newPositions));
     } catch (e) {
       console.error("LocalStorage save failed", e);
     }
   };
 
-  // Reset to initial clean state
+  // Reset to initial clean centered state
   const handleReset = () => {
-    localStorage.removeItem("landing_tree_members_v5");
-    localStorage.removeItem("landing_tree_connections_v5");
-    localStorage.removeItem("landing_tree_positions_v5");
+    localStorage.removeItem("landing_tree_members_v6");
+    localStorage.removeItem("landing_tree_connections_v6");
+    localStorage.removeItem("landing_tree_positions_v6");
 
-    const width = canvasSurfaceRef.current?.clientWidth || window.innerWidth || 1200;
-    const height = canvasSurfaceRef.current?.clientHeight || 700;
+    const w = surfaceDimensions.width;
+    const h = surfaceDimensions.height;
     setMembers(DEFAULT_MEMBERS);
     setConnections(DEFAULT_CONNECTIONS);
-    setNodePositions(calculateDefaultPositions(width, height));
+    setNodePositions(calculateCenteredPositions(w, h));
     setSelectedMemberId("you");
     setZoomLevel(100);
     setPanOffset({ x: 0, y: 0 });
@@ -259,9 +259,27 @@ export default function LandingFamilyTreeCanvas() {
     setPanOffset({ x: 0, y: 0 });
   };
 
-  // Pointer Down on Canvas Background -> Start Canvas Panning (Move whole tree)
+  // Convert Screen Mouse Coordinates to Canvas Coordinates
+  // Taking center transformOrigin into account so that zoom and drag are 100% synchronized!
+  const getCanvasCoords = (clientX: number, clientY: number) => {
+    const rect = canvasSurfaceRef.current?.getBoundingClientRect();
+    if (!rect) return { x: 0, y: 0 };
+
+    const cx = surfaceDimensions.width / 2;
+    const cy = surfaceDimensions.height / 2;
+    const scale = zoomLevel / 100;
+
+    const mx = clientX - rect.left - panOffset.x;
+    const my = clientY - rect.top - panOffset.y;
+
+    return {
+      x: cx + (mx - cx) / scale,
+      y: cy + (my - cy) / scale,
+    };
+  };
+
+  // Pointer Down on Canvas Background -> Panning
   const handleCanvasBackgroundPointerDown = (e: React.PointerEvent) => {
-    // Only pan on left (0) or middle (1) mouse button
     if (e.button !== 0 && e.button !== 1) return;
 
     setIsPanningCanvas(true);
@@ -274,7 +292,7 @@ export default function LandingFamilyTreeCanvas() {
     (e.currentTarget as HTMLElement).setPointerCapture(e.pointerId);
   };
 
-  // Pointer Down on Node Card (Move or Link selection)
+  // Pointer Down on Node Card
   const handleNodePointerDown = (e: React.PointerEvent, memberId: string) => {
     e.stopPropagation();
 
@@ -290,20 +308,17 @@ export default function LandingFamilyTreeCanvas() {
       return;
     }
 
-    // Select the node
     setSelectedMemberId(memberId);
 
-    // Start dragging the card
+    // Start dragging
     (e.target as HTMLElement).setPointerCapture(e.pointerId);
-    const canvasRect = canvasSurfaceRef.current?.getBoundingClientRect();
-    if (!canvasRect) return;
-
-    const scale = zoomLevel / 100;
+    const coords = getCanvasCoords(e.clientX, e.clientY);
     const currentPos = nodePositions[memberId] || { x: 50, y: 50 };
+
     setDraggingNodeId(memberId);
     setDragOffset({
-      x: (e.clientX - canvasRect.left - panOffset.x) / scale - currentPos.x,
-      y: (e.clientY - canvasRect.top - panOffset.y) / scale - currentPos.y,
+      x: coords.x - currentPos.x,
+      y: coords.y - currentPos.y,
     });
   };
 
@@ -311,21 +326,15 @@ export default function LandingFamilyTreeCanvas() {
   const handleHandlePointerDown = (e: React.PointerEvent, memberId: string) => {
     e.stopPropagation();
     setLinkingFromId(memberId);
-    const canvasRect = canvasSurfaceRef.current?.getBoundingClientRect();
-    if (canvasRect) {
-      const scale = zoomLevel / 100;
-      setLinkingCursor({
-        x: (e.clientX - canvasRect.left - panOffset.x) / scale,
-        y: (e.clientY - canvasRect.top - panOffset.y) / scale,
-      });
-    }
+    const coords = getCanvasCoords(e.clientX, e.clientY);
+    setLinkingCursor(coords);
   };
 
-  // Pointer Move on canvas (handles canvas panning, node dragging, and connector linking)
+  // Pointer Move on canvas
   const handleCanvasPointerMove = (e: React.PointerEvent) => {
     if (!canvasSurfaceRef.current) return;
 
-    // 1. Panning canvas background
+    // 1. Canvas background panning
     if (isPanningCanvas) {
       const dx = e.clientX - panStartRef.current.x;
       const dy = e.clientY - panStartRef.current.y;
@@ -336,32 +345,28 @@ export default function LandingFamilyTreeCanvas() {
       return;
     }
 
-    const canvasRect = canvasSurfaceRef.current.getBoundingClientRect();
-    const scale = zoomLevel / 100;
+    const coords = getCanvasCoords(e.clientX, e.clientY);
 
-    const currentX = (e.clientX - canvasRect.left - panOffset.x) / scale;
-    const currentY = (e.clientY - canvasRect.top - panOffset.y) / scale;
-
-    // 2. Rubberband line during connector handle drag
+    // 2. Connector rubberband
     if (linkingFromId) {
-      setLinkingCursor({ x: currentX, y: currentY });
+      setLinkingCursor(coords);
       return;
     }
 
-    // 3. Dragging individual relative node card
+    // 3. Node card dragging
     if (draggingNodeId) {
-      const newX = currentX - dragOffset.x;
-      const newY = currentY - dragOffset.y;
-
       const updated = {
         ...nodePositions,
-        [draggingNodeId]: { x: newX, y: newY },
+        [draggingNodeId]: {
+          x: coords.x - dragOffset.x,
+          y: coords.y - dragOffset.y,
+        },
       };
       setNodePositions(updated);
     }
   };
 
-  // Pointer Up on canvas (finish drag or drop connector)
+  // Pointer Up on canvas
   const handleCanvasPointerUp = (e: React.PointerEvent) => {
     if (isPanningCanvas) {
       setIsPanningCanvas(false);
@@ -392,7 +397,6 @@ export default function LandingFamilyTreeCanvas() {
   const handleConfirmLink = () => {
     if (!linkSourceId || !linkTargetId) return;
 
-    // Avoid duplicate connection
     const exists = connections.some(
       (c) =>
         (c.fromId === linkSourceId && c.toId === linkTargetId) ||
@@ -437,16 +441,10 @@ export default function LandingFamilyTreeCanvas() {
       gender: newRelativeGender,
     };
 
-    // Calculate a visible spot in the user's current viewport
-    const canvasRect = canvasSurfaceRef.current?.getBoundingClientRect();
-    const width = canvasRect?.width || 800;
-    const height = canvasRect?.height || 500;
-    const scale = zoomLevel / 100;
-    const viewCenterX = (width / 2 - panOffset.x) / scale;
-    const viewCenterY = (height / 2 - panOffset.y) / scale;
-
-    const randomX = Math.floor(viewCenterX + (Math.random() * 160 - 80));
-    const randomY = Math.floor(viewCenterY + (Math.random() * 120 - 60));
+    const cx = surfaceDimensions.width / 2;
+    const cy = surfaceDimensions.height / 2;
+    const randomX = Math.floor(cx + (Math.random() * 160 - 80));
+    const randomY = Math.floor(cy + (Math.random() * 120 - 60));
 
     const updatedMembers = [...members, newMember];
     const updatedPositions = {
@@ -458,7 +456,6 @@ export default function LandingFamilyTreeCanvas() {
     setNodePositions(updatedPositions);
     setSelectedMemberId(newId);
 
-    // If a node was currently selected, auto-create a connection to it!
     let updatedConnections = connections;
     if (selectedMemberId && selectedMemberId !== newId) {
       const autoConn: DemoConnection = {
@@ -472,8 +469,6 @@ export default function LandingFamilyTreeCanvas() {
     }
 
     persistTree(updatedMembers, updatedConnections, updatedPositions);
-
-    // Reset modal form
     setNewRelativeName("");
     setIsAddModalOpen(false);
   };
@@ -539,17 +534,19 @@ export default function LandingFamilyTreeCanvas() {
   const selectedMember = members.find((m) => m.id === selectedMemberId);
   const nodeWidth = 135;
   const nodeHeight = 68;
+  const cx = surfaceDimensions.width / 2;
+  const cy = surfaceDimensions.height / 2;
 
   return (
     <div
       ref={canvasContainerRef}
-      className={`w-full relative transition-all duration-300 ${
+      className={`w-full h-screen min-h-screen relative transition-all duration-300 ${
         isFullScreen
           ? "fixed inset-0 z-50 bg-slate-950/95 backdrop-blur-2xl p-2 sm:p-4 flex flex-col justify-between overflow-hidden"
-          : "my-2"
+          : "p-0 m-0"
       }`}
     >
-      {/* 2D Interactive Canvas Surface (Full-Width Edge-to-Edge & DB Design Schema Canvas Experience) */}
+      {/* 2D Interactive Canvas Surface (Always Full-Width & Full-Height h-screen) */}
       <div
         ref={canvasSurfaceRef}
         onPointerDown={handleCanvasBackgroundPointerDown}
@@ -558,16 +555,12 @@ export default function LandingFamilyTreeCanvas() {
         style={{
           backgroundPosition: `${panOffset.x}px ${panOffset.y}px`,
         }}
-        className={`w-full relative ${
-          isFullScreen
-            ? "flex-1 h-full min-h-[600px]"
-            : "h-[85vh] sm:h-[90vh] min-h-[680px]"
-        } rounded-3xl bg-slate-50/90 dark:bg-slate-900/95 backdrop-blur-xl border border-slate-200/90 dark:border-slate-800 shadow-2xl overflow-hidden select-none touch-none bg-[radial-gradient(#cbd5e1_1.2px,transparent_1.2px)] dark:bg-[radial-gradient(#334155_1.2px,transparent_1.2px)] [background-size:24px_24px] cursor-grab active:cursor-grabbing transition-colors`}
+        className="w-full h-screen min-h-screen relative rounded-none border-y sm:border border-slate-200/80 dark:border-slate-800 bg-slate-50/90 dark:bg-slate-900/95 backdrop-blur-xl shadow-2xl overflow-hidden select-none touch-none bg-[radial-gradient(#cbd5e1_1.2px,transparent_1.2px)] dark:bg-[radial-gradient(#334155_1.2px,transparent_1.2px)] [background-size:24px_24px] cursor-grab active:cursor-grabbing transition-colors"
       >
         {/* Top-Left Live Indicator Pill */}
         <div
           onPointerDown={(e) => e.stopPropagation()}
-          className="absolute top-3.5 left-3.5 z-30 hidden sm:flex items-center gap-2 px-3.5 py-2 rounded-2xl bg-white/95 dark:bg-slate-900/95 backdrop-blur-md border border-slate-200/90 dark:border-slate-800 shadow-xl text-xs font-semibold text-slate-800 dark:text-slate-200 pointer-events-auto"
+          className="absolute top-4 left-4 z-30 hidden sm:flex items-center gap-2 px-3.5 py-2 rounded-2xl bg-white/95 dark:bg-slate-900/95 backdrop-blur-md border border-slate-200/90 dark:border-slate-800 shadow-xl text-xs font-semibold text-slate-800 dark:text-slate-200 pointer-events-auto"
         >
           <span className="relative flex h-2.5 w-2.5">
             <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
@@ -580,7 +573,7 @@ export default function LandingFamilyTreeCanvas() {
         {/* Top-Right Floating Controls Bar */}
         <div
           onPointerDown={(e) => e.stopPropagation()}
-          className="absolute top-3.5 right-3.5 z-30 flex flex-wrap items-center gap-1.5 sm:gap-2 p-2 rounded-2xl bg-white/95 dark:bg-slate-900/95 backdrop-blur-xl border border-slate-200/90 dark:border-slate-800 shadow-2xl transition-all max-w-[calc(100%-28px)] pointer-events-auto"
+          className="absolute top-4 right-4 z-30 flex flex-wrap items-center gap-1.5 sm:gap-2 p-2 rounded-2xl bg-white/95 dark:bg-slate-900/95 backdrop-blur-xl border border-slate-200/90 dark:border-slate-800 shadow-2xl transition-all max-w-[calc(100%-28px)] pointer-events-auto"
         >
           {/* Add Relative Button */}
           <button
@@ -640,7 +633,7 @@ export default function LandingFamilyTreeCanvas() {
               type="button"
               onClick={handleResetZoom}
               className="px-2.5 py-1 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 hover:bg-slate-100 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 font-extrabold text-xs cursor-pointer transition-colors"
-              title="Click to reset zoom (100%) and center pan"
+              title="Click to reset zoom (100%) and center in the middle"
             >
               {zoomLevel}%
             </button>
@@ -672,7 +665,7 @@ export default function LandingFamilyTreeCanvas() {
             type="button"
             onClick={handleReset}
             className="p-2 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 hover:bg-slate-100 dark:hover:bg-slate-700 text-slate-600 dark:text-slate-300 font-bold text-xs flex items-center gap-1 cursor-pointer transition-colors"
-            title="Reset to default tree layout and zoom"
+            title="Reset to default tree centered in the middle"
           >
             <RotateCcw className="h-3.5 w-3.5" />
             <span className="hidden lg:inline text-xs">Reset</span>
@@ -749,34 +742,34 @@ export default function LandingFamilyTreeCanvas() {
           </div>
         )}
 
-        {/* Bottom Interactive Tips Pill (DB Design Tool Style) */}
+        {/* Bottom Interactive Tips Pill */}
         <div
           onPointerDown={(e) => e.stopPropagation()}
-          className="absolute bottom-3.5 left-1/2 -translate-x-1/2 z-20 hidden md:flex items-center gap-3 px-4 py-2 rounded-2xl bg-white/95 dark:bg-slate-900/95 backdrop-blur-xl border border-slate-200/90 dark:border-slate-800 shadow-xl text-[11px] font-medium text-slate-600 dark:text-slate-300 pointer-events-auto"
+          className="absolute bottom-4 left-1/2 -translate-x-1/2 z-20 hidden md:flex items-center gap-3 px-4 py-2 rounded-2xl bg-white/95 dark:bg-slate-900/95 backdrop-blur-xl border border-slate-200/90 dark:border-slate-800 shadow-xl text-[11px] font-medium text-slate-600 dark:text-slate-300 pointer-events-auto"
         >
           <span className="flex items-center gap-1 font-bold text-indigo-600 dark:text-indigo-400">
             <Sparkles className="h-3.5 w-3.5" />
-            DB Canvas
+            Full-Screen Canvas
           </span>
           <span className="text-slate-300 dark:text-slate-700">|</span>
-          <span>🖱️ Mouse wheel: Zoom ({zoomLevel}%)</span>
+          <span>🖱️ Mouse wheel: Zoom in/out ({zoomLevel}%)</span>
           <span className="text-slate-300 dark:text-slate-700">•</span>
-          <span>🖐️ Drag canvas: Pan / Move</span>
+          <span>🖐️ Drag background: Pan / Move</span>
           <span className="text-slate-300 dark:text-slate-700">•</span>
           <span>🎴 Drag cards: Reposition</span>
           <span className="text-slate-300 dark:text-slate-700">•</span>
-          <span>⚪ Dots: Connect</span>
+          <span>⚪ Connector dots: Link</span>
         </div>
 
-        {/* Transformed Inner Canvas Layer: Panning & Zooming */}
+        {/* Transformed Inner Canvas Layer: Panning & Zooming around exact middle (cx, cy) */}
         <div
           style={{
             transform: `translate3d(${panOffset.x}px, ${panOffset.y}px, 0) scale(${zoomLevel / 100})`,
-            transformOrigin: "0 0",
-            width: "4000px",
-            height: "3000px",
+            transformOrigin: `${cx}px ${cy}px`,
+            width: "100%",
+            height: "100%",
           }}
-          className="absolute top-0 left-0 pointer-events-auto"
+          className="absolute inset-0 pointer-events-auto"
         >
           {/* SVG Dynamic Connecting Lines Layer */}
           <svg className="absolute inset-0 w-full h-full pointer-events-none z-0">
@@ -855,7 +848,7 @@ export default function LandingFamilyTreeCanvas() {
 
           {/* Draggable Relative Nodes */}
           {members.map((m) => {
-            const pos = nodePositions[m.id] || { x: 100, y: 100 };
+            const pos = nodePositions[m.id] || { x: cx - 65, y: cy };
             const isSelected = selectedMemberId === m.id;
             const isSelectedSource = linkSourceId === m.id;
             const isDragging = draggingNodeId === m.id;
