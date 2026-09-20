@@ -38,20 +38,32 @@ export interface DemoConnection {
 }
 
 const DEFAULT_MEMBERS: DemoMember[] = [
-  { id: "grandfather", name: "Grandfather", role: "Grandparent", emoji: "👴", gender: "MALE" },
-  { id: "grandmother", name: "Grandmother", role: "Grandparent", emoji: "👵", gender: "FEMALE" },
+  { id: "pat_grandfather", name: "Grandfather", role: "Paternal Grandfather", emoji: "👴", gender: "MALE" },
+  { id: "pat_grandmother", name: "Grandmother", role: "Paternal Grandmother", emoji: "👵", gender: "FEMALE" },
+  { id: "mat_grandfather", name: "Grandfather", role: "Maternal Grandfather", emoji: "👴", gender: "MALE" },
+  { id: "mat_grandmother", name: "Grandmother", role: "Maternal Grandmother", emoji: "👵", gender: "FEMALE" },
   { id: "father", name: "Father", role: "Parent", emoji: "👨", gender: "MALE" },
+  { id: "mother", name: "Mother", role: "Parent", emoji: "👩", gender: "FEMALE" },
   { id: "brother", name: "Brother", role: "Sibling", emoji: "👦", gender: "MALE" },
   { id: "you", name: "You", role: "Sanctuary Owner", emoji: "👩", gender: "FEMALE", isYou: true },
   { id: "sister", name: "Sister", role: "Sibling", emoji: "👧", gender: "FEMALE" },
 ];
 
 const DEFAULT_CONNECTIONS: DemoConnection[] = [
-  { id: "c1", fromId: "grandfather", toId: "father", type: "Parent ➔ Child" },
-  { id: "c2", fromId: "grandmother", toId: "father", type: "Parent ➔ Child" },
-  { id: "c3", fromId: "father", toId: "you", type: "Parent ➔ Child" },
-  { id: "c4", fromId: "father", toId: "brother", type: "Parent ➔ Child" },
-  { id: "c5", fromId: "father", toId: "sister", type: "Parent ➔ Child" },
+  // Paternal Grandparents -> Father
+  { id: "c1", fromId: "pat_grandfather", toId: "father", type: "Parent ➔ Child" },
+  { id: "c2", fromId: "pat_grandmother", toId: "father", type: "Parent ➔ Child" },
+  // Maternal Grandparents -> Mother
+  { id: "c3", fromId: "mat_grandfather", toId: "mother", type: "Parent ➔ Child" },
+  { id: "c4", fromId: "mat_grandmother", toId: "mother", type: "Parent ➔ Child" },
+  // Parents Connected (Spouse)
+  { id: "c5", fromId: "father", toId: "mother", type: "Spouse / Married" },
+  // Parents -> You
+  { id: "c6", fromId: "father", toId: "you", type: "Parent ➔ Child" },
+  { id: "c7", fromId: "mother", toId: "you", type: "Parent ➔ Child" },
+  // Parents -> Siblings
+  { id: "c8", fromId: "father", toId: "brother", type: "Parent ➔ Child" },
+  { id: "c9", fromId: "mother", toId: "sister", type: "Parent ➔ Child" },
 ];
 
 export default function LandingFamilyTreeCanvas() {
@@ -92,23 +104,31 @@ export default function LandingFamilyTreeCanvas() {
 
   // Calculate default centered positions based on canvas width
   const calculateDefaultPositions = (width: number) => {
-    const cx = Math.max(width / 2, 400);
+    const cx = Math.max(width / 2, 480);
     return {
-      grandfather: { x: cx - 140, y: 40 },
-      grandmother: { x: cx + 20, y: 40 },
-      father: { x: cx - 60, y: 165 },
-      brother: { x: cx - 210, y: 295 },
-      you: { x: cx - 65, y: 290 },
-      sister: { x: cx + 80, y: 295 },
+      // Top Row: Paternal & Maternal Grandparents (Y: 35)
+      pat_grandfather: { x: cx - 400, y: 35 },
+      pat_grandmother: { x: cx - 250, y: 35 },
+      mat_grandfather: { x: cx + 120, y: 35 },
+      mat_grandmother: { x: cx + 270, y: 35 },
+
+      // Middle Row: Father & Mother (Y: 175)
+      father: { x: cx - 190, y: 175 },
+      mother: { x: cx + 60, y: 175 },
+
+      // Bottom Row: Brother, You, Sister (Y: 315)
+      brother: { x: cx - 210, y: 315 },
+      you: { x: cx - 65, y: 310 },
+      sister: { x: cx + 80, y: 315 },
     };
   };
 
   // 1. Initialize Positions on Mount / Resize
   useEffect(() => {
     const width = canvasContainerRef.current?.clientWidth || 800;
-    const savedPositions = localStorage.getItem("landing_tree_positions_v2");
-    const savedMembers = localStorage.getItem("landing_tree_members_v2");
-    const savedConnections = localStorage.getItem("landing_tree_connections_v2");
+    const savedPositions = localStorage.getItem("landing_tree_positions_v4");
+    const savedMembers = localStorage.getItem("landing_tree_members_v4");
+    const savedConnections = localStorage.getItem("landing_tree_connections_v4");
 
     if (savedMembers) {
       try {
@@ -145,9 +165,9 @@ export default function LandingFamilyTreeCanvas() {
     newPositions = nodePositions
   ) => {
     try {
-      localStorage.setItem("landing_tree_members_v2", JSON.stringify(newMembers));
-      localStorage.setItem("landing_tree_connections_v2", JSON.stringify(newConnections));
-      localStorage.setItem("landing_tree_positions_v2", JSON.stringify(newPositions));
+      localStorage.setItem("landing_tree_members_v4", JSON.stringify(newMembers));
+      localStorage.setItem("landing_tree_connections_v4", JSON.stringify(newConnections));
+      localStorage.setItem("landing_tree_positions_v4", JSON.stringify(newPositions));
     } catch (e) {
       console.error("LocalStorage save failed", e);
     }
@@ -155,9 +175,9 @@ export default function LandingFamilyTreeCanvas() {
 
   // Reset to initial clean state
   const handleReset = () => {
-    localStorage.removeItem("landing_tree_members_v2");
-    localStorage.removeItem("landing_tree_connections_v2");
-    localStorage.removeItem("landing_tree_positions_v2");
+    localStorage.removeItem("landing_tree_members_v4");
+    localStorage.removeItem("landing_tree_connections_v4");
+    localStorage.removeItem("landing_tree_positions_v4");
 
     const width = canvasContainerRef.current?.clientWidth || 800;
     setMembers(DEFAULT_MEMBERS);
