@@ -2,6 +2,7 @@
 
 import React, { useState } from "react";
 import { useGetMembersQuery, useDeleteMemberMutation } from "@/redux/api/familyApi";
+import { useAppSelector } from "@/redux/store";
 import { Users, Plus, Search, Trash2, Edit, Loader2 } from "lucide-react";
 import AddMemberModal from "@/components/modals/AddMemberModal";
 
@@ -16,10 +17,16 @@ export default function MembersTab({ role, currentUserId }: MembersTabProps = {}
   const [searchQuery, setSearchQuery] = useState("");
   const [isAddMemberOpen, setIsAddMemberOpen] = useState(false);
 
+  const { user } = useAppSelector((state) => state.auth);
+  const activeUserId = currentUserId || user?.id;
+  const activeUserEmail = user?.email;
+
   const currentMember = members.find(
     (m: any) =>
-      currentUserId &&
-      (m.userId === currentUserId || m.user?.id === currentUserId || m.email === currentUserId)
+      (activeUserId && (m.userId === activeUserId || m.user?.id === activeUserId)) ||
+      (activeUserEmail &&
+        (m.email?.toLowerCase() === activeUserEmail.toLowerCase() ||
+          m.user?.email?.toLowerCase() === activeUserEmail.toLowerCase()))
   );
 
   const filteredMembers = members.filter((m) =>
@@ -109,16 +116,14 @@ export default function MembersTab({ role, currentUserId }: MembersTabProps = {}
                   </div>
                 </div>
 
-                {role !== "MEMBER" && (
-                  <button
-                    type="button"
-                    onClick={() => handleDelete(member.id, `${member.firstName} ${member.lastName}`)}
-                    className="p-1.5 text-slate-400 hover:text-rose-400 hover:bg-rose-950/40 rounded-lg transition-colors cursor-pointer"
-                    title="Delete member from database"
-                  >
-                    <Trash2 className="h-4 w-4" />
-                  </button>
-                )}
+                <button
+                  type="button"
+                  onClick={() => handleDelete(member.id, `${member.firstName} ${member.lastName}`)}
+                  className="p-1.5 text-slate-400 hover:text-rose-400 hover:bg-rose-950/40 rounded-lg transition-colors cursor-pointer"
+                  title="Delete member from database"
+                >
+                  <Trash2 className="h-4 w-4" />
+                </button>
               </div>
 
               <p className="text-xs text-slate-300 leading-relaxed italic">

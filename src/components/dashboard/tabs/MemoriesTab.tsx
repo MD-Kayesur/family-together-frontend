@@ -59,15 +59,13 @@ export default function MemoriesTab({ role }: MemoriesTabProps = {}) {
           </div>
         </div>
 
-        {role !== "MEMBER" && (
-          <Link
-            href="/owner-dashboard/memories/create"
-            className="px-4 py-2.5 rounded-xl bg-purple-600 hover:bg-purple-700 text-white font-bold text-xs shadow-md shadow-purple-600/25 flex items-center gap-2 cursor-pointer transition-all hover:scale-[1.02]"
-          >
-            <Plus className="h-4 w-4" />
-            <span>Upload Memory</span>
-          </Link>
-        )}
+        <Link
+          href={role === "MEMBER" ? "/user-dashboard/memories/create" : "/owner-dashboard/memories/create"}
+          className="px-4 py-2.5 rounded-xl bg-purple-600 hover:bg-purple-700 text-white font-bold text-xs shadow-md shadow-purple-600/25 flex items-center gap-2 cursor-pointer transition-all hover:scale-[1.02]"
+        >
+          <Plus className="h-4 w-4" />
+          <span>Upload Memory</span>
+        </Link>
       </div>
 
       {/* 1. Featured Media Slider Carousel Section */}
@@ -102,7 +100,7 @@ export default function MemoriesTab({ role }: MemoriesTabProps = {}) {
               Preserve your first family photo or story in your private sanctuary archive.
             </p>
             <Link
-              href="/owner-dashboard/memories/create"
+              href={role === "MEMBER" ? "/user-dashboard/memories/create" : "/owner-dashboard/memories/create"}
               className="px-4 py-2 rounded-xl bg-purple-600 hover:bg-purple-700 text-white font-bold text-xs shadow-md inline-flex items-center gap-2"
             >
               <Plus className="h-4 w-4" />
@@ -182,27 +180,29 @@ export default function MemoriesTab({ role }: MemoriesTabProps = {}) {
                   </div>
 
                   <div className="pt-3 border-t border-slate-800 text-[11px] font-bold text-slate-500 flex items-center justify-between">
-                    <span>Shared by {mem.sharedBy || "Sanctuary Owner"}</span>
+                    <span>Shared by {mem.sharedBy || "Sanctuary Member"}</span>
                     <div className="flex items-center gap-2">
-                      {role !== "MEMBER" && (
-                        <div className="flex items-center gap-1" onClick={(e) => e.stopPropagation()}>
-                          <Link
-                            href={`/owner-dashboard/memories/create?id=${mem.id}`}
-                            className="p-1.5 rounded-lg bg-slate-800 hover:bg-purple-950 text-slate-300 hover:text-purple-300 border border-slate-700 transition-colors"
-                            title="Edit Memory"
-                          >
-                            <Pencil className="h-3.5 w-3.5" />
-                          </Link>
-                          <button
-                            type="button"
-                            onClick={(e) => handleDeleteMemory(e, mem.id, mem.title)}
-                            className="p-1.5 rounded-lg bg-slate-800 hover:bg-rose-950 text-slate-300 hover:text-rose-300 border border-slate-700 transition-colors cursor-pointer"
-                            title="Delete Memory"
-                          >
-                            <Trash2 className="h-3.5 w-3.5" />
-                          </button>
-                        </div>
-                      )}
+                      <div className="flex items-center gap-1" onClick={(e) => e.stopPropagation()}>
+                        <Link
+                          href={
+                            role === "MEMBER"
+                              ? `/user-dashboard/memories/create?id=${mem.id}`
+                              : `/owner-dashboard/memories/create?id=${mem.id}`
+                          }
+                          className="p-1.5 rounded-lg bg-slate-800 hover:bg-purple-950 text-slate-300 hover:text-purple-300 border border-slate-700 transition-colors"
+                          title="Edit Memory"
+                        >
+                          <Pencil className="h-3.5 w-3.5" />
+                        </Link>
+                        <button
+                          type="button"
+                          onClick={(e) => handleDeleteMemory(e, mem.id, mem.title)}
+                          className="p-1.5 rounded-lg bg-slate-800 hover:bg-rose-950 text-slate-300 hover:text-rose-300 border border-slate-700 transition-colors cursor-pointer"
+                          title="Delete Memory"
+                        >
+                          <Trash2 className="h-3.5 w-3.5" />
+                        </button>
+                      </div>
                       <Heart className="h-4 w-4 text-rose-500 fill-rose-500 ml-1" />
                     </div>
                   </div>

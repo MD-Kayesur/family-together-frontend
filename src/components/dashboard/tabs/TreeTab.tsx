@@ -6,6 +6,7 @@ import AddMemberModal from "@/components/modals/AddMemberModal";
 import InteractiveFamilyTreeCanvas from "@/components/tree/InteractiveFamilyTreeCanvas";
 import LandingFamilyTreeCanvas from "@/components/tree/LandingFamilyTreeCanvas";
 import { useGetMembersQuery, useGetRelationshipsQuery } from "@/redux/api/familyApi";
+import { useAppSelector } from "@/redux/store";
 
 interface TreeTabProps {
   role?: string;
@@ -18,10 +19,16 @@ export default function TreeTab({ role, currentUserId }: TreeTabProps) {
   const { data: members = [], refetch: refetchMembers } = useGetMembersQuery();
   const { data: relationships = [], refetch: refetchRelationships } = useGetRelationshipsQuery();
 
+  const { user } = useAppSelector((state) => state.auth);
+  const activeUserId = currentUserId || user?.id;
+  const activeUserEmail = user?.email;
+
   const currentMember = members.find(
     (m: any) =>
-      currentUserId &&
-      (m.userId === currentUserId || m.user?.id === currentUserId || m.email === currentUserId)
+      (activeUserId && (m.userId === activeUserId || m.user?.id === activeUserId)) ||
+      (activeUserEmail &&
+        (m.email?.toLowerCase() === activeUserEmail.toLowerCase() ||
+          m.user?.email?.toLowerCase() === activeUserEmail.toLowerCase()))
   );
 
   return (

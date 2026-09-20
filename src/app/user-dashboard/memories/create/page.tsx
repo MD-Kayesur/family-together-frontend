@@ -24,8 +24,6 @@ import {
   Tag,
   Users,
   Lock,
-  FileCheck,
-  Trash2,
   UserCheck,
   Check,
   X,
@@ -33,7 +31,7 @@ import {
   AlertCircle,
 } from "lucide-react";
 
-function MemoryFormContent() {
+function MemberMemoryFormContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const memoryId = searchParams.get("id") || searchParams.get("edit");
@@ -101,13 +99,11 @@ function MemoryFormContent() {
   useEffect(() => {
     if (!isEditMode) return;
 
-    // Use fetched memory or find in allMemories cache
     const memory = fetchedMemory || allMemories.find((m) => m.id === memoryId);
     if (!memory || hasInitialized) return;
 
     setTitle(memory.title || "");
 
-    // Pre-fill mediaUrls array
     if (memory.mediaUrls && Array.isArray(memory.mediaUrls) && memory.mediaUrls.length > 0) {
       setMediaUrls(memory.mediaUrls);
     } else if (memory.mediaUrl) {
@@ -133,7 +129,6 @@ function MemoryFormContent() {
       const parts = rawDesc.split("\n\n");
       const metaLine = parts[0];
 
-      // Parse metadata if formatted as "Category: ... • Date: ..."
       if (metaLine.includes("Category:") || metaLine.includes("Date:") || metaLine.includes("Location:")) {
         const catMatch = metaLine.match(/Category:\s*([^•\n]+)/);
         if (catMatch) setCategory(catMatch[1].trim());
@@ -153,7 +148,6 @@ function MemoryFormContent() {
         const privMatch = metaLine.match(/Privacy:\s*([^•\n]+)/);
         if (privMatch) setPrivacy(privMatch[1].trim());
 
-        // Actual description body is everything after the metadata line
         rawDesc = parts.slice(1).join("\n\n").trim();
       }
 
@@ -163,8 +157,7 @@ function MemoryFormContent() {
     setHasInitialized(true);
   }, [isEditMode, memoryId, fetchedMemory, allMemories, hasInitialized]);
 
-  // Handle Multiple File Selection with Promise.race and try/catch
-  // If any single file fails or times out, the other files are safely added!
+  // Handle Multiple File Selection
   const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files.length > 0) {
       const filesArray = Array.from(e.target.files);
@@ -209,7 +202,6 @@ function MemoryFormContent() {
     setMediaUrls((prev) => prev.filter((_, i) => i !== index));
   };
 
-  // Autocomplete Relative Selection
   const handleSelectRelative = (name: string) => {
     if (!taggedMembersList.includes(name)) {
       setTaggedMembersList((prev) => [...prev, name]);
@@ -250,7 +242,7 @@ function MemoryFormContent() {
           ? taggedMembersList.join(", ")
           : tagInputText.trim() || undefined;
 
-      const authorName = user?.fullName || "Sanctuary Owner";
+      const authorName = user?.fullName || "Family Member";
 
       if (isEditMode && memoryId) {
         await updateMemory({
@@ -288,7 +280,7 @@ function MemoryFormContent() {
       }
 
       setTimeout(() => {
-        router.push("/owner-dashboard?tab=memories");
+        router.push("/user-dashboard?tab=memories");
       }, 1200);
     } catch (err: any) {
       setErrorMsg(err?.data?.message || "Failed to save memory.");
@@ -301,7 +293,7 @@ function MemoryFormContent() {
       <div className="flex flex-wrap items-center justify-between gap-4 p-5 rounded-2xl bg-slate-900 border border-slate-800 shadow-lg">
         <div className="flex items-center gap-3">
           <Link
-            href="/owner-dashboard?tab=memories"
+            href="/user-dashboard?tab=memories"
             className="p-2.5 rounded-xl border border-slate-700 text-slate-300 hover:text-white hover:bg-slate-800 transition-all flex items-center justify-center cursor-pointer"
             title="Back to Memories Vault"
           >
@@ -320,19 +312,19 @@ function MemoryFormContent() {
                     : "bg-purple-900/40 text-purple-300 border border-purple-800/60"
                 }`}
               >
-                {isEditMode ? "Edit Mode" : "Create Mode"}
+                {isEditMode ? "Edit Mode" : "Member Memory"}
               </span>
             </div>
             <p className="text-xs text-slate-400 font-medium">
               {isEditMode
-                ? "Update memory details, media attachments, and tagged relatives."
-                : "Upload multiple photos, videos, and preserve milestone stories in your family archive."}
+                ? "Update your memory details, photos, and tagged relatives."
+                : "Upload family photos, videos, and preserve milestone stories in your sanctuary memory vault."}
             </p>
           </div>
         </div>
 
         <Link
-          href="/owner-dashboard?tab=memories"
+          href="/user-dashboard?tab=memories"
           className="px-4 py-2 rounded-xl border border-slate-700 text-slate-300 hover:bg-slate-800 font-bold text-xs transition-colors"
         >
           Cancel & Return
@@ -354,11 +346,11 @@ function MemoryFormContent() {
           <div className="flex items-center gap-2 text-purple-300 font-bold">
             <UserCheck className="h-4 w-4 text-purple-400" />
             <span>
-              {isEditMode ? "Editing as:" : "Adding as:"} Sanctuary Owner (Authenticated User)
+              {isEditMode ? "Editing as:" : "Adding as:"} {user?.fullName || "Family Member"} ({user?.role || "MEMBER"})
             </span>
           </div>
           <span className="text-[10px] bg-purple-900/60 text-purple-200 border border-purple-700/50 font-extrabold px-2.5 py-0.5 rounded-md">
-            Auto-Authorized
+            Member Authorized
           </span>
         </div>
 
@@ -418,7 +410,7 @@ function MemoryFormContent() {
                     : "Click or drag & drop multiple photos and videos here"}
                 </p>
                 <p className="text-xs text-slate-400">
-                  Select multiple files at once (PNG, JPG, WEBP, MP4, MOV). If any file fails, the rest will still be added!
+                  Select multiple files at once (PNG, JPG, WEBP, MP4, MOV). All photos are saved to your family vault!
                 </p>
               </div>
             </div>
@@ -427,7 +419,7 @@ function MemoryFormContent() {
             <div className="flex items-center gap-2">
               <input
                 type="url"
-                placeholder="Or paste media URL (e.g. Unsplash, Cloudinary, direct MP4 link)..."
+                placeholder="Or paste media URL (e.g. Unsplash, Cloudinary, direct photo link)..."
                 value={customMediaUrl}
                 onChange={(e) => setCustomMediaUrl(e.target.value)}
                 onKeyDown={(e) => {
@@ -529,7 +521,7 @@ function MemoryFormContent() {
             </label>
             <input
               type="text"
-              placeholder="e.g. Eid al-Fitr Family Celebration 2026, Grandparents Golden Anniversary"
+              placeholder="e.g. Eid al-Fitr Family Celebration, Grandparents Milestone Story"
               value={title}
               onChange={(e) => setTitle(e.target.value)}
               className="w-full px-4 py-3 rounded-xl border border-slate-800 bg-slate-950 text-white placeholder:text-slate-500 text-sm font-semibold focus:ring-2 focus:ring-purple-500 focus:outline-none"
@@ -734,7 +726,7 @@ function MemoryFormContent() {
           {/* Action Buttons */}
           <div className="flex items-center justify-end gap-3 pt-4 border-t border-slate-800">
             <Link
-              href="/owner-dashboard?tab=memories"
+              href="/user-dashboard?tab=memories"
               className="px-5 py-3 rounded-xl border border-slate-800 text-slate-300 font-bold hover:bg-slate-800 transition-colors text-xs"
             >
               Cancel
@@ -765,7 +757,7 @@ function MemoryFormContent() {
   );
 }
 
-export default function CreateOrEditMemoryPage() {
+export default function MemberCreateOrEditMemoryPage() {
   return (
     <SanctuaryDashboardWrapper
       title="Family Memories Vault"
@@ -779,7 +771,7 @@ export default function CreateOrEditMemoryPage() {
           </div>
         }
       >
-        <MemoryFormContent />
+        <MemberMemoryFormContent />
       </Suspense>
     </SanctuaryDashboardWrapper>
   );

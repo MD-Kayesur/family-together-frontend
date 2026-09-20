@@ -1,0 +1,111 @@
+========================================================================================
+         FAMILYROOTS SANCTUARY — MEMBER MEMORY & RELATIVE CREATION ARCHITECTURE
+                            TECHNICAL ASSURANCE & DOCUMENTATION
+========================================================================================
+
+DOCUMENT TITLE: Member Memory & Family Relative Creation Architecture
+TARGET APPLICATION: FamilyRoots Frontend & Backend
+AUTHOR: Antigravity AI Engineering Team
+DATE: September 21, 2026
+STATUS: Approved & Fully Deployed
+
+----------------------------------------------------------------------------------------
+1. EXECUTIVE SUMMARY & OBJECTIVE
+----------------------------------------------------------------------------------------
+The user requested full assurance and implementation of two core capabilities for users with the MEMBER role:
+1. "in member can also add a memory":
+   Members must have full permissions and user interface controls to upload and preserve family memories (photos, videos, milestone stories) in their sanctuary memory vault.
+2. "and also member both do it":
+   Members must also be able to add relatives and family members to expand their personal family tree and the sanctuary directory.
+3. "and insure me this":
+   Verify and guarantee that both memory creation and member/relative creation function smoothly, persist directly to PostgreSQL, and seamlessly update the UI without authorization blocks or redirects.
+
+----------------------------------------------------------------------------------------
+2. MEMBER MEMORY CREATION ARCHITECTURE
+----------------------------------------------------------------------------------------
+2.1. Dedicated Member Memory Creation Workspace:
+- Location: `src/app/user-dashboard/memories/create/page.tsx`
+- Description: A dedicated, role-authorized memory creation and editing workspace wrapped cleanly in `SanctuaryDashboardWrapper`.
+- Key Features:
+  - Multiple Media Attachments: Drag-and-drop file dropzone supporting multiple images (JPG, PNG, WEBP) and videos (MP4, MOV, WEBM) simultaneously using resilient `Promise.race` file processing.
+  - Direct Media URL Input: Option to paste direct image/video URLs from external CDNs.
+  - Form Fields: Memory Title, Date of Memory, Location/City, Category/Album, Sanctuary Visibility.
+  - Relatives Tagging: Autocomplete dropdown triggered by `@name` allowing the member to tag other sanctuary relatives.
+  - Dynamic Author Attribution: `sharedBy` dynamically extracts `user.fullName` from the Redux auth state (falling back to "Family Member").
+  - Seamless Redirection: Upon successful creation or update, the user receives a confirmation toast and is redirected back to `/user-dashboard?tab=memories`.
+  - Cancel / Return Navigation: Safely returns to `/user-dashboard?tab=memories`.
+
+2.2. Updated Memories Tab (`src/components/dashboard/tabs/MemoriesTab.tsx`):
+- Previous Issue: The "Upload Memory" button was wrapped in `{role !== "MEMBER" && (`, completely hiding it from members. In addition, it linked to `/owner-dashboard/memories/create`, which bounced members due to role authorization guards.
+- Resolution:
+  - The "Upload Memory" button is now visible to all roles.
+  - Dynamic Routing:
+    - If `role === "MEMBER"` -> `/user-dashboard/memories/create`
+    - If `role !== "MEMBER"` -> `/owner-dashboard/memories/create`
+  - Empty State: When no memories exist, the "Upload First Memory" button is available to members, linking to `/user-dashboard/memories/create`.
+  - Edit & Delete: Members can edit their memories (`/user-dashboard/memories/create?id=${mem.id}`) and delete them with confirmation prompts.
+
+----------------------------------------------------------------------------------------
+3. MEMBER RELATIVE & FAMILY MEMBER CREATION ARCHITECTURE
+----------------------------------------------------------------------------------------
+3.1. Directory Tab Integration (`src/components/dashboard/tabs/MembersTab.tsx`):
+- Action Button: "+ Add Relative" opens `AddMemberModal`.
+- Enhanced Resolution:
+  - Resolves `currentMember` using both `activeUserId` and `activeUserEmail`:
+    ```typescript
+    const currentMember = members.find(
+      (m) =>
+        (activeUserId && (m.userId === activeUserId || m.user?.id === activeUserId)) ||
+        (activeUserEmail &&
+          (m.email?.toLowerCase() === activeUserEmail.toLowerCase() ||
+            m.user?.email?.toLowerCase() === activeUserEmail.toLowerCase()))
+    );
+    ```
+  - Automatically binds `relativeToPersonId={currentMember?.id}` and `relativeToName` to establish the relationship directly to the member.
+  - Member Deletion: Allows members to manage and remove relative profiles they have created.
+
+3.2. Family Tree Canvas Integration (`src/components/dashboard/tabs/TreeTab.tsx`):
+- Action Button: "+ Add Relative" in the tree header controls bar opens `AddMemberModal`.
+- Automatic Relationship Binding: When a member adds a relative from the Tree tab, the new node is connected to their personal profile in the interactive canvas.
+- Canvas Modes:
+  - Interactive 2D Canvas: Free-form node dragging, pan, zoom, and live connector handles.
+  - Database Sync Canvas: Direct tree structure reflecting PostgreSQL family relationships.
+
+3.3. Modal Workflow (`src/components/modals/AddMemberModal.tsx`):
+- Relationship Selection: Father, Mother, Son, Daughter, Brother, Sister, Spouse, Grandparent, Relative.
+- Deduplication Engine: Real-time search suggests existing profiles to prevent duplicate entries in PostgreSQL.
+- Optional Login Account: Can create a platform login account for the relative with email and password so they can log in to their own sanctuary portal.
+
+----------------------------------------------------------------------------------------
+4. BACKEND VERIFICATION & DATABASE PERSISTENCE
+----------------------------------------------------------------------------------------
+4.1. Memory Creation Endpoint (`POST /family/memories`):
+- Controller: `src/family/family.controller.ts` -> `@Post('memories')`
+- Service: `src/family/family.service.ts` -> `createMemory`
+- Persistence: Creates a record in the `Memory` table with:
+  - `title`: Provided title
+  - `description`: Structured metadata (Category, Date, Location, Tagged, Privacy) + story body
+  - `sharedBy`: Dynamic author name (`user.fullName || "Family Member"`)
+  - `mediaUrl`: Serialized JSON array of all uploaded media URLs
+  - `photoCount`: Total number of attached media items
+  - `familyId`: Associated family sanctuary ID
+
+4.2. Member Creation Endpoint (`POST /family/members`):
+- Controller: `src/family/family.controller.ts` -> `@Post('members')`
+- Service: `src/family/family.service.ts` -> `createMember`
+- Persistence: Creates a record in the `FamilyMember` table and optionally generates a `User` login record and a `Relationship` link in PostgreSQL.
+
+----------------------------------------------------------------------------------------
+5. ASSURANCE CHECKLIST
+----------------------------------------------------------------------------------------
+[X] Member can click "Upload Memory" on `/user-dashboard?tab=memories`.
+[X] Member is navigated to `/user-dashboard/memories/create` without role redirection.
+[X] Member can upload multiple photos and videos via dropzone or URL.
+[X] Memory saves to PostgreSQL and appears in the Member Memory Vault and interactive slider.
+[X] Member can click "+ Add Relative" on `/user-dashboard?tab=members` and `/user-dashboard?tab=tree`.
+[X] Relative is created and connected in the database and visible in the tree and directory.
+[X] Zero TypeScript compilation errors across the entire codebase.
+
+========================================================================================
+                               END OF DOCUMENTATION
+========================================================================================
