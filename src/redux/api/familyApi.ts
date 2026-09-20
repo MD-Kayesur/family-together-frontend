@@ -283,6 +283,13 @@ export const familyApi = baseApi.injectEndpoints({
       }),
       invalidatesTags: ["Sanctuary", "Documents"],
     }),
+    deleteAllDocuments: builder.mutation<{ success: boolean; message?: string }, void>({
+      query: () => ({
+        url: "/family/documents",
+        method: "DELETE",
+      }),
+      invalidatesTags: ["Sanctuary", "Documents"],
+    }),
     getInvitations: builder.query<InvitationRecord[], void>({
       query: () => "/family/invitations",
       providesTags: ["Invitations"],
@@ -348,6 +355,7 @@ export const {
   useAddDocumentMutation,
   useAddMultipleDocumentsMutation,
   useDeleteDocumentMutation,
+  useDeleteAllDocumentsMutation,
   useGetInvitationsQuery,
   useAddInvitationMutation,
   useUpdateInvitationStatusMutation,

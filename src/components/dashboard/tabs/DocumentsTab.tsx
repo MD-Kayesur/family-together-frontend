@@ -37,6 +37,9 @@ export default function DocumentsTab() {
   const { data: documents = [], isLoading, refetch } = useGetDocumentsQuery();
   const [addMultipleDocuments, { isLoading: isSubmitting }] = useAddMultipleDocumentsMutation();
   const [deleteDocument] = useDeleteDocumentMutation();
+  const [deleteAllDocuments] = useDeleteAllDocumentsMutation();
+
+  const safeDocuments = Array.isArray(documents) ? documents : [];
 
   const [isUploading, setIsUploading] = useState(false);
   const [selectedFiles, setSelectedFiles] = useState<SelectedFileItem[]>([]);
@@ -47,6 +50,12 @@ export default function DocumentsTab() {
   // PDF Viewport Modal State
   const [selectedDocForViewer, setSelectedDocForViewer] = useState<DocumentRecord | null>(null);
   const [isPdfModalOpen, setIsPdfModalOpen] = useState(false);
+
+  // Deletion Modal States
+  const [docToDelete, setDocToDelete] = useState<DocumentRecord | null>(null);
+  const [isDeleteAllConfirmOpen, setIsDeleteAllConfirmOpen] = useState(false);
+  const [isDeletingSingle, setIsDeletingSingle] = useState(false);
+  const [isDeletingAll, setIsDeletingAll] = useState(false);
 
   // Helper to read File as Data URL safely with Promise.race & timeout
   const readFileAsDataUrl = (file: File): Promise<string> => {
@@ -161,14 +170,32 @@ export default function DocumentsTab() {
     }
   };
 
-  const handleDelete = async (id: string, name: string) => {
-    if (confirm(`Are you sure you want to delete ${name}?`)) {
-      try {
-        await deleteDocument(id).unwrap();
-        refetch();
-      } catch (err) {
-        alert("Failed to delete document");
-      }
+  const handleConfirmDeleteSingle = async () => {
+    if (!docToDelete) return;
+    try {
+      setIsDeletingSingle(true);
+      await deleteDocument(docToDelete.id).unwrap();
+      setDocToDelete(null);
+      await refetch();
+    } catch (err: any) {
+      console.error("Failed to delete document:", err);
+      alert(err?.data?.message || err?.message || "Failed to delete document");
+    } finally {
+      setIsDeletingSingle(false);
+    }
+  };
+
+  const handleConfirmDeleteAll = async () => {
+    try {
+      setIsDeletingAll(true);
+      await deleteAllDocuments().unwrap();
+      setIsDeleteAllConfirmOpen(false);
+      await refetch();
+    } catch (err: any) {
+      console.error("Failed to clear documents:", err);
+      alert(err?.data?.message || err?.message || "Failed to clear documents");
+    } finally {
+      setIsDeletingAll(false);
     }
   };
 
@@ -200,7 +227,7 @@ export default function DocumentsTab() {
           </div>
           <div>
             <h3 className="font-extrabold text-white text-base">
-              {documents.length} Encrypted Vault Documents
+              {safeDocuments.length} Encrypted Vault Document{safeDocuments.length === 1 ? "" : "s"}
             </h3>
             <p className="text-xs text-slate-400 font-medium">
               256-bit AES Encrypted • Multi-document batch upload & live file URLs supported
@@ -208,18 +235,32 @@ export default function DocumentsTab() {
           </div>
         </div>
 
-        <button
-          type="button"
-          onClick={() => {
-            setIsUploading(!isUploading);
-            setUploadError("");
-            setUploadSuccess("");
-          }}
-          className="px-4 py-2.5 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white font-bold text-xs shadow-md shadow-indigo-600/25 flex items-center gap-2 cursor-pointer transition-all hover:scale-[1.02]"
-        >
-          <Plus className="h-4 w-4" />
-          <span>{isUploading ? "Close Upload" : "Upload Documents / PDFs"}</span>
-        </button>
+        <div className="flex items-center gap-2.5">
+          {safeDocuments.length > 0 && (
+            <button
+              type="button"
+              onClick={() => setIsDeleteAllConfirmOpen(true)}
+              className="px-3.5 py-2.5 rounded-xl bg-rose-950/60 hover:bg-rose-900/80 border border-rose-800/60 text-rose-300 font-bold text-xs shadow-sm flex items-center gap-1.5 cursor-pointer transition-all hover:scale-[1.02]"
+              title="Delete all documents from vault"
+            >
+              <Trash2 className="h-4 w-4 text-rose-400" />
+              <span>Clear Vault</span>
+            </button>
+          )}
+
+          <button
+            type="button"
+            onClick={() => {
+              setIsUploading(!isUploading);
+              setUploadError("");
+              setUploadSuccess("");
+            }}
+            className="px-4 py-2.5 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white font-bold text-xs shadow-md shadow-indigo-600/25 flex items-center gap-2 cursor-pointer transition-all hover:scale-[1.02]"
+          >
+            <Plus className="h-4 w-4" />
+            <span>{isUploading ? "Close Upload" : "Upload Documents / PDFs"}</span>
+          </button>
+        </div>
       </div>
 
       {/* Upload Form with Multi-PDF Dropzone */}
@@ -402,7 +443,7 @@ export default function DocumentsTab() {
           <Loader2 className="h-5 w-5 animate-spin text-indigo-400" />
           <span>Loading document vault from database...</span>
         </div>
-      ) : documents.length === 0 ? (
+      ) : safeDocuments.length === 0 ? (
         <div className="p-12 text-center bg-slate-900 rounded-3xl border border-slate-800 space-y-3">
           <FolderLock className="h-10 w-10 text-slate-600 mx-auto" />
           <h3 className="font-bold text-base text-white">Vault is empty</h3>
@@ -412,7 +453,7 @@ export default function DocumentsTab() {
         </div>
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-          {documents.map((doc) => (
+          {safeDocuments.map((doc) => (
             <div
               key={doc.id}
               className="bg-slate-900 border border-slate-800 rounded-3xl p-6 shadow-sm flex flex-col justify-between space-y-4 hover:border-slate-700 hover:shadow-xl transition-all cursor-pointer group"
@@ -442,9 +483,9 @@ export default function DocumentsTab() {
                   type="button"
                   onClick={(e) => {
                     e.stopPropagation();
-                    handleDelete(doc.id, doc.name);
+                    setDocToDelete(doc);
                   }}
-                  className="p-1 text-slate-400 hover:text-rose-400 transition-colors shrink-0"
+                  className="p-1.5 text-slate-400 hover:text-rose-400 hover:bg-rose-950/40 rounded-lg transition-colors shrink-0 cursor-pointer"
                   title="Delete document"
                 >
                   <Trash2 className="h-4 w-4" />
@@ -485,6 +526,89 @@ export default function DocumentsTab() {
               </div>
             </div>
           ))}
+        </div>
+      )}
+
+      {/* Single Document Delete Confirmation Modal */}
+      {docToDelete && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/80 backdrop-blur-sm animate-fadeIn">
+          <div className="bg-slate-900 border border-slate-800 rounded-3xl p-6 sm:p-7 max-w-md w-full space-y-4 shadow-2xl animate-scaleUp">
+            <div className="flex items-center gap-3">
+              <div className="h-10 w-10 rounded-2xl bg-rose-950/80 border border-rose-800/60 text-rose-400 flex items-center justify-center shrink-0">
+                <Trash2 className="h-5 w-5" />
+              </div>
+              <div>
+                <h3 className="text-base font-extrabold text-white">Delete Document?</h3>
+                <p className="text-xs text-slate-400">This file will be permanently removed from the database.</p>
+              </div>
+            </div>
+
+            <div className="p-3.5 rounded-xl bg-slate-950/60 border border-slate-800 text-xs text-slate-300 space-y-1">
+              <p className="font-bold text-white truncate">{docToDelete.name}</p>
+              <p className="text-[11px] text-slate-400">{docToDelete.category} • {docToDelete.size}</p>
+            </div>
+
+            <div className="flex items-center justify-end gap-3 pt-2">
+              <button
+                type="button"
+                disabled={isDeletingSingle}
+                onClick={() => setDocToDelete(null)}
+                className="px-4 py-2 rounded-xl border border-slate-800 text-slate-300 font-bold hover:bg-slate-800 text-xs cursor-pointer disabled:opacity-50"
+              >
+                Cancel
+              </button>
+              <button
+                type="button"
+                disabled={isDeletingSingle}
+                onClick={handleConfirmDeleteSingle}
+                className="px-5 py-2.5 rounded-xl bg-rose-600 hover:bg-rose-700 text-white font-bold text-xs shadow-md shadow-rose-600/25 flex items-center gap-2 cursor-pointer disabled:opacity-50 transition-all hover:scale-[1.02]"
+              >
+                {isDeletingSingle && <Loader2 className="h-3.5 w-3.5 animate-spin" />}
+                <span>{isDeletingSingle ? "Deleting..." : "Permanently Delete"}</span>
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Delete All Documents Confirmation Modal */}
+      {isDeleteAllConfirmOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/80 backdrop-blur-sm animate-fadeIn">
+          <div className="bg-slate-900 border border-slate-800 rounded-3xl p-6 sm:p-7 max-w-md w-full space-y-4 shadow-2xl animate-scaleUp">
+            <div className="flex items-center gap-3">
+              <div className="h-10 w-10 rounded-2xl bg-rose-950/80 border border-rose-800/60 text-rose-400 flex items-center justify-center shrink-0">
+                <Trash2 className="h-5 w-5" />
+              </div>
+              <div>
+                <h3 className="text-base font-extrabold text-white">Clear All Vault Documents?</h3>
+                <p className="text-xs text-slate-400">All {safeDocuments.length} document(s) will be permanently deleted.</p>
+              </div>
+            </div>
+
+            <p className="text-xs text-rose-300/90 bg-rose-950/40 border border-rose-800/50 p-3 rounded-xl">
+              Warning: This will permanently delete all {safeDocuments.length} uploaded files, scans, and PDFs from PostgreSQL database. This action cannot be reversed.
+            </p>
+
+            <div className="flex items-center justify-end gap-3 pt-2">
+              <button
+                type="button"
+                disabled={isDeletingAll}
+                onClick={() => setIsDeleteAllConfirmOpen(false)}
+                className="px-4 py-2 rounded-xl border border-slate-800 text-slate-300 font-bold hover:bg-slate-800 text-xs cursor-pointer disabled:opacity-50"
+              >
+                Cancel
+              </button>
+              <button
+                type="button"
+                disabled={isDeletingAll}
+                onClick={handleConfirmDeleteAll}
+                className="px-5 py-2.5 rounded-xl bg-rose-600 hover:bg-rose-700 text-white font-bold text-xs shadow-md shadow-rose-600/25 flex items-center gap-2 cursor-pointer disabled:opacity-50 transition-all hover:scale-[1.02]"
+              >
+                {isDeletingAll && <Loader2 className="h-3.5 w-3.5 animate-spin" />}
+                <span>{isDeletingAll ? "Clearing Vault..." : "Yes, Delete All Documents"}</span>
+              </button>
+            </div>
+          </div>
         </div>
       )}
 
