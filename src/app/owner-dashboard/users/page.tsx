@@ -60,6 +60,16 @@ export default function OwnerUsersPage() {
       return;
     }
 
+    const existingUser = usersList.find(
+      (u) => u.email.toLowerCase() === email.trim().toLowerCase()
+    );
+    if (existingUser) {
+      setFormError(
+        `A user account with email "${email.trim()}" already exists (Role: ${existingUser.role}). You can update their role directly from the table below.`
+      );
+      return;
+    }
+
     try {
       await createUser({
         fullName: fullName.trim(),
