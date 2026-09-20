@@ -57,6 +57,12 @@ export interface RelationshipRecord {
   toPersonId?: string;
 }
 
+export interface DocumentFileAttachment {
+  name: string;
+  size?: string;
+  fileUrl: string;
+}
+
 export interface DocumentRecord {
   id: string;
   familyId?: string;
@@ -64,6 +70,9 @@ export interface DocumentRecord {
   category: string;
   size: string;
   fileUrl?: string | null;
+  fileUrls?: string[];
+  files?: DocumentFileAttachment[];
+  fileCount?: number;
   uploadedBy: string;
   createdAt?: string;
   updatedAt?: string;
@@ -255,7 +264,15 @@ export const familyApi = baseApi.injectEndpoints({
     }),
     addDocument: builder.mutation<
       DocumentRecord,
-      { name: string; category?: string; size?: string; fileUrl?: string; uploadedBy?: string }
+      {
+        name: string;
+        category?: string;
+        size?: string;
+        fileUrl?: string;
+        fileUrls?: string[];
+        files?: DocumentFileAttachment[];
+        uploadedBy?: string;
+      }
     >({
       query: (body) => ({
         url: "/family/documents",

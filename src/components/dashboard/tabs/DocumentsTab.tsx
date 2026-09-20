@@ -3,10 +3,12 @@
 import React, { useState } from "react";
 import {
   useGetDocumentsQuery,
+  useAddDocumentMutation,
   useAddMultipleDocumentsMutation,
   useDeleteDocumentMutation,
   useDeleteAllDocumentsMutation,
   DocumentRecord,
+  DocumentFileAttachment,
 } from "@/redux/api/familyApi";
 import {
   FolderLock,
@@ -23,6 +25,7 @@ import {
   X,
   AlertCircle,
   CheckCircle2,
+  Layers,
 } from "lucide-react";
 import PdfViewportModal from "@/components/modals/PdfViewportModal";
 
@@ -36,13 +39,14 @@ interface SelectedFileItem {
 
 export default function DocumentsTab() {
   const { data: documents = [], isLoading, refetch } = useGetDocumentsQuery();
-  const [addMultipleDocuments, { isLoading: isSubmitting }] = useAddMultipleDocumentsMutation();
+  const [addDocument, { isLoading: isSubmitting }] = useAddDocumentMutation();
   const [deleteDocument] = useDeleteDocumentMutation();
   const [deleteAllDocuments] = useDeleteAllDocumentsMutation();
 
   const safeDocuments = Array.isArray(documents) ? documents : [];
 
   const [isUploading, setIsUploading] = useState(false);
+  const [documentTitle, setDocumentTitle] = useState("");
   const [selectedFiles, setSelectedFiles] = useState<SelectedFileItem[]>([]);
   const [defaultCategory, setDefaultCategory] = useState("Legal Records");
   const [uploadError, setUploadError] = useState("");
@@ -110,7 +114,7 @@ export default function DocumentsTab() {
     );
   };
 
-  // Upload multiple documents using Promise.race and try-catch
+  // Upload multiple files into ONE single document record
   const handleUpload = async (e: React.FormEvent) => {
     e.preventDefault();
     if (selectedFiles.length === 0) {
@@ -122,43 +126,54 @@ export default function DocumentsTab() {
     setUploadSuccess("");
 
     try {
-      const preparedDocs: Array<{
-        name: string;
-        category: string;
-        size: string;
-        fileUrl: string;
-        uploadedBy: string;
-      }> = [];
+      const attachments: DocumentFileAttachment[] = [];
 
       // Process each file with try-catch and Promise.race so no failure crashes the app
       for (const item of selectedFiles) {
         try {
           const fileUrl = await readFileAsDataUrl(item.file);
-          preparedDocs.push({
+          attachments.push({
             name: item.name,
-            category: item.category || defaultCategory,
             size: item.sizeStr,
             fileUrl,
-            uploadedBy: "Sanctuary Owner",
           });
         } catch (err: any) {
           console.error(`Failed to convert ${item.name}:`, err);
-          // Fallback with dummy PDF URL if data URL conversion failed
-          preparedDocs.push({
+          attachments.push({
             name: item.name,
-            category: item.category || defaultCategory,
             size: item.sizeStr,
             fileUrl: `https://www.w3.org/WAI/ER/tests/xhtml/testfiles/resources/pdf/dummy.pdf`,
-            uploadedBy: "Sanctuary Owner",
           });
         }
       }
 
-      const res = await addMultipleDocuments(preparedDocs).unwrap();
-      const count = Array.isArray(res) ? res.length : preparedDocs.length;
+      // Calculate total size of all attached files
+      const totalBytes = selectedFiles.reduce((acc, f) => acc + f.file.size, 0);
+      const totalMb = (totalBytes / (1024 * 1024)).toFixed(2);
+      const totalSizeStr = `${totalMb} MB${attachments.length > 1 ? ` • ${attachments.length} Files` : ""}`;
 
-      setUploadSuccess(`Successfully uploaded and encrypted ${count} document(s) in the sanctuary vault!`);
+      // Determine document name (custom title or based on files)
+      const docName =
+        documentTitle.trim() ||
+        (attachments.length === 1
+          ? attachments[0].name
+          : `${attachments[0].name} (${attachments.length} files)`);
+
+      // Save ONE document in the vault containing all attachments
+      await addDocument({
+        name: docName,
+        category: defaultCategory,
+        size: totalSizeStr,
+        files: attachments,
+        fileUrl: JSON.stringify(attachments),
+        uploadedBy: "Sanctuary Owner",
+      }).unwrap();
+
+      setUploadSuccess(
+        `Successfully created document "${docName}" with ${attachments.length} file(s) in the sanctuary vault!`
+      );
       setSelectedFiles([]);
+      setDocumentTitle("");
       refetch();
 
       setTimeout(() => {
@@ -167,7 +182,9 @@ export default function DocumentsTab() {
       }, 2000);
     } catch (err: any) {
       console.error("Upload error:", err);
-      setUploadError(err?.data?.message || err?.message || "Failed to upload documents. Please try again.");
+      setUploadError(
+        err?.data?.message || err?.message || "Failed to upload document. Please try again."
+      );
     }
   };
 
@@ -206,16 +223,29 @@ export default function DocumentsTab() {
   };
 
   const handleDownloadDoc = (doc: DocumentRecord) => {
-    const activeUrl =
-      doc.fileUrl ||
-      "https://www.w3.org/WAI/ER/tests/xhtml/testfiles/resources/pdf/dummy.pdf";
-    const link = window.document.createElement("a");
-    link.href = activeUrl;
-    link.download = doc.name || "vault_document.pdf";
-    link.target = "_blank";
-    window.document.body.appendChild(link);
-    link.click();
-    window.document.body.removeChild(link);
+    const filesToDownload =
+      Array.isArray(doc.files) && doc.files.length > 0
+        ? doc.files
+        : [
+            {
+              name: doc.name,
+              fileUrl:
+                doc.fileUrl ||
+                "https://www.w3.org/WAI/ER/tests/xhtml/testfiles/resources/pdf/dummy.pdf",
+            },
+          ];
+
+    filesToDownload.forEach((f, idx) => {
+      setTimeout(() => {
+        const link = window.document.createElement("a");
+        link.href = f.fileUrl;
+        link.download = f.name || `document_part_${idx + 1}.pdf`;
+        link.target = "_blank";
+        window.document.body.appendChild(link);
+        link.click();
+        window.document.body.removeChild(link);
+      }, idx * 250);
+    });
   };
 
   return (
@@ -231,7 +261,7 @@ export default function DocumentsTab() {
               {safeDocuments.length} Encrypted Vault Document{safeDocuments.length === 1 ? "" : "s"}
             </h3>
             <p className="text-xs text-slate-400 font-medium">
-              256-bit AES Encrypted • Multi-document batch upload & live file URLs supported
+              256-bit AES Encrypted • Multi-file single documents & live file viewing supported
             </p>
           </div>
         </div>
@@ -273,10 +303,10 @@ export default function DocumentsTab() {
           <div className="flex items-center justify-between border-b border-slate-800 pb-3">
             <h3 className="font-extrabold text-white text-base flex items-center gap-2">
               <FileCode className="h-5 w-5 text-purple-400" />
-              <span>Batch Upload Documents to Vault</span>
+              <span>Create Document in Vault</span>
             </h3>
-            <span className="px-2.5 py-0.5 rounded-md bg-emerald-950/60 text-emerald-300 font-bold text-[10px] border border-emerald-800/60">
-              Multi-File Support
+            <span className="px-2.5 py-0.5 rounded-md bg-purple-950/60 text-purple-300 font-bold text-[10px] border border-purple-800/60 flex items-center gap-1">
+              <Layers className="h-3 w-3" /> Multi-File Attachment
             </span>
           </div>
 
@@ -296,10 +326,24 @@ export default function DocumentsTab() {
           )}
 
           <div className="space-y-4 text-xs">
+            {/* Optional Custom Document Title */}
+            <div>
+              <label className="block font-bold text-slate-200 mb-1">
+                Document Title (Optional)
+              </label>
+              <input
+                type="text"
+                value={documentTitle}
+                onChange={(e) => setDocumentTitle(e.target.value)}
+                placeholder="e.g. Immigration & Passport Dossier (leave blank to use file name)"
+                className="w-full px-3.5 py-2.5 rounded-xl border border-slate-800 bg-slate-950 text-white placeholder-slate-500 focus:ring-2 focus:ring-purple-500 focus:outline-none font-medium"
+              />
+            </div>
+
             {/* Default Category Selection */}
             <div>
               <label className="block font-bold text-slate-200 mb-1">
-                Default Category for Uploads
+                Document Category
               </label>
               <select
                 value={defaultCategory}
@@ -323,7 +367,7 @@ export default function DocumentsTab() {
             <div>
               <label className="block font-bold text-slate-200 mb-1.5 flex items-center gap-1.5">
                 <Upload className="h-3.5 w-3.5 text-purple-400" />
-                <span>Select Multiple PDF / Document Files *</span>
+                <span>Select 1 or Multiple Files to Attach *</span>
               </label>
 
               <div className="relative border-2 border-dashed border-slate-800 hover:border-purple-500 bg-slate-950/60 rounded-2xl p-6 text-center cursor-pointer transition-colors group">
@@ -339,10 +383,10 @@ export default function DocumentsTab() {
                     <Upload className="h-6 w-6" />
                   </div>
                   <p className="font-bold text-white text-xs">
-                    Click to browse or drag & drop multiple files here
+                    Click to browse or drag & drop files here
                   </p>
                   <p className="text-[10px] text-slate-400 font-medium">
-                    Supports PDF, DOCX, PNG, JPG, JPEG (Select multiple files at once)
+                    Select multiple files at once — they will all be saved inside this single document!
                   </p>
                 </div>
               </div>
@@ -352,7 +396,7 @@ export default function DocumentsTab() {
             {selectedFiles.length > 0 && (
               <div className="space-y-2 pt-1">
                 <div className="flex items-center justify-between text-xs font-bold text-slate-300">
-                  <span>Selected Files Queue ({selectedFiles.length})</span>
+                  <span>Attached Files ({selectedFiles.length})</span>
                   <button
                     type="button"
                     onClick={() => setSelectedFiles([])}
@@ -379,18 +423,6 @@ export default function DocumentsTab() {
                       </div>
 
                       <div className="flex items-center gap-2 shrink-0">
-                        <select
-                          value={item.category}
-                          onChange={(e) => handleUpdateItemCategory(item.id, e.target.value)}
-                          className="px-2 py-1 rounded-lg bg-slate-950 border border-slate-800 text-[11px] text-slate-200 focus:outline-none focus:ring-1 focus:ring-purple-500 font-medium"
-                        >
-                          <option value="Legal Records">Legal Records</option>
-                          <option value="Vital Records">Vital Records</option>
-                          <option value="Immigration">Immigration</option>
-                          <option value="Property & Deeds">Property & Deeds</option>
-                          <option value="Photos & Letters">Photos & Letters</option>
-                        </select>
-
                         <button
                           type="button"
                           onClick={() => handleRemoveSelectedFile(item.id)}
@@ -414,6 +446,7 @@ export default function DocumentsTab() {
               onClick={() => {
                 setIsUploading(false);
                 setSelectedFiles([]);
+                setDocumentTitle("");
               }}
               className="px-4 py-2 rounded-xl border border-slate-800 text-slate-300 font-bold hover:bg-slate-800 cursor-pointer text-xs"
             >
@@ -428,10 +461,10 @@ export default function DocumentsTab() {
               {isSubmitting && <Loader2 className="h-4 w-4 animate-spin" />}
               <span>
                 {isSubmitting
-                  ? "Encrypting & Uploading..."
-                  : `Upload ${selectedFiles.length > 0 ? `${selectedFiles.length} ` : ""}Document${
-                      selectedFiles.length > 1 ? "s" : ""
-                    }`}
+                  ? "Encrypting & Saving..."
+                  : `Create Document (${selectedFiles.length > 0 ? `${selectedFiles.length} ` : ""}file${
+                      selectedFiles.length === 1 ? "" : "s"
+                    })`}
               </span>
             </button>
           </div>
@@ -454,79 +487,111 @@ export default function DocumentsTab() {
         </div>
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-          {safeDocuments.map((doc) => (
-            <div
-              key={doc.id}
-              className="bg-slate-900 border border-slate-800 rounded-3xl p-6 shadow-sm flex flex-col justify-between space-y-4 hover:border-slate-700 hover:shadow-xl transition-all cursor-pointer group"
-              onClick={() => handleOpenPdfViewer(doc)}
-            >
-              <div className="flex items-start justify-between gap-3">
-                <div className="flex items-start gap-3 min-w-0">
-                  <div className="h-12 w-12 rounded-2xl bg-indigo-950/80 group-hover:bg-indigo-600 text-indigo-400 group-hover:text-white border border-indigo-800/60 flex items-center justify-center shrink-0 shadow-sm transition-colors">
-                    <FileText className="h-6 w-6" />
-                  </div>
-                  <div className="min-w-0">
-                    <h4 className="font-bold text-white group-hover:text-indigo-400 transition-colors text-xs leading-snug truncate" title={doc.name}>
-                      {doc.name}
-                    </h4>
-                    <span className="text-[10px] font-semibold text-slate-400">
-                      {doc.category} • {doc.size}
-                    </span>
-                    {doc.fileUrl && (
-                      <span className="block text-[9px] text-indigo-400/80 font-mono truncate mt-0.5" title={doc.fileUrl}>
-                        {doc.fileUrl.startsWith("data:") ? "Direct Data URL" : doc.fileUrl}
+          {safeDocuments.map((doc) => {
+            const hasMultipleFiles =
+              (doc.fileCount && doc.fileCount > 1) ||
+              (Array.isArray(doc.files) && doc.files.length > 1);
+            const count = doc.fileCount || doc.files?.length || 1;
+
+            return (
+              <div
+                key={doc.id}
+                className="bg-slate-900 border border-slate-800 rounded-3xl p-6 shadow-sm flex flex-col justify-between space-y-4 hover:border-slate-700 hover:shadow-xl transition-all cursor-pointer group"
+                onClick={() => handleOpenPdfViewer(doc)}
+              >
+                <div className="flex items-start justify-between gap-3">
+                  <div className="flex items-start gap-3 min-w-0">
+                    <div className="h-12 w-12 rounded-2xl bg-indigo-950/80 group-hover:bg-indigo-600 text-indigo-400 group-hover:text-white border border-indigo-800/60 flex items-center justify-center shrink-0 shadow-sm transition-colors">
+                      <FileText className="h-6 w-6" />
+                    </div>
+                    <div className="min-w-0">
+                      <div className="flex items-center gap-1.5 flex-wrap">
+                        <h4
+                          className="font-bold text-white group-hover:text-indigo-400 transition-colors text-xs leading-snug truncate"
+                          title={doc.name}
+                        >
+                          {doc.name}
+                        </h4>
+                        {hasMultipleFiles && (
+                          <span className="px-2 py-0.5 rounded-full bg-purple-500/20 text-purple-300 border border-purple-500/30 text-[10px] font-bold flex items-center gap-1">
+                            <Layers className="h-3 w-3" /> {count} Files
+                          </span>
+                        )}
+                      </div>
+                      <span className="text-[10px] font-semibold text-slate-400">
+                        {doc.category} • {doc.size}
                       </span>
-                    )}
+
+                      {/* Attached files preview chips */}
+                      {hasMultipleFiles && Array.isArray(doc.files) && (
+                        <div className="flex flex-wrap gap-1 mt-2">
+                          {doc.files.slice(0, 3).map((f, i) => (
+                            <span
+                              key={i}
+                              className="px-2 py-0.5 rounded-md bg-slate-800/80 text-[10px] text-slate-300 font-medium truncate max-w-[120px]"
+                              title={f.name}
+                            >
+                              {f.name}
+                            </span>
+                          ))}
+                          {doc.files.length > 3 && (
+                            <span className="px-1.5 py-0.5 rounded-md bg-purple-950/60 text-purple-300 text-[10px] font-bold border border-purple-800/60">
+                              +{doc.files.length - 3} more
+                            </span>
+                          )}
+                        </div>
+                      )}
+                    </div>
+                  </div>
+
+                  <button
+                    type="button"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      setDocToDelete(doc);
+                    }}
+                    className="p-1.5 text-slate-400 hover:text-rose-400 hover:bg-rose-950/40 rounded-lg transition-colors shrink-0 cursor-pointer"
+                    title="Delete document"
+                  >
+                    <Trash2 className="h-4 w-4" />
+                  </button>
+                </div>
+
+                <div className="pt-3 border-t border-slate-800 flex items-center justify-between gap-2">
+                  <span className="text-[10px] font-semibold text-emerald-400 flex items-center gap-1">
+                    <ShieldCheck className="h-3.5 w-3.5" /> 256-bit Encrypted
+                  </span>
+
+                  <div className="flex items-center gap-1.5">
+                    <button
+                      type="button"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        handleDownloadDoc(doc);
+                      }}
+                      className="p-1.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 hover:text-white transition-colors cursor-pointer"
+                      title={hasMultipleFiles ? "Download All Files" : "Download Document"}
+                    >
+                      <Download className="h-3.5 w-3.5" />
+                    </button>
+
+                    <button
+                      type="button"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        handleOpenPdfViewer(doc);
+                      }}
+                      className="px-3 py-1.5 rounded-xl text-indigo-300 bg-indigo-950/80 hover:bg-indigo-900 border border-indigo-800/60 font-bold transition-colors flex items-center gap-1.5 text-xs cursor-pointer shadow-sm"
+                      title="View Document in Viewport"
+                    >
+                      <Eye className="h-3.5 w-3.5" />
+                      <span>{hasMultipleFiles ? `View (${count})` : "View"}</span>
+                    </button>
                   </div>
                 </div>
-
-                <button
-                  type="button"
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    setDocToDelete(doc);
-                  }}
-                  className="p-1.5 text-slate-400 hover:text-rose-400 hover:bg-rose-950/40 rounded-lg transition-colors shrink-0 cursor-pointer"
-                  title="Delete document"
-                >
-                  <Trash2 className="h-4 w-4" />
-                </button>
               </div>
-
-              <div className="pt-3 border-t border-slate-800 flex items-center justify-between gap-2">
-                <span className="text-[10px] font-semibold text-emerald-400 flex items-center gap-1">
-                  <ShieldCheck className="h-3.5 w-3.5" /> 256-bit Encrypted
-                </span>
-
-                <div className="flex items-center gap-1.5">
-                  <button
-                    type="button"
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      handleDownloadDoc(doc);
-                    }}
-                    className="p-1.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 hover:text-white transition-colors cursor-pointer"
-                    title="Download Document"
-                  >
-                    <Download className="h-3.5 w-3.5" />
-                  </button>
-
-                  <button
-                    type="button"
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      handleOpenPdfViewer(doc);
-                    }}
-                    className="px-3 py-1.5 rounded-xl text-indigo-300 bg-indigo-950/80 hover:bg-indigo-900 border border-indigo-800/60 font-bold transition-colors flex items-center gap-1.5 text-xs cursor-pointer shadow-sm"
-                    title="View Document in Viewport"
-                  >
-                    <Eye className="h-3.5 w-3.5" />
-                    <span>View</span>
-                  </button>
-                </div>
-              </div>
-            </div>
-          ))}
+            );
+          })}
         </div>
       )}
 
