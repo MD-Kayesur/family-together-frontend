@@ -69,7 +69,7 @@ export default function SettingsPage() {
   const [passwordError, setPasswordError] = useState("");
 
   // --- Sanctuary State ---
-  const { data: sanctuaryData, isLoading: isSanctuaryLoading } = useGetSanctuaryQuery();
+  const { data: sanctuaryData, isLoading: isSanctuaryLoading, refetch: refetchSanctuary } = useGetSanctuaryQuery();
   const [updateSanctuarySettings, { isLoading: isSavingSanctuary }] = useUpdateSanctuarySettingsMutation();
   const [sanctuaryName, setSanctuaryName] = useState("");
   const [sanctuaryDescription, setSanctuaryDescription] = useState("");
@@ -214,6 +214,7 @@ export default function SettingsPage() {
     setSanctuarySuccess("");
     try {
       await updateSanctuarySettings({ name: sanctuaryName, description: sanctuaryDescription }).unwrap();
+      refetchSanctuary();
       setSanctuarySuccess("Sanctuary configuration saved successfully!");
       setTimeout(() => setSanctuarySuccess(""), 4000);
     } catch (err) {

@@ -7,7 +7,7 @@ import { Calendar, Plus, MapPin, Video, Loader2 } from "lucide-react";
 import AddEventModal from "@/components/modals/AddEventModal";
 
 export default function EventsPage() {
-  const { data: events = [], isLoading } = useGetEventsQuery();
+  const { data: events = [], isLoading, refetch } = useGetEventsQuery();
   const [isAddEventOpen, setIsAddEventOpen] = useState(false);
 
   return (
@@ -96,7 +96,13 @@ export default function EventsPage() {
         )}
       </div>
 
-      <AddEventModal isOpen={isAddEventOpen} onClose={() => setIsAddEventOpen(false)} />
+      <AddEventModal
+        isOpen={isAddEventOpen}
+        onClose={() => {
+          setIsAddEventOpen(false);
+          refetch();
+        }}
+      />
     </SanctuaryDashboardWrapper>
   );
 }

@@ -40,7 +40,7 @@ function MemoryFormContent() {
 
   // Queries & Mutations
   const { data: members = [] } = useGetMembersQuery();
-  const { data: allMemories = [] } = useGetMemoriesQuery();
+  const { data: allMemories = [], refetch: refetchMemories } = useGetMemoriesQuery();
   const { data: fetchedMemory, isLoading: isFetchingMemory } = useGetMemoryByIdQuery(
     memoryId as string,
     { skip: !memoryId }
@@ -262,6 +262,7 @@ function MemoryFormContent() {
           privacy: privacy || undefined,
         }).unwrap();
 
+        refetchMemories();
         setSuccessMsg(`Memory updated successfully with ${mediaUrls.length} media item(s)! Redirecting...`);
       } else {
         await addMemory({
@@ -277,6 +278,7 @@ function MemoryFormContent() {
           privacy: privacy || undefined,
         }).unwrap();
 
+        refetchMemories();
         setSuccessMsg(`Memory created successfully with ${mediaUrls.length} media item(s)! Redirecting...`);
       }
 

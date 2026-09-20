@@ -44,8 +44,8 @@ export default function InteractiveFamilyTreeCanvas({
 }: {
   isCompact?: boolean;
 }) {
-  const { data: members = [], isLoading: isLoadingMembers } = useGetMembersQuery();
-  const { data: serverRelationships = [] } = useGetRelationshipsQuery();
+  const { data: members = [], isLoading: isLoadingMembers, refetch: refetchMembers } = useGetMembersQuery();
+  const { data: serverRelationships = [], refetch: refetchRelationships } = useGetRelationshipsQuery();
   const [addRelationship] = useAddRelationshipMutation();
 
   const canvasRef = useRef<HTMLDivElement>(null);
@@ -292,6 +292,8 @@ export default function InteractiveFamilyTreeCanvas({
           toPersonId: toM.id,
           typeCode: relType,
         }).unwrap();
+        refetchRelationships();
+        refetchMembers();
       } catch (err) {
         console.error("Failed to post relationship link to backend", err);
       }

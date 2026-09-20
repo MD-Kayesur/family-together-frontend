@@ -10,7 +10,7 @@ import {
 import { Mail, Plus, Check, X, Clock, UserPlus, Loader2 } from "lucide-react";
 
 export default function InvitationsPage() {
-  const { data: invitations = [], isLoading } = useGetInvitationsQuery();
+  const { data: invitations = [], isLoading, refetch } = useGetInvitationsQuery();
   const [updateInvitationStatus] = useUpdateInvitationStatusMutation();
   const [addInvitation] = useAddInvitationMutation();
 
@@ -23,6 +23,7 @@ export default function InvitationsPage() {
   const handleAction = async (id: string, action: "APPROVED" | "REJECTED") => {
     try {
       await updateInvitationStatus({ id, status: action }).unwrap();
+      refetch();
     } catch (err) {
       alert("Failed to update invitation status");
     }
@@ -33,6 +34,7 @@ export default function InvitationsPage() {
     if (!name.trim() || !email.trim()) return;
     try {
       await addInvitation({ name, email, role, note }).unwrap();
+      refetch();
       setName("");
       setEmail("");
       setNote("");

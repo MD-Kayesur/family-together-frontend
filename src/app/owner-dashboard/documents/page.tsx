@@ -24,7 +24,7 @@ import {
 import PdfViewportModal from "@/components/modals/PdfViewportModal";
 
 export default function DocumentsPage() {
-  const { data: documents = [], isLoading } = useGetDocumentsQuery();
+  const { data: documents = [], isLoading, refetch } = useGetDocumentsQuery();
   const [addDocument] = useAddDocumentMutation();
   const [deleteDocument] = useDeleteDocumentMutation();
 
@@ -65,6 +65,7 @@ export default function DocumentsPage() {
         uploadedBy: "Sanctuary Owner",
       }).unwrap();
 
+      refetch();
       setDocName("");
       setSelectedFile(null);
       setIsUploading(false);
@@ -79,6 +80,7 @@ export default function DocumentsPage() {
     if (confirm(`Are you sure you want to delete ${name}?`)) {
       try {
         await deleteDocument(id).unwrap();
+        refetch();
       } catch (err) {
         alert("Failed to delete document");
       }

@@ -55,16 +55,16 @@ export default function DashboardPage() {
   const { user, isAuthenticated } = useAppSelector((state) => state.auth);
   const [logout] = useLogoutMutation();
 
-  const { data: sanctuaryData } = useGetSanctuaryQuery(undefined, {
+  const { data: sanctuaryData, refetch: refetchSanctuary } = useGetSanctuaryQuery(undefined, {
     skip: !isAuthenticated,
   });
-  const { data: invitations = [] } = useGetInvitationsQuery(undefined, {
+  const { data: invitations = [], refetch: refetchInvitations } = useGetInvitationsQuery(undefined, {
     skip: !isAuthenticated,
   });
-  const { data: activityLogs = [] } = useGetActivityLogsQuery(undefined, {
+  const { data: activityLogs = [], refetch: refetchLogs } = useGetActivityLogsQuery(undefined, {
     skip: !isAuthenticated,
   });
-  const { data: members = [] } = useGetMembersQuery(undefined, {
+  const { data: members = [], refetch: refetchMembers } = useGetMembersQuery(undefined, {
     skip: !isAuthenticated,
   });
 
@@ -135,6 +135,10 @@ export default function DashboardPage() {
   const handleApprove = async (id: string) => {
     try {
       await updateInvitationStatus({ id, status: "APPROVED" }).unwrap();
+      refetchInvitations();
+      refetchSanctuary();
+      refetchMembers();
+      refetchLogs();
     } catch (err) {
       console.error("Failed to approve invitation", err);
     }
@@ -143,6 +147,9 @@ export default function DashboardPage() {
   const handleReject = async (id: string) => {
     try {
       await updateInvitationStatus({ id, status: "REJECTED" }).unwrap();
+      refetchInvitations();
+      refetchSanctuary();
+      refetchLogs();
     } catch (err) {
       console.error("Failed to reject invitation", err);
     }
@@ -791,8 +798,23 @@ export default function DashboardPage() {
       </div>
 
       {/* Interactive Modals */}
-      <AddMemberModal isOpen={isAddMemberOpen} onClose={() => setIsAddMemberOpen(false)} />
-      <AddMemoryModal isOpen={isAddMemoryOpen} onClose={() => setIsAddMemoryOpen(false)} />
+      <AddMemberModal
+        isOpen={isAddMemberOpen}
+        onClose={() => {
+          setIsAddMemberOpen(false);
+          refetchMembers();
+          refetchSanctuary();
+          refetchLogs();
+        }}
+      />
+      <AddMemoryModal
+        isOpen={isAddMemoryOpen}
+        onClose={() => {
+          setIsAddMemoryOpen(false);
+          refetchSanctuary();
+          refetchLogs();
+        }}
+      />
     </div>
   );
 }

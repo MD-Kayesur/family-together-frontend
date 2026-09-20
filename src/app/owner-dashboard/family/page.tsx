@@ -35,10 +35,10 @@ import AddMemoryModal from "@/components/modals/AddMemoryModal";
 import InteractiveFamilyTreeCanvas from "@/components/tree/InteractiveFamilyTreeCanvas";
 
 export default function MyFamilyPage() {
-  const { data: sanctuaryData, isLoading: isLoadingSanctuary } = useGetSanctuaryQuery();
-  const { data: members = [], isLoading: isLoadingMembers } = useGetMembersQuery();
-  const { data: relationships = [] } = useGetRelationshipsQuery();
-  const { data: memories = [] } = useGetMemoriesQuery();
+  const { data: sanctuaryData, isLoading: isLoadingSanctuary, refetch: refetchSanctuary } = useGetSanctuaryQuery();
+  const { data: members = [], isLoading: isLoadingMembers, refetch: refetchMembers } = useGetMembersQuery();
+  const { data: relationships = [], refetch: refetchRelationships } = useGetRelationshipsQuery();
+  const { data: memories = [], refetch: refetchMemories } = useGetMemoriesQuery();
   const [updateFamilyDetails, { isLoading: isUpdating }] = useUpdateFamilyDetailsMutation();
 
   // Modals & Search state
@@ -85,6 +85,7 @@ export default function MyFamilyPage() {
         name: familyName.trim(),
         description: familyDesc.trim(),
       }).unwrap();
+      refetchSanctuary();
       setEditSuccessMsg("Family sanctuary details updated successfully!");
       setTimeout(() => {
         setIsEditFamilyOpen(false);
@@ -414,8 +415,22 @@ export default function MyFamilyPage() {
       )}
 
       {/* Modals */}
-      <AddMemberModal isOpen={isAddMemberOpen} onClose={() => setIsAddMemberOpen(false)} />
-      <AddMemoryModal isOpen={isAddMemoryOpen} onClose={() => setIsAddMemoryOpen(false)} />
+      <AddMemberModal
+        isOpen={isAddMemberOpen}
+        onClose={() => {
+          setIsAddMemberOpen(false);
+          refetchMembers();
+          refetchSanctuary();
+        }}
+      />
+      <AddMemoryModal
+        isOpen={isAddMemoryOpen}
+        onClose={() => {
+          setIsAddMemoryOpen(false);
+          refetchMemories();
+          refetchSanctuary();
+        }}
+      />
     </SanctuaryDashboardWrapper>
   );
 }

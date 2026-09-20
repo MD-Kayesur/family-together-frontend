@@ -24,7 +24,7 @@ import {
 import AddMemberModal from "@/components/modals/AddMemberModal";
 
 export default function AdminMembersPage() {
-  const { data: members = [], isLoading } = useGetMembersQuery();
+  const { data: members = [], isLoading, refetch } = useGetMembersQuery();
   const [deleteMember] = useDeleteMemberMutation();
 
   const [searchTerm, setSearchTerm] = useState("");
@@ -38,6 +38,7 @@ export default function AdminMembersPage() {
     ) {
       try {
         await deleteMember(id).unwrap();
+        refetch();
       } catch (err) {
         alert("Failed to delete family member.");
       }
@@ -215,7 +216,10 @@ export default function AdminMembersPage() {
       {/* Add Member Modal with Real-Time Deduplication */}
       <AddMemberModal
         isOpen={isAddMemberOpen}
-        onClose={() => setIsAddMemberOpen(false)}
+        onClose={() => {
+          setIsAddMemberOpen(false);
+          refetch();
+        }}
       />
     </div>
   );

@@ -39,7 +39,7 @@ interface AddMemberModalProps {
 
 export default function AddMemberModal({ isOpen, onClose }: AddMemberModalProps) {
   // Fetch existing members from database for real-time deduplication suggestions
-  const { data: existingMembers = [] } = useGetMembersQuery();
+  const { data: existingMembers = [], refetch: refetchMembers } = useGetMembersQuery();
 
   // Primary Recognition Fields
   const [firstName, setFirstName] = useState("");
@@ -161,6 +161,8 @@ export default function AddMemberModal({ isOpen, onClose }: AddMemberModalProps)
             : "Family member profile & recognition details saved to PostgreSQL Database!"
         );
       }
+
+      refetchMembers();
 
       setTimeout(() => {
         setFirstName("");

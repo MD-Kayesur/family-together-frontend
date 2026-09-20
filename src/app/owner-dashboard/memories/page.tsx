@@ -9,7 +9,7 @@ import MediaSliderCarousel from "@/components/memories/MediaSliderCarousel";
 import MediaLightboxModal from "@/components/modals/MediaLightboxModal";
 
 export default function MemoriesPage() {
-  const { data: memories = [], isLoading } = useGetMemoriesQuery();
+  const { data: memories = [], isLoading, refetch } = useGetMemoriesQuery();
   const [deleteMemory] = useDeleteMemoryMutation();
   const [isLightboxOpen, setIsLightboxOpen] = useState(false);
   const [lightboxIndex, setLightboxIndex] = useState(0);
@@ -31,6 +31,7 @@ export default function MemoriesPage() {
     if (window.confirm(`Are you sure you want to delete "${title}"?`)) {
       try {
         await deleteMemory(id).unwrap();
+        refetch();
       } catch (err) {
         console.error("Failed to delete memory:", err);
       }

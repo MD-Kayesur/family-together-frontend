@@ -18,7 +18,7 @@ import {
   UserCheck,
   Check,
 } from "lucide-react";
-import { useAddMemoryMutation, useGetMembersQuery } from "@/redux/api/familyApi";
+import { useAddMemoryMutation, useGetMembersQuery, useGetMemoriesQuery } from "@/redux/api/familyApi";
 
 interface AddMemoryModalProps {
   isOpen: boolean;
@@ -27,6 +27,7 @@ interface AddMemoryModalProps {
 
 export default function AddMemoryModal({ isOpen, onClose }: AddMemoryModalProps) {
   const { data: members = [] } = useGetMembersQuery();
+  const { refetch: refetchMemories } = useGetMemoriesQuery();
 
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
@@ -123,6 +124,7 @@ export default function AddMemoryModal({ isOpen, onClose }: AddMemoryModalProps)
         privacy: privacy || undefined,
       }).unwrap();
 
+      refetchMemories();
       setSuccessMsg(`Memory saved with ${selectedFiles.length} media items!`);
       setTimeout(() => {
         setTitle("");

@@ -7,7 +7,7 @@ import { Users, Plus, Search, Trash2, Edit, Loader2 } from "lucide-react";
 import AddMemberModal from "@/components/modals/AddMemberModal";
 
 export default function MembersPage() {
-  const { data: members = [], isLoading } = useGetMembersQuery();
+  const { data: members = [], isLoading, refetch } = useGetMembersQuery();
   const [deleteMember] = useDeleteMemberMutation();
   const [searchQuery, setSearchQuery] = useState("");
   const [isAddMemberOpen, setIsAddMemberOpen] = useState(false);
@@ -22,6 +22,7 @@ export default function MembersPage() {
     if (confirm(`Are you sure you want to delete ${name} from your PostgreSQL database?`)) {
       try {
         await deleteMember(id).unwrap();
+        refetch();
       } catch (err) {
         alert("Failed to delete member.");
       }
@@ -124,7 +125,13 @@ export default function MembersPage() {
         )}
       </div>
 
-      <AddMemberModal isOpen={isAddMemberOpen} onClose={() => setIsAddMemberOpen(false)} />
+      <AddMemberModal
+        isOpen={isAddMemberOpen}
+        onClose={() => {
+          setIsAddMemberOpen(false);
+          refetch();
+        }}
+      />
     </SanctuaryDashboardWrapper>
   );
 }

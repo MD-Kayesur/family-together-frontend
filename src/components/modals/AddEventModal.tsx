@@ -2,7 +2,7 @@
 
 import React, { useState } from "react";
 import { X, Calendar, Sparkles, Loader2 } from "lucide-react";
-import { useAddEventMutation } from "@/redux/api/familyApi";
+import { useAddEventMutation, useGetEventsQuery } from "@/redux/api/familyApi";
 
 interface AddEventModalProps {
   isOpen: boolean;
@@ -10,6 +10,7 @@ interface AddEventModalProps {
 }
 
 export default function AddEventModal({ isOpen, onClose }: AddEventModalProps) {
+  const { refetch: refetchEvents } = useGetEventsQuery();
   const [title, setTitle] = useState("");
   const [date, setDate] = useState("");
   const [location, setLocation] = useState("");
@@ -39,6 +40,7 @@ export default function AddEventModal({ isOpen, onClose }: AddEventModalProps) {
         isVirtual,
       }).unwrap();
 
+      refetchEvents();
       setSuccessMsg("Family event created successfully!");
       setTimeout(() => {
         setTitle("");

@@ -22,7 +22,7 @@ import {
 } from "lucide-react";
 
 export default function AdminUsersPage() {
-  const { data: usersList = [], isLoading } = useGetUsersListQuery();
+  const { data: usersList = [], isLoading, refetch } = useGetUsersListQuery();
   const [updateUserRole] = useUpdateUserRoleMutation();
   const [deleteUser] = useDeleteUserMutation();
 
@@ -32,6 +32,7 @@ export default function AdminUsersPage() {
     if (confirm(`Are you sure you want to remove user account ${email}?`)) {
       try {
         await deleteUser(id).unwrap();
+        refetch();
       } catch (err) {
         alert("Failed to delete user account.");
       }
@@ -42,6 +43,7 @@ export default function AdminUsersPage() {
     const nextRole = currentRole === "ADMIN" ? "MEMBER" : "ADMIN";
     try {
       await updateUserRole({ id, role: nextRole }).unwrap();
+      refetch();
     } catch (err) {
       alert("Failed to update user role.");
     }

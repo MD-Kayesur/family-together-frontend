@@ -26,7 +26,7 @@ import {
 
 export default function OwnerUsersPage() {
   const { user: currentUser } = useAppSelector((state) => state.auth);
-  const { data: usersList = [], isLoading } = useGetUsersListQuery();
+  const { data: usersList = [], isLoading, refetch } = useGetUsersListQuery();
   const [createUser, { isLoading: isCreating }] = useCreateUserMutation();
   const [updateUserRole] = useUpdateUserRoleMutation();
   const [deleteUser] = useDeleteUserMutation();
@@ -68,6 +68,7 @@ export default function OwnerUsersPage() {
         role,
       }).unwrap();
 
+      refetch();
       setFormSuccess(`User account created successfully as ${role}!`);
       setFullName("");
       setEmail("");
@@ -93,6 +94,7 @@ export default function OwnerUsersPage() {
     setRoleUpdateMsg(null);
     try {
       await updateUserRole({ id, role: newRole.toUpperCase() }).unwrap();
+      refetch();
       setRoleUpdateMsg(`Role updated to ${newRole.toUpperCase()} successfully!`);
       setTimeout(() => setRoleUpdateMsg(null), 3000);
     } catch (err: any) {
@@ -106,6 +108,7 @@ export default function OwnerUsersPage() {
     if (confirm(`Are you sure you want to permanently remove user account (${email})?`)) {
       try {
         await deleteUser(id).unwrap();
+        refetch();
       } catch (err: any) {
         alert("Failed to remove user account: " + (err?.data?.message || err?.message || "Unknown error"));
       }
