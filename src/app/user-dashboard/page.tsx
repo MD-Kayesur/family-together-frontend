@@ -25,6 +25,7 @@ import TreeTab from "@/components/dashboard/tabs/TreeTab";
 import MembersTab from "@/components/dashboard/tabs/MembersTab";
 import MemoriesTab from "@/components/dashboard/tabs/MemoriesTab";
 import EventsTab from "@/components/dashboard/tabs/EventsTab";
+import MessagesTab from "@/components/dashboard/tabs/MessagesTab";
 
 function UserDashboardContent() {
   const router = useRouter();
@@ -80,7 +81,19 @@ function UserDashboardContent() {
     );
   }
 
-  // Tab 3: Memory Vault
+  // Tab 3: Family Messages
+  if (currentTab === "messages") {
+    return (
+      <SanctuaryDashboardWrapper
+        title="Family Messages"
+        subtitle="Connect and chat in real-time with your sanctuary members and relatives"
+      >
+        <MessagesTab role="MEMBER" currentUserId={user.id} />
+      </SanctuaryDashboardWrapper>
+    );
+  }
+
+  // Tab 4: Memory Vault
   if (currentTab === "memories") {
     return (
       <SanctuaryDashboardWrapper
@@ -92,7 +105,7 @@ function UserDashboardContent() {
     );
   }
 
-  // Tab 4: Upcoming Gatherings & Events
+  // Tab 5: Upcoming Gatherings & Events
   if (currentTab === "events") {
     return (
       <SanctuaryDashboardWrapper

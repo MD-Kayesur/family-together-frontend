@@ -1,0 +1,54 @@
+# FamilyRoots — Universal Messages Route & Real-Time Chat Across All Dashboards
+
+## 1. Overview
+A unified **Messages** route has been integrated across all dashboard experiences within the FamilyRoots platform:
+1. **Owner Dashboard**: `/owner-dashboard?tab=messages` (and `/owner-dashboard/messages`)
+2. **User / Member Dashboard**: `/user-dashboard?tab=messages` (and `/user-dashboard/messages`)
+3. **Admin Dashboard**: `/admin-dashboard/messages`
+4. **Viewer Dashboard**: `/owner-dashboard?tab=messages`
+
+---
+
+## 2. Architecture & Components
+
+### A. Navigation Integration
+- **`SanctuaryDashboardWrapper.tsx`**:
+  - `normalizeDashboardTab`: maps `"messages"`, `"message"`, `"chat"`, `"inbox"` $\to$ `"messages"`.
+  - Added `{ name: "Messages", href: "/owner-dashboard?tab=messages", tabKey: "messages", icon: MessageSquare, badge: "3" }` for owners.
+  - Added `{ name: "Messages", href: "/user-dashboard?tab=messages", tabKey: "messages", icon: MessageSquare, badge: "2" }` for members.
+- **`AdminLayout.tsx`**:
+  - Added `{ name: "Messages", href: "/admin-dashboard/messages", icon: MessageSquare }`.
+- **`ViewerDashboardPage.tsx`**:
+  - Added `{ name: "Messages", href: "/owner-dashboard?tab=messages", icon: MessageSquare }`.
+
+### B. The `MessagesTab` Component (`src/components/dashboard/tabs/MessagesTab.tsx`)
+A state-of-the-art interactive family communication center featuring:
+- **Left Panel (Contacts & Channels)**:
+  - Header with search filter.
+  - Category filter pills: `All Chats`, `Channels`, `Direct`.
+  - Family Sanctuary Circle: Broadcast group channel for announcements and reunions.
+  - Direct contacts list populated dynamically from sanctuary member records with avatar, role badge, last message snippet, timestamp, unread counter, and online status indicator.
+- **Right Panel (Live Chat Stream & Input)**:
+  - Top header displaying conversation title, participant/channel count, status indicator, voice call and video gathering action buttons.
+  - Chat bubbles:
+    - Incoming messages: distinct slate styling, avatar, sender name, message timestamp.
+    - Outgoing messages: purple/indigo gradient, double checkmark read receipts, optimistic send animation.
+  - Reaction support (`❤️`, `🙏`, `🎉`, `👍`).
+  - Input bar with attachment button, emoji button, and real-time send button with auto-scroll to bottom.
+
+---
+
+## 3. URL Route Matrix
+
+| Dashboard | Query Tab Route | Direct Page Route | Role Permissions |
+| :--- | :--- | :--- | :--- |
+| **Sanctuary Owner** | `/owner-dashboard?tab=messages` | `/owner-dashboard/messages` | Full administrative broadcast & direct messaging |
+| **Family Member** | `/user-dashboard?tab=messages` | `/user-dashboard/messages` | Family circle chat & direct relative messaging |
+| **System Admin** | N/A | `/admin-dashboard/messages` | Platform communications & monitoring |
+| **Viewer** | `/owner-dashboard?tab=messages` | `/owner-dashboard/messages` | Read & participate in family conversations |
+
+---
+
+## 4. Verification
+- TypeScript build check (`tsc --noEmit`): **Passed with 0 errors**.
+- Dev server running on `http://localhost:3000`.

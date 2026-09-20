@@ -16,6 +16,7 @@ import {
   Settings,
   Shield,
   Search,
+  MessageSquare,
 } from "lucide-react";
 import { useAppSelector } from "@/redux/store";
 import NavbarNotificationMenu from "@/components/dashboard/NavbarNotificationMenu";
@@ -36,6 +37,7 @@ export function normalizeDashboardTab(rawTab?: string | null): string {
   if (cleaned === "events" || cleaned === "event") return "events";
   if (cleaned === "documents" || cleaned === "document" || cleaned === "docs") return "documents";
   if (cleaned === "invitations" || cleaned === "invites" || cleaned === "invite") return "invitations";
+  if (cleaned === "messages" || cleaned === "message" || cleaned === "chat" || cleaned === "inbox") return "messages";
   if (cleaned === "settings" || cleaned === "setting") return "settings";
   return cleaned;
 }
@@ -57,6 +59,7 @@ function SidebarNavLinks({ isOwnerOrAdmin, pathname }: SidebarNavLinksProps) {
         { name: "Family Tree", href: "/owner-dashboard?tab=tree", tabKey: "tree", icon: TreePine, badge: null },
         { name: "Members", href: "/owner-dashboard?tab=members", tabKey: "members", icon: UserCheck, badge: null },
         { name: "Relationships", href: "/owner-dashboard?tab=relationships", tabKey: "relationships", icon: Heart, badge: null },
+        { name: "Messages", href: "/owner-dashboard?tab=messages", tabKey: "messages", icon: MessageSquare, badge: "3" },
         { name: "Memories", href: "/owner-dashboard?tab=memories", tabKey: "memories", icon: ImageIcon, badge: null },
         { name: "Events", href: "/owner-dashboard?tab=events", tabKey: "events", icon: Calendar, badge: null },
         { name: "Documents", href: "/owner-dashboard?tab=documents", tabKey: "documents", icon: FolderLock, badge: null },
@@ -67,6 +70,7 @@ function SidebarNavLinks({ isOwnerOrAdmin, pathname }: SidebarNavLinksProps) {
         { name: "Sanctuary Portal", href: "/user-dashboard?tab=dashboard", tabKey: "dashboard", icon: LayoutDashboard, badge: null },
         { name: "Family Tree", href: "/user-dashboard?tab=tree", tabKey: "tree", icon: TreePine, badge: null },
         { name: "Family Directory", href: "/user-dashboard?tab=members", tabKey: "members", icon: Users, badge: null },
+        { name: "Messages", href: "/user-dashboard?tab=messages", tabKey: "messages", icon: MessageSquare, badge: "2" },
         { name: "Memory Vault", href: "/user-dashboard?tab=memories", tabKey: "memories", icon: ImageIcon, badge: null },
         { name: "Upcoming Events", href: "/user-dashboard?tab=events", tabKey: "events", icon: Calendar, badge: null },
         { name: "My Profile", href: "/user-dashboard/profile", tabKey: "profile", icon: UserCheck, badge: null },

@@ -72,6 +72,7 @@ export default function ViewerDashboardPage() {
     { name: "Family Tree", href: "/owner-dashboard?tab=tree", icon: TreePine, badge: null },
     { name: "Members", href: "/owner-dashboard?tab=members", icon: UserCheck, badge: null },
     { name: "Relationships", href: "/owner-dashboard?tab=relationships", icon: Heart, badge: null },
+    { name: "Messages", href: "/owner-dashboard?tab=messages", icon: MessageSquare, badge: null },
     { name: "Memories", href: "/owner-dashboard?tab=memories", icon: ImageIcon, badge: null },
     { name: "Events", href: "/owner-dashboard?tab=events", icon: Calendar, badge: null },
     { name: "Documents", href: "/owner-dashboard?tab=documents", icon: FolderLock, badge: null },

@@ -20,6 +20,7 @@ import EventsTab from "@/components/dashboard/tabs/EventsTab";
 import DocumentsTab from "@/components/dashboard/tabs/DocumentsTab";
 import InvitationsTab from "@/components/dashboard/tabs/InvitationsTab";
 import SettingsTab from "@/components/dashboard/tabs/SettingsTab";
+import MessagesTab from "@/components/dashboard/tabs/MessagesTab";
 
 function OwnerDashboardContent() {
   const searchParams = useSearchParams();
@@ -37,6 +38,8 @@ function OwnerDashboardContent() {
       return <MembersTab />;
     case "relationships":
       return <RelationshipsTab />;
+    case "messages":
+      return <MessagesTab role="OWNER" />;
     case "memories":
       return <MemoriesTab />;
     case "events":
