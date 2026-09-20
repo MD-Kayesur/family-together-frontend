@@ -1,47 +1,63 @@
-# Owner Dashboard — Landing Page 2D Interactive Tree Canvas Integration
+# Owner Dashboard — Live Database-Connected 2D Family Tree Canvas
 
-## 1. Executive Summary & Objective
-The user requested:
-> *"in owner dashboard add this how has in landing pages this section add same logic how has in landing page do it"*
+## 1. Executive Summary
+Following the user request:
+> *"but show database data in owner dashboard"*
 
-To fulfill this request:
-1. The **Interactive 2D Family Tree Canvas** (`LandingFamilyTreeCanvas.tsx`), which was previously featured on the public landing page, has now been directly integrated into the **Owner Dashboard** (`OverviewTab.tsx` and `TreeTab.tsx`).
-2. The exact same rich interactivity, node positioning, rubberband relationship linking, emoji avatars, inline node editing, full panning, and mouse wheel zooming from the landing page are now active and accessible to Sanctuary Owners.
-3. Real-time synchronization across browser tabs and sections is maintained via local storage and custom event broadcasting (`landing_tree_v6`).
-
----
-
-## 2. Key Features & Capabilities in Owner Dashboard
-
-### 2.1 Interactive 2D Lineage Workspace
-- **Drag & Drop Node Positioning**: Owners can freely drag relative cards anywhere across the 2D grid surface.
-- **Rubberband Connector Linking**: Drag glowing connector dots between relatives to draw live SVG relationship lines with customizable link types (e.g., Parent ➔ Child, Spouse / Married, Sibling).
-- **Inline Node Editing**: Clicking the pencil icon on any relative opens an edit modal allowing owners to update the name, role, gender, and emoji.
-- **Add Relative Directly on Canvas**: "+ Add Relative" button allows inserting new relatives with custom roles, emojis, and genders directly onto the canvas.
-- **Canvas Panning & Zooming**:
-  - Click and drag on the canvas background to pan around the infinite workspace.
-  - Zoom in/out via toolbar buttons (+ / -) or directly with the mouse scroll wheel.
-  - One-click zoom reset to 100% centered view.
-- **Full Screen Mode**: Expand the canvas to full screen for immersive family tree editing.
-- **Layout Reset**: One-click reset to restore the clean, centered hierarchical arrangement.
+The **Interactive 2D Family Tree Canvas** (`LandingFamilyTreeCanvas.tsx`) in the **Owner Dashboard** (`OverviewTab.tsx` and `TreeTab.tsx`) has been directly wired to the **PostgreSQL Database** via RTK Query (`useDatabaseData={true}`):
+- Instead of showing static or mock members, the canvas now queries and displays the **actual family members and relationships** stored in the database.
+- The owner sees their real family relatives, real full names, real photos/avatars, and real generational links.
+- All interactive actions on the canvas (adding relatives, editing member details, drawing relationship links, and deleting members) now trigger live mutations that persist directly to the PostgreSQL database!
 
 ---
 
-## 3. Integration Points
+## 2. Live Database Synchronization Architecture
 
-### 3.1 Overview Tab (`OverviewTab.tsx`)
-- Location: Positioned prominently between the **GitHub-Style Member Creation Activity Heatmap** and **Grid 3: Recent Lineage Records**.
-- Visual Style: Wrapped in a sleek `bg-slate-900 border border-slate-800` card with a dedicated header, status pill, and direct shortcut link to the full Family Tree tab.
-- Variant: `variant="dashboard"` with responsive height (`h-[620px]`).
+### 2.1 Querying Real Data
+In `LandingFamilyTreeCanvas.tsx`:
+```typescript
+const { data: dbMembers = [], refetch: refetchMembers } = useGetMembersQuery(undefined, {
+  skip: !useDatabaseData,
+});
+const { data: dbRelationships = [], refetch: refetchRelationships } = useGetRelationshipsQuery(undefined, {
+  skip: !useDatabaseData,
+});
+```
 
-### 3.2 Family Tree Tab (`TreeTab.tsx`)
-- Includes an intuitive top-bar switcher allowing the owner to toggle between:
-  1. **Interactive 2D Canvas**: The rich, animated, emoji-powered canvas identical to the landing page.
-  2. **Database Sync Canvas**: The live PostgreSQL-connected person graph.
+### 2.2 Member & Relationship Mapping
+- **Database Members to Canvas Nodes**:
+  - `id`: Database person UUID.
+  - `name`: Real member full name (`${firstName} ${lastName}`).
+  - `role`: Identified role in the family (e.g. `Sanctuary Owner` for logged-in user, `Mother / Daughter`, `Father / Son`).
+  - `photoUrl`: Real profile photo from database or fallback to gender-appropriate avatar.
+  - `gender`: Database gender (`MALE` / `FEMALE`).
+- **Database Relationships to Canvas Curves**:
+  - Links `fromPersonId` and `toPersonId` with live SVG cubic bezier curves and glowing relationship badges (e.g. `Parent ➔ Child`, `Spouse / Married`).
+
+### 2.3 Live Two-Way Database Persistence
+1. **Adding a Relative ("+ Add Relative")**:
+   - Calls `addMemberMutation({ firstName, lastName, gender, relativeToPersonId, relationshipType })`.
+   - Saves the new person and relationship to PostgreSQL.
+   - Triggers `refetchMembers()` and `refetchRelationships()`.
+2. **Connecting Two Relatives (Drag-to-Connect / Link Modal)**:
+   - Calls `addRelationshipMutation({ fromPersonId, toPersonId, typeCode })`.
+   - Persists the new edge to the PostgreSQL `relationships` table.
+3. **Editing a Member (Pencil Icon)**:
+   - Calls `updateMemberMutation({ id, data: { firstName, lastName, gender } })`.
+   - Updates the database record in real time.
+4. **Deleting a Member (Trash Icon)**:
+   - Calls `deleteMemberMutation(memberId)`.
+   - Removes the person and cascades to clean up attached relationships.
 
 ---
 
-## 4. Modified Files
-1. `d:\Projects\family-together-frontend\src\components\tree\LandingFamilyTreeCanvas.tsx`: Added `"dashboard"` variant with custom container styling.
-2. `d:\Projects\family-together-frontend\src\components\dashboard\tabs\OverviewTab.tsx`: Embedded `LandingFamilyTreeCanvas` section with full interactivity.
-3. `d:\Projects\family-together-frontend\src\components\dashboard\tabs\TreeTab.tsx`: Added dual-mode canvas switcher with `LandingFamilyTreeCanvas` support.
+## 3. UI Indicators
+- **Status Pill**: Shows `Live PostgreSQL Database Lineage | X Database Members` with an animated emerald pulse.
+- **Node Cards**: Renders actual uploaded photos if available, or gendered avatars with real names and roles.
+
+---
+
+## 4. File Locations
+- **Canvas Component**: [LandingFamilyTreeCanvas.tsx](file:///d:/Projects/family-together-frontend/src/components/tree/LandingFamilyTreeCanvas.tsx)
+- **Owner Dashboard Overview**: [OverviewTab.tsx](file:///d:/Projects/family-together-frontend/src/components/dashboard/tabs/OverviewTab.tsx)
+- **Family Tree Dedicated Tab**: [TreeTab.tsx](file:///d:/Projects/family-together-frontend/src/components/dashboard/tabs/TreeTab.tsx)

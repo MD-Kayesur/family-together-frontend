@@ -17,6 +17,15 @@ import {
   Minimize2,
   Info,
 } from "lucide-react";
+import { useAppSelector } from "@/redux/store";
+import {
+  useGetMembersQuery,
+  useGetRelationshipsQuery,
+  useAddMemberMutation,
+  useUpdateMemberMutation,
+  useDeleteMemberMutation,
+  useAddRelationshipMutation,
+} from "@/redux/api/familyApi";
 
 export interface DemoMember {
   id: string;
@@ -25,6 +34,8 @@ export interface DemoMember {
   emoji: string;
   gender: "MALE" | "FEMALE";
   isYou?: boolean;
+  photoUrl?: string;
+  bio?: string;
 }
 
 export interface DemoConnection {
@@ -86,6 +97,7 @@ interface LandingFamilyTreeCanvasProps {
   readOnly?: boolean;
   className?: string;
   storageKey?: string;
+  useDatabaseData?: boolean;
 }
 
 export default function LandingFamilyTreeCanvas({
@@ -93,10 +105,24 @@ export default function LandingFamilyTreeCanvas({
   readOnly = false,
   className = "",
   storageKey = "landing_tree_v6",
+  useDatabaseData = false,
 }: LandingFamilyTreeCanvasProps) {
   const isCard = variant === "card";
   const isDashboard = variant === "dashboard";
   const defaultZoom = isCard ? 70 : 100;
+
+  const { user } = useAppSelector((state) => state.auth);
+  const { data: dbMembers = [], refetch: refetchMembers } = useGetMembersQuery(undefined, {
+    skip: !useDatabaseData,
+  });
+  const { data: dbRelationships = [], refetch: refetchRelationships } = useGetRelationshipsQuery(undefined, {
+    skip: !useDatabaseData,
+  });
+
+  const [addMemberMutation] = useAddMemberMutation();
+  const [updateMemberMutation] = useUpdateMemberMutation();
+  const [deleteMemberMutation] = useDeleteMemberMutation();
+  const [addRelationshipMutation] = useAddRelationshipMutation();
 
   const canvasContainerRef = useRef<HTMLDivElement>(null);
   const canvasSurfaceRef = useRef<HTMLDivElement>(null);
@@ -218,6 +244,75 @@ export default function LandingFamilyTreeCanvas({
     window.addEventListener("resize", updateDimensions);
     return () => window.removeEventListener("resize", updateDimensions);
   }, [calculateCenteredPositions, isCard, storageKey]);
+
+  // 1b. Load & Synchronize Real PostgreSQL Database Data when useDatabaseData is true
+  useEffect(() => {
+    if (!useDatabaseData) return;
+    if (!dbMembers || dbMembers.length === 0) return;
+
+    const mappedMembers: DemoMember[] = dbMembers.map((m: any) => {
+      const isYou = user?.id && (m.userId === user.id || m.email === user.email);
+      const fullName = `${m.firstName || ""} ${m.lastName || ""}`.trim() || "Family Member";
+      return {
+        id: m.id,
+        name: fullName,
+        role: isYou
+          ? "Sanctuary Owner"
+          : m.roleInFamily || (m.gender === "FEMALE" ? "Mother / Daughter" : "Father / Son"),
+        emoji: m.photoUrl ? "" : (m.gender === "FEMALE" ? "👩" : "👨"),
+        gender: (m.gender === "FEMALE" ? "FEMALE" : "MALE") as "MALE" | "FEMALE",
+        isYou: Boolean(isYou),
+        photoUrl: m.photoUrl || undefined,
+        bio: m.bio,
+      };
+    });
+
+    const mappedConns: DemoConnection[] = (dbRelationships || []).map((r: any) => {
+      const fromMember = dbMembers.find(
+        (m: any) => m.id === r.fromPersonId || `${m.firstName} ${m.lastName}`.trim() === r.from
+      );
+      const toMember = dbMembers.find(
+        (m: any) => m.id === r.toPersonId || `${m.firstName} ${m.lastName}`.trim() === r.to
+      );
+      return {
+        id: r.id,
+        fromId: fromMember ? fromMember.id : (r.fromPersonId || dbMembers[0]?.id || "1"),
+        toId: toMember ? toMember.id : (r.toPersonId || dbMembers[1]?.id || "2"),
+        type: r.type || "Parent ➔ Child",
+      };
+    });
+
+    const savedPositionsStr = localStorage.getItem(`${storageKey}_positions`);
+    let savedPositions: Record<string, { x: number; y: number }> = {};
+    if (savedPositionsStr) {
+      try {
+        savedPositions = JSON.parse(savedPositionsStr);
+      } catch (e) {}
+    }
+
+    const cx = surfaceDimensions.width / 2;
+    const cy = surfaceDimensions.height / 2;
+    const newPositions: Record<string, { x: number; y: number }> = { ...savedPositions };
+
+    mappedMembers.forEach((m, idx) => {
+      if (!newPositions[m.id]) {
+        const total = mappedMembers.length;
+        const row = Math.floor(idx / 4) - Math.floor(total / 8);
+        const col = (idx % 4) - 1.5;
+        newPositions[m.id] = {
+          x: Math.round(cx + col * 180),
+          y: Math.round(cy + row * 130),
+        };
+      }
+    });
+
+    setMembers(mappedMembers);
+    setConnections(mappedConns);
+    setNodePositions(newPositions);
+    if (!selectedMemberId && mappedMembers[0]) {
+      setSelectedMemberId(mappedMembers[0].id);
+    }
+  }, [useDatabaseData, dbMembers, dbRelationships, user, storageKey, surfaceDimensions]);
 
   // 2. Real-time Synchronization across sections
   useEffect(() => {
@@ -457,7 +552,7 @@ export default function LandingFamilyTreeCanvas({
   };
 
   // Confirm relationship creation
-  const handleConfirmLink = () => {
+  const handleConfirmLink = async () => {
     if (readOnly || !linkSourceId || !linkTargetId) return;
 
     const exists = connections.some(
@@ -476,6 +571,19 @@ export default function LandingFamilyTreeCanvas({
       const updated = [...connections, newConn];
       setConnections(updated);
       persistTree(members, updated, nodePositions);
+
+      if (useDatabaseData) {
+        try {
+          await addRelationshipMutation({
+            fromPersonId: linkSourceId,
+            toPersonId: linkTargetId,
+            typeCode: linkType,
+          }).unwrap();
+          refetchRelationships();
+        } catch (err) {
+          console.error("Failed to add relationship to database:", err);
+        }
+      }
     }
 
     setLinkSourceId(null);
@@ -492,7 +600,7 @@ export default function LandingFamilyTreeCanvas({
   };
 
   // Add new relative
-  const handleAddRelative = (e: React.FormEvent) => {
+  const handleAddRelative = async (e: React.FormEvent) => {
     e.preventDefault();
     if (readOnly || !newRelativeName.trim()) return;
 
@@ -535,6 +643,25 @@ export default function LandingFamilyTreeCanvas({
     persistTree(updatedMembers, updatedConnections, updatedPositions);
     setNewRelativeName("");
     setIsAddModalOpen(false);
+
+    if (useDatabaseData) {
+      try {
+        const parts = newRelativeName.trim().split(" ");
+        const firstName = parts[0] || newRelativeName.trim();
+        const lastName = parts.slice(1).join(" ") || "";
+        await addMemberMutation({
+          firstName,
+          lastName,
+          gender: newRelativeGender,
+          relativeToPersonId: selectedMemberId || undefined,
+          relationshipType: newRelativeRole,
+        }).unwrap();
+        refetchMembers();
+        refetchRelationships();
+      } catch (err) {
+        console.error("Failed to add member to database:", err);
+      }
+    }
   };
 
   // Open Edit Relative Modal
@@ -548,7 +675,7 @@ export default function LandingFamilyTreeCanvas({
   };
 
   // Save Edited Relative
-  const handleSaveEdit = (e: React.FormEvent) => {
+  const handleSaveEdit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (readOnly || !editingMember || !editName.trim()) return;
 
@@ -566,10 +693,29 @@ export default function LandingFamilyTreeCanvas({
     setMembers(updated);
     persistTree(updated, connections, nodePositions);
     setEditingMember(null);
+
+    if (useDatabaseData) {
+      try {
+        const parts = editName.trim().split(" ");
+        const firstName = parts[0] || editName.trim();
+        const lastName = parts.slice(1).join(" ") || "";
+        await updateMemberMutation({
+          id: editingMember.id,
+          data: {
+            firstName,
+            lastName,
+            gender: editGender,
+          },
+        }).unwrap();
+        refetchMembers();
+      } catch (err) {
+        console.error("Failed to update member in database:", err);
+      }
+    }
   };
 
   // Delete selected relative
-  const handleDeleteMember = (memberId: string) => {
+  const handleDeleteMember = async (memberId: string) => {
     if (readOnly) return;
     const updatedMembers = members.filter((m) => m.id !== memberId);
     const updatedConnections = connections.filter(
@@ -586,6 +732,16 @@ export default function LandingFamilyTreeCanvas({
     }
 
     persistTree(updatedMembers, updatedConnections, updatedPositions);
+
+    if (useDatabaseData) {
+      try {
+        await deleteMemberMutation(memberId).unwrap();
+        refetchMembers();
+        refetchRelationships();
+      } catch (err) {
+        console.error("Failed to delete member from database:", err);
+      }
+    }
   };
 
   // Clear all relatives from canvas
@@ -646,10 +802,18 @@ export default function LandingFamilyTreeCanvas({
             <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-500"></span>
           </span>
           <span className="font-bold text-[11px]">
-            {readOnly ? "Live Signature Tree View" : "Interactive Sanctuary Tree"}
+            {useDatabaseData
+              ? "Live PostgreSQL Database Lineage"
+              : readOnly
+              ? "Live Signature Tree View"
+              : "Interactive Sanctuary Tree"}
           </span>
           <span className="text-[10px] text-slate-400 dark:text-slate-500 font-normal">
-            {readOnly ? "| Auto-synced" : "| Drag & connect"}
+            {useDatabaseData
+              ? `| ${members.length} Database Members`
+              : readOnly
+              ? "| Auto-synced"
+              : "| Drag & connect"}
           </span>
         </div>
 
@@ -999,7 +1163,7 @@ export default function LandingFamilyTreeCanvas({
                 {/* Node Card Content */}
                 <div className="flex items-center gap-2.5">
                   <div
-                    className={`h-9 w-9 rounded-full font-bold text-sm flex items-center justify-center shrink-0 shadow-sm ${
+                    className={`h-9 w-9 rounded-full font-bold text-sm flex items-center justify-center shrink-0 shadow-sm overflow-hidden ${
                       m.isYou
                         ? "bg-indigo-600 text-white shadow-indigo-600/30"
                         : m.gender === "FEMALE"
@@ -1007,7 +1171,11 @@ export default function LandingFamilyTreeCanvas({
                         : "bg-indigo-100 dark:bg-indigo-950/60 text-indigo-700 dark:text-indigo-300"
                     }`}
                   >
-                    <span>{m.emoji}</span>
+                    {m.photoUrl ? (
+                      <img src={m.photoUrl} alt={m.name} className="h-full w-full object-cover" />
+                    ) : (
+                      <span>{m.emoji || (m.gender === "FEMALE" ? "👩" : "👨")}</span>
+                    )}
                   </div>
 
                   <div className="overflow-hidden space-y-0.5 text-left">

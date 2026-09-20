@@ -87,7 +87,8 @@ export default function TreeTab({ role, currentUserId }: TreeTabProps) {
             <LandingFamilyTreeCanvas
               variant="fullscreen"
               readOnly={false}
-              storageKey="landing_tree_v6"
+              useDatabaseData={true}
+              storageKey="owner_sanctuary_db_tree"
             />
           </div>
         ) : (
