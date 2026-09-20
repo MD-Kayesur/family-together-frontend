@@ -243,7 +243,7 @@ export default function Home() {
 
         {/* Interactive Family Tree Canvas (Full-Screen Edge-to-Edge DB Design Canvas) */}
         <section className="w-full h-screen min-h-screen p-0 m-0 overflow-hidden relative">
-          <LandingFamilyTreeCanvas />
+          <LandingFamilyTreeCanvas variant="fullscreen" readOnly={false} storageKey="landing_tree_v6" />
         </section>
 
         {/* The Signature Tree Section */}
@@ -280,9 +280,9 @@ export default function Home() {
               </div>
             </div>
 
-            {/* Interactive Signature Tree Preview Card (Rich interactive canvas) */}
+            {/* View-Only Signature Tree Preview Card (Auto-synced with above interactive canvas) */}
             <div className="w-full relative">
-              <LandingFamilyTreeCanvas variant="card" storageKey="signature_tree_preview_v1" />
+              <LandingFamilyTreeCanvas variant="card" readOnly={true} storageKey="landing_tree_v6" />
             </div>
           </div>
         </section>
