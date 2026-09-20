@@ -291,11 +291,11 @@ function MemoryFormContent() {
   return (
     <div className="max-w-4xl mx-auto space-y-6 pb-16">
       {/* Top Navigation & Mode Header */}
-      <div className="flex flex-wrap items-center justify-between gap-4 p-5 rounded-2xl bg-white border border-slate-200/80 shadow-sm">
+      <div className="flex flex-wrap items-center justify-between gap-4 p-5 rounded-2xl bg-slate-900 border border-slate-800 shadow-lg">
         <div className="flex items-center gap-3">
           <Link
             href="/owner-dashboard/memories"
-            className="p-2.5 rounded-xl border border-slate-200 text-slate-600 hover:text-slate-900 hover:bg-slate-50 transition-all flex items-center justify-center cursor-pointer"
+            className="p-2.5 rounded-xl border border-slate-700 text-slate-300 hover:text-white hover:bg-slate-800 transition-all flex items-center justify-center cursor-pointer"
             title="Back to Memories Vault"
           >
             <ArrowLeft className="h-4 w-4" />
@@ -303,20 +303,20 @@ function MemoryFormContent() {
 
           <div>
             <div className="flex items-center gap-2">
-              <h2 className="font-extrabold text-slate-900 text-lg sm:text-xl leading-tight">
+              <h2 className="font-extrabold text-white text-lg sm:text-xl leading-tight">
                 {isEditMode ? "Edit Family Memory" : "Create Family Memory"}
               </h2>
               <span
                 className={`px-2.5 py-0.5 rounded-full text-[10px] font-extrabold tracking-wide uppercase ${
                   isEditMode
-                    ? "bg-amber-100 text-amber-800 border border-amber-200"
-                    : "bg-purple-100 text-purple-800 border border-purple-200"
+                    ? "bg-amber-900/40 text-amber-300 border border-amber-800/60"
+                    : "bg-purple-900/40 text-purple-300 border border-purple-800/60"
                 }`}
               >
                 {isEditMode ? "Edit Mode" : "Create Mode"}
               </span>
             </div>
-            <p className="text-xs text-slate-500 font-medium">
+            <p className="text-xs text-slate-400 font-medium">
               {isEditMode
                 ? "Update memory details, media attachments, and tagged relatives."
                 : "Upload multiple photos, videos, and preserve milestone stories in your family archive."}
@@ -326,7 +326,7 @@ function MemoryFormContent() {
 
         <Link
           href="/owner-dashboard/memories"
-          className="px-4 py-2 rounded-xl border border-slate-200 text-slate-600 hover:bg-slate-50 font-bold text-xs transition-colors"
+          className="px-4 py-2 rounded-xl border border-slate-700 text-slate-300 hover:bg-slate-800 font-bold text-xs transition-colors"
         >
           Cancel & Return
         </Link>
@@ -334,30 +334,30 @@ function MemoryFormContent() {
 
       {/* Loading state when fetching existing memory */}
       {isEditMode && isFetchingMemory && !hasInitialized && (
-        <div className="p-12 text-center bg-white rounded-3xl border border-slate-200/80 flex items-center justify-center gap-3 text-slate-500 text-sm">
-          <Loader2 className="h-5 w-5 animate-spin text-purple-600" />
+        <div className="p-12 text-center bg-slate-900 rounded-3xl border border-slate-800 flex items-center justify-center gap-3 text-slate-400 text-sm">
+          <Loader2 className="h-5 w-5 animate-spin text-purple-500" />
           <span>Loading previous memory data...</span>
         </div>
       )}
 
       {/* Main Form Card */}
-      <div className="bg-white border border-slate-200/80 rounded-3xl p-6 sm:p-8 shadow-sm space-y-6">
+      <div className="bg-slate-900 border border-slate-800 rounded-3xl p-6 sm:p-8 shadow-xl space-y-6 text-white">
         {/* Status Indicator */}
-        <div className="px-4 py-2.5 rounded-xl bg-purple-50/70 border border-purple-200/80 flex items-center justify-between text-xs">
-          <div className="flex items-center gap-2 text-purple-900 font-bold">
-            <UserCheck className="h-4 w-4 text-purple-600" />
+        <div className="px-4 py-2.5 rounded-xl bg-purple-950/40 border border-purple-800/60 flex items-center justify-between text-xs">
+          <div className="flex items-center gap-2 text-purple-300 font-bold">
+            <UserCheck className="h-4 w-4 text-purple-400" />
             <span>
               {isEditMode ? "Editing as:" : "Adding as:"} Sanctuary Owner (Authenticated User)
             </span>
           </div>
-          <span className="text-[10px] bg-purple-200 text-purple-900 font-extrabold px-2.5 py-0.5 rounded-md">
+          <span className="text-[10px] bg-purple-900/60 text-purple-200 border border-purple-700/50 font-extrabold px-2.5 py-0.5 rounded-md">
             Auto-Authorized
           </span>
         </div>
 
         {/* Error Alert */}
         {errorMsg && (
-          <div className="p-4 rounded-xl bg-rose-50 border border-rose-200 text-rose-700 text-xs font-semibold flex items-center gap-2">
+          <div className="p-4 rounded-xl bg-rose-950/50 border border-rose-800/70 text-rose-300 text-xs font-semibold flex items-center gap-2">
             <AlertCircle className="h-4 w-4 shrink-0" />
             <span>{errorMsg}</span>
           </div>
@@ -365,7 +365,7 @@ function MemoryFormContent() {
 
         {/* Success Alert */}
         {successMsg && (
-          <div className="p-4 rounded-xl bg-emerald-50 border border-emerald-200 text-emerald-700 text-xs font-semibold flex items-center gap-2">
+          <div className="p-4 rounded-xl bg-emerald-950/50 border border-emerald-800/70 text-emerald-300 text-xs font-semibold flex items-center gap-2">
             <Sparkles className="h-4 w-4 shrink-0" />
             <span>{successMsg}</span>
           </div>
@@ -375,17 +375,17 @@ function MemoryFormContent() {
           {/* Multiple Media Upload & URL Zone */}
           <div className="space-y-4">
             <div className="flex items-center justify-between">
-              <label className="block font-bold text-slate-700 text-sm flex items-center gap-2">
-                <Upload className="h-4 w-4 text-purple-600" />
+              <label className="block font-bold text-slate-200 text-sm flex items-center gap-2">
+                <Upload className="h-4 w-4 text-purple-400" />
                 <span>Upload Photos & Videos (Multiple Media)</span>
               </label>
-              <span className="text-xs text-purple-600 font-extrabold bg-purple-50 border border-purple-200 px-3 py-1 rounded-full">
+              <span className="text-xs text-purple-300 font-extrabold bg-purple-950/60 border border-purple-800/80 px-3 py-1 rounded-full">
                 {mediaUrls.length} Media Item(s) Attached
               </span>
             </div>
 
             {/* Dropzone for Multiple Local Files */}
-            <div className="relative border-2 border-dashed border-purple-200 hover:border-purple-500 bg-purple-50/30 rounded-2xl p-6 text-center cursor-pointer transition-colors group">
+            <div className="relative border-2 border-dashed border-purple-800/60 hover:border-purple-500 bg-purple-950/20 rounded-2xl p-6 text-center cursor-pointer transition-colors group">
               <input
                 type="file"
                 multiple
@@ -397,15 +397,15 @@ function MemoryFormContent() {
               <div className="space-y-2">
                 <div className="flex items-center justify-center gap-3">
                   {isProcessingMedia ? (
-                    <Loader2 className="h-8 w-8 text-purple-600 animate-spin" />
+                    <Loader2 className="h-8 w-8 text-purple-500 animate-spin" />
                   ) : (
                     <>
-                      <ImageIcon className="h-7 w-7 text-purple-500 group-hover:scale-110 transition-transform" />
-                      <Film className="h-7 w-7 text-purple-600 group-hover:scale-110 transition-transform" />
+                      <ImageIcon className="h-7 w-7 text-purple-400 group-hover:scale-110 transition-transform" />
+                      <Film className="h-7 w-7 text-purple-500 group-hover:scale-110 transition-transform" />
                     </>
                   )}
                 </div>
-                <p className="font-bold text-slate-800 text-sm">
+                <p className="font-bold text-white text-sm">
                   {isProcessingMedia
                     ? "Processing and reading files via resilient Promise.race..."
                     : "Click or drag & drop multiple photos and videos here"}
@@ -429,7 +429,7 @@ function MemoryFormContent() {
                     handleAddCustomMediaUrl();
                   }
                 }}
-                className="flex-1 px-4 py-2.5 rounded-xl border border-slate-200 bg-slate-50 text-slate-900 text-xs font-medium focus:ring-2 focus:ring-purple-500 focus:outline-none"
+                className="flex-1 px-4 py-2.5 rounded-xl border border-slate-800 bg-slate-950 text-white placeholder:text-slate-500 text-xs font-medium focus:ring-2 focus:ring-purple-500 focus:outline-none"
               />
               <button
                 type="button"
@@ -454,7 +454,7 @@ function MemoryFormContent() {
                   </button>
                 </div>
 
-                <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3 max-h-64 overflow-y-auto p-1 border border-slate-200 rounded-2xl bg-slate-50/50">
+                <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3 max-h-64 overflow-y-auto p-1 border border-slate-800 rounded-2xl bg-slate-950/60">
                   {mediaUrls.map((url, index) => {
                     const isVideo =
                       url.startsWith("data:video/") ||
@@ -465,7 +465,7 @@ function MemoryFormContent() {
                     return (
                       <div
                         key={index}
-                        className="relative group/thumb rounded-xl overflow-hidden border border-slate-200 bg-black aspect-video flex items-center justify-center shadow-sm hover:shadow-md transition-all"
+                        className="relative group/thumb rounded-xl overflow-hidden border border-slate-800 bg-black aspect-video flex items-center justify-center shadow-sm hover:shadow-md transition-all"
                       >
                         {isVideo ? (
                           <video
@@ -509,7 +509,7 @@ function MemoryFormContent() {
                 </div>
               </div>
             ) : (
-              <div className="p-3 text-center rounded-xl bg-slate-50 border border-slate-200 text-slate-400 text-xs">
+              <div className="p-3 text-center rounded-xl bg-slate-950 border border-slate-800 text-slate-400 text-xs">
                 No media attached yet. Select files or paste URLs above to add photos & videos.
               </div>
             )}
@@ -517,7 +517,7 @@ function MemoryFormContent() {
 
           {/* Memory Title */}
           <div>
-            <label className="block font-bold text-slate-700 text-sm mb-1.5">
+            <label className="block font-bold text-slate-200 text-sm mb-1.5">
               Memory Title *
             </label>
             <input
@@ -525,7 +525,7 @@ function MemoryFormContent() {
               placeholder="e.g. Eid al-Fitr Family Celebration 2026, Grandparents Golden Anniversary"
               value={title}
               onChange={(e) => setTitle(e.target.value)}
-              className="w-full px-4 py-3 rounded-xl border border-slate-200 bg-slate-50 text-slate-900 text-sm font-semibold focus:ring-2 focus:ring-purple-500 focus:outline-none"
+              className="w-full px-4 py-3 rounded-xl border border-slate-800 bg-slate-950 text-white placeholder:text-slate-500 text-sm font-semibold focus:ring-2 focus:ring-purple-500 focus:outline-none"
               required
             />
           </div>
@@ -533,21 +533,21 @@ function MemoryFormContent() {
           {/* Date & Location */}
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div>
-              <label className="block font-bold text-slate-700 text-sm mb-1.5 flex items-center gap-1.5">
-                <Calendar className="h-4 w-4 text-purple-600" />
+              <label className="block font-bold text-slate-200 text-sm mb-1.5 flex items-center gap-1.5">
+                <Calendar className="h-4 w-4 text-purple-400" />
                 <span>Date of Memory</span>
               </label>
               <input
                 type="date"
                 value={date}
                 onChange={(e) => setDate(e.target.value)}
-                className="w-full px-4 py-3 rounded-xl border border-slate-200 bg-slate-50 text-slate-900 text-xs font-semibold focus:ring-2 focus:ring-purple-500 focus:outline-none"
+                className="w-full px-4 py-3 rounded-xl border border-slate-800 bg-slate-950 text-white text-xs font-semibold focus:ring-2 focus:ring-purple-500 focus:outline-none"
               />
             </div>
 
             <div>
-              <label className="block font-bold text-slate-700 text-sm mb-1.5 flex items-center gap-1.5">
-                <MapPin className="h-4 w-4 text-purple-600" />
+              <label className="block font-bold text-slate-200 text-sm mb-1.5 flex items-center gap-1.5">
+                <MapPin className="h-4 w-4 text-purple-400" />
                 <span>Location / City</span>
               </label>
               <input
@@ -555,7 +555,7 @@ function MemoryFormContent() {
                 placeholder="e.g. Dhaka, Bangladesh"
                 value={location}
                 onChange={(e) => setLocation(e.target.value)}
-                className="w-full px-4 py-3 rounded-xl border border-slate-200 bg-slate-50 text-slate-900 text-xs font-semibold focus:ring-2 focus:ring-purple-500 focus:outline-none"
+                className="w-full px-4 py-3 rounded-xl border border-slate-800 bg-slate-950 text-white placeholder:text-slate-500 text-xs font-semibold focus:ring-2 focus:ring-purple-500 focus:outline-none"
               />
             </div>
           </div>
@@ -563,56 +563,56 @@ function MemoryFormContent() {
           {/* Category & Privacy */}
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div>
-              <label className="block font-bold text-slate-700 text-sm mb-1.5 flex items-center gap-1.5">
-                <Tag className="h-4 w-4 text-purple-600" />
+              <label className="block font-bold text-slate-200 text-sm mb-1.5 flex items-center gap-1.5">
+                <Tag className="h-4 w-4 text-purple-400" />
                 <span>Category / Album</span>
               </label>
               <select
                 value={category}
                 onChange={(e) => setCategory(e.target.value)}
-                className="w-full px-4 py-3 rounded-xl border border-slate-200 bg-slate-50 text-slate-900 text-xs font-bold focus:ring-2 focus:ring-purple-500 focus:outline-none"
+                className="w-full px-4 py-3 rounded-xl border border-slate-800 bg-slate-950 text-white text-xs font-bold focus:ring-2 focus:ring-purple-500 focus:outline-none"
               >
-                <option value="Reunion & Gathering">Reunion & Gathering</option>
-                <option value="Vacation & Travel">Vacation & Travel</option>
-                <option value="Wedding & Celebration">Wedding & Celebration</option>
-                <option value="Birthday & Milestones">Birthday & Milestones</option>
-                <option value="Historic Archive & Deeds">Historic Archive & Deeds</option>
-                <option value="General Story">General Story</option>
+                <option value="Reunion & Gathering" className="bg-slate-950 text-white">Reunion & Gathering</option>
+                <option value="Vacation & Travel" className="bg-slate-950 text-white">Vacation & Travel</option>
+                <option value="Wedding & Celebration" className="bg-slate-950 text-white">Wedding & Celebration</option>
+                <option value="Birthday & Milestones" className="bg-slate-950 text-white">Birthday & Milestones</option>
+                <option value="Historic Archive & Deeds" className="bg-slate-950 text-white">Historic Archive & Deeds</option>
+                <option value="General Story" className="bg-slate-950 text-white">General Story</option>
               </select>
             </div>
 
             <div>
-              <label className="block font-bold text-slate-700 text-sm mb-1.5 flex items-center gap-1.5">
-                <Lock className="h-4 w-4 text-purple-600" />
+              <label className="block font-bold text-slate-200 text-sm mb-1.5 flex items-center gap-1.5">
+                <Lock className="h-4 w-4 text-purple-400" />
                 <span>Sanctuary Visibility</span>
               </label>
               <select
                 value={privacy}
                 onChange={(e) => setPrivacy(e.target.value)}
-                className="w-full px-4 py-3 rounded-xl border border-slate-200 bg-slate-50 text-slate-900 text-xs font-bold focus:ring-2 focus:ring-purple-500 focus:outline-none"
+                className="w-full px-4 py-3 rounded-xl border border-slate-800 bg-slate-950 text-white text-xs font-bold focus:ring-2 focus:ring-purple-500 focus:outline-none"
               >
-                <option value="Entire Family Sanctuary">Entire Family Sanctuary</option>
-                <option value="Owners & Admins Only">Owners & Admins Only</option>
-                <option value="Private / Only Me">Private / Only Me</option>
+                <option value="Entire Family Sanctuary" className="bg-slate-950 text-white">Entire Family Sanctuary</option>
+                <option value="Owners & Admins Only" className="bg-slate-950 text-white">Owners & Admins Only</option>
+                <option value="Private / Only Me" className="bg-slate-950 text-white">Private / Only Me</option>
               </select>
             </div>
           </div>
 
           {/* Tagged Relatives Autocomplete */}
           <div className="relative">
-            <label className="block font-bold text-slate-700 text-sm mb-1.5 flex items-center justify-between">
+            <label className="block font-bold text-slate-200 text-sm mb-1.5 flex items-center justify-between">
               <span className="flex items-center gap-1.5">
-                <Users className="h-4 w-4 text-purple-600" />
+                <Users className="h-4 w-4 text-purple-400" />
                 <span>Tagged Relatives</span>
               </span>
-              <span className="text-[11px] text-purple-600 font-semibold">
-                Type <code className="bg-purple-100 text-purple-800 px-1 py-0.5 rounded">@name</code> to autocomplete
+              <span className="text-[11px] text-purple-400 font-semibold">
+                Type <code className="bg-purple-950/60 text-purple-300 border border-purple-800/60 px-1 py-0.5 rounded">@name</code> to autocomplete
               </span>
             </label>
 
             {/* Tag Badges Container */}
             {taggedMembersList.length > 0 && (
-              <div className="flex flex-wrap gap-1.5 mb-2.5 p-2.5 rounded-xl bg-purple-50/60 border border-purple-100">
+              <div className="flex flex-wrap gap-1.5 mb-2.5 p-2.5 rounded-xl bg-purple-950/30 border border-purple-800/50">
                 {taggedMembersList.map((name) => (
                   <span
                     key={name}
@@ -641,18 +641,18 @@ function MemoryFormContent() {
                 setTagInputText(e.target.value);
                 setIsTagDropdownOpen(true);
               }}
-              className="w-full px-4 py-3 rounded-xl border border-slate-200 bg-slate-50 text-slate-900 text-xs font-semibold focus:ring-2 focus:ring-purple-500 focus:outline-none"
+              className="w-full px-4 py-3 rounded-xl border border-slate-800 bg-slate-950 text-white placeholder:text-slate-500 text-xs font-semibold focus:ring-2 focus:ring-purple-500 focus:outline-none"
             />
 
             {/* Autocomplete Dropdown List */}
             {isTagDropdownOpen && (
-              <div className="absolute left-0 right-0 top-full mt-1.5 z-50 bg-white border border-slate-200 rounded-2xl shadow-2xl max-h-56 overflow-y-auto p-2 space-y-1">
-                <div className="px-2.5 py-1 text-[11px] font-bold uppercase tracking-wider text-slate-400 border-b border-slate-100 flex items-center justify-between">
+              <div className="absolute left-0 right-0 top-full mt-1.5 z-50 bg-slate-900 border border-slate-800 rounded-2xl shadow-2xl max-h-56 overflow-y-auto p-2 space-y-1">
+                <div className="px-2.5 py-1 text-[11px] font-bold uppercase tracking-wider text-slate-400 border-b border-slate-800 flex items-center justify-between">
                   <span>Sanctuary Family Members</span>
                   <button
                     type="button"
                     onClick={() => setIsTagDropdownOpen(false)}
-                    className="text-slate-400 hover:text-slate-600 cursor-pointer"
+                    className="text-slate-400 hover:text-slate-200 cursor-pointer"
                   >
                     <X className="h-3.5 w-3.5" />
                   </button>
@@ -673,14 +673,16 @@ function MemoryFormContent() {
                         onClick={() => handleSelectRelative(fullName)}
                         className={`w-full flex items-center justify-between p-2.5 rounded-xl transition-colors text-left text-xs cursor-pointer ${
                           isAlreadyTagged
-                            ? "bg-purple-50 text-purple-900 font-bold"
-                            : "hover:bg-slate-100 text-slate-800"
+                            ? "bg-purple-950/60 text-purple-200 font-bold"
+                            : "hover:bg-slate-800 text-slate-200"
                         }`}
                       >
                         <div className="flex items-center gap-2.5">
                           <div
                             className={`h-8 w-8 rounded-full flex items-center justify-center font-bold text-xs ${
-                              m.gender === "FEMALE" ? "bg-rose-100 text-rose-700" : "bg-indigo-100 text-indigo-700"
+                              m.gender === "FEMALE"
+                                ? "bg-rose-950/60 text-rose-300 border border-rose-800/50"
+                                : "bg-indigo-950/60 text-indigo-300 border border-indigo-800/50"
                             }`}
                           >
                             {m.gender === "FEMALE" ? "👩" : "👨"}
@@ -694,9 +696,9 @@ function MemoryFormContent() {
                         </div>
 
                         {isAlreadyTagged ? (
-                          <Check className="h-4 w-4 text-purple-600" />
+                          <Check className="h-4 w-4 text-purple-400" />
                         ) : (
-                          <span className="text-[11px] font-bold text-purple-600 hover:underline">
+                          <span className="text-[11px] font-bold text-purple-400 hover:underline">
                             + Tag
                           </span>
                         )}
@@ -710,7 +712,7 @@ function MemoryFormContent() {
 
           {/* Description / Story */}
           <div>
-            <label className="block font-bold text-slate-700 text-sm mb-1.5">
+            <label className="block font-bold text-slate-200 text-sm mb-1.5">
               Description / Memory Story
             </label>
             <textarea
@@ -718,15 +720,15 @@ function MemoryFormContent() {
               placeholder="Write a description or milestone story about this memory..."
               value={description}
               onChange={(e) => setDescription(e.target.value)}
-              className="w-full px-4 py-3 rounded-xl border border-slate-200 bg-slate-50 text-slate-900 text-xs font-semibold focus:ring-2 focus:ring-purple-500 focus:outline-none resize-none"
+              className="w-full px-4 py-3 rounded-xl border border-slate-800 bg-slate-950 text-white placeholder:text-slate-500 text-xs font-semibold focus:ring-2 focus:ring-purple-500 focus:outline-none resize-none"
             />
           </div>
 
           {/* Action Buttons */}
-          <div className="flex items-center justify-end gap-3 pt-4 border-t border-slate-100">
+          <div className="flex items-center justify-end gap-3 pt-4 border-t border-slate-800">
             <Link
               href="/owner-dashboard/memories"
-              className="px-5 py-3 rounded-xl border border-slate-200 text-slate-600 font-bold hover:bg-slate-100 transition-colors text-xs"
+              className="px-5 py-3 rounded-xl border border-slate-800 text-slate-300 font-bold hover:bg-slate-800 transition-colors text-xs"
             >
               Cancel
             </Link>

@@ -44,8 +44,8 @@ export default function MemoryDetailPage() {
         title="Family Memory Details"
         subtitle="Loading preserved milestone memory from the database archive..."
       >
-        <div className="p-16 text-center bg-white rounded-3xl border border-slate-200/80 flex items-center justify-center gap-3 text-slate-500 text-sm">
-          <Loader2 className="h-6 w-6 animate-spin text-purple-600" />
+        <div className="p-16 text-center bg-slate-900 rounded-3xl border border-slate-800 flex items-center justify-center gap-3 text-slate-400 text-sm">
+          <Loader2 className="h-6 w-6 animate-spin text-purple-500" />
           <span>Fetching memory details...</span>
         </div>
       </SanctuaryDashboardWrapper>
@@ -58,13 +58,13 @@ export default function MemoryDetailPage() {
         title="Memory Not Found"
         subtitle="The requested memory could not be located in your sanctuary vault."
       >
-        <div className="p-12 text-center bg-white rounded-3xl border border-slate-200/80 space-y-4">
-          <p className="text-sm font-semibold text-slate-600">
+        <div className="p-12 text-center bg-slate-900 rounded-3xl border border-slate-800 space-y-4">
+          <p className="text-sm font-semibold text-slate-300">
             This memory may have been removed or does not exist.
           </p>
           <Link
             href="/owner-dashboard/memories"
-            className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-purple-600 text-white font-bold text-xs"
+            className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-purple-600 text-white font-bold text-xs hover:bg-purple-700 transition-colors"
           >
             <ArrowLeft className="h-4 w-4" />
             <span>Return to Memories Vault</span>
@@ -128,25 +128,25 @@ export default function MemoryDetailPage() {
     >
       <div className="space-y-6 pb-16">
         {/* Navigation Action Bar */}
-        <div className="flex flex-wrap items-center justify-between gap-4 p-5 rounded-2xl bg-white border border-slate-200/80 shadow-sm">
+        <div className="flex flex-wrap items-center justify-between gap-4 p-5 rounded-2xl bg-slate-900 border border-slate-800 shadow-xl">
           <div className="flex items-center gap-3">
             <Link
               href="/owner-dashboard/memories"
-              className="p-2.5 rounded-xl border border-slate-200 text-slate-600 hover:text-slate-900 hover:bg-slate-50 transition-all flex items-center justify-center cursor-pointer"
+              className="p-2.5 rounded-xl border border-slate-800 text-slate-400 hover:text-white hover:bg-slate-800 transition-all flex items-center justify-center cursor-pointer"
               title="Back to Memories"
             >
               <ArrowLeft className="h-4 w-4" />
             </Link>
             <div>
               <div className="flex items-center gap-2">
-                <h2 className="font-extrabold text-slate-900 text-lg sm:text-xl leading-tight">
+                <h2 className="font-extrabold text-white text-lg sm:text-xl leading-tight">
                   {memory.title}
                 </h2>
-                <span className="px-2.5 py-0.5 rounded-full text-[10px] font-extrabold uppercase tracking-wide bg-purple-100 text-purple-800 border border-purple-200">
+                <span className="px-2.5 py-0.5 rounded-full text-[10px] font-extrabold uppercase tracking-wide bg-purple-950/60 text-purple-300 border border-purple-800/60">
                   {mediaList.length} Media File{mediaList.length > 1 ? "s" : ""}
                 </span>
               </div>
-              <p className="text-xs text-slate-500 font-medium">
+              <p className="text-xs text-slate-400 font-medium">
                 Uploaded by {memory.sharedBy || "Sanctuary Owner"}
               </p>
             </div>
@@ -205,8 +205,8 @@ export default function MemoryDetailPage() {
 
             {/* Multiple Media Thumbnails Carousel Strip */}
             {mediaList.length > 1 && (
-              <div className="bg-white border border-slate-200/80 rounded-2xl p-3 shadow-sm space-y-2">
-                <div className="flex items-center justify-between text-xs font-bold text-slate-700 px-1">
+              <div className="bg-slate-900 border border-slate-800 rounded-2xl p-3 shadow-lg space-y-2">
+                <div className="flex items-center justify-between text-xs font-bold text-white px-1">
                   <span>Attached Media Files ({mediaList.length})</span>
                   <span className="text-[11px] text-slate-400 font-medium">Click thumbnail to view</span>
                 </div>
@@ -225,8 +225,8 @@ export default function MemoryDetailPage() {
                         onClick={() => setActiveMediaIndex(idx)}
                         className={`relative h-16 w-24 rounded-xl overflow-hidden border-2 transition-all shrink-0 cursor-pointer ${
                           activeMediaIndex === idx
-                            ? "border-purple-600 scale-105 shadow-md shadow-purple-600/30"
-                            : "border-slate-200 opacity-70 hover:opacity-100"
+                            ? "border-purple-500 scale-105 shadow-md shadow-purple-600/30"
+                            : "border-slate-800 opacity-70 hover:opacity-100"
                         }`}
                       >
                         {isThumbVideo ? (
@@ -248,71 +248,71 @@ export default function MemoryDetailPage() {
           {/* Right / Story & Metadata Information (5 cols) */}
           <div className="lg:col-span-5 space-y-4">
             {/* Story & Description Card */}
-            <div className="bg-white border border-slate-200/80 rounded-3xl p-6 shadow-sm space-y-4">
-              <div className="flex items-center gap-2 text-xs font-bold text-purple-700">
+            <div className="bg-slate-900 border border-slate-800 rounded-3xl p-6 shadow-xl space-y-4">
+              <div className="flex items-center gap-2 text-xs font-bold text-purple-400">
                 <Sparkles className="h-4 w-4" />
                 <span>Memory Milestone Story</span>
               </div>
 
-              <h3 className="font-extrabold text-slate-900 text-xl leading-snug">
+              <h3 className="font-extrabold text-white text-xl leading-snug">
                 {memory.title}
               </h3>
 
-              <div className="p-4 rounded-2xl bg-slate-50 border border-slate-100 text-xs text-slate-700 leading-relaxed font-normal whitespace-pre-wrap">
+              <div className="p-4 rounded-2xl bg-slate-950 border border-slate-800 text-xs text-slate-300 leading-relaxed font-normal whitespace-pre-wrap">
                 {cleanDescription}
               </div>
 
               {/* Metadata Grid */}
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-2">
-                <div className="p-3 rounded-xl bg-purple-50/50 border border-purple-100 flex items-center gap-2.5">
-                  <Tag className="h-4 w-4 text-purple-600 shrink-0" />
+                <div className="p-3 rounded-xl bg-slate-950/70 border border-slate-800 flex items-center gap-2.5">
+                  <Tag className="h-4 w-4 text-purple-400 shrink-0" />
                   <div className="overflow-hidden">
                     <span className="text-[10px] text-slate-400 font-bold uppercase block">Category</span>
-                    <span className="text-xs font-bold text-slate-800 truncate block">{extractedCategory}</span>
+                    <span className="text-xs font-bold text-white truncate block">{extractedCategory}</span>
                   </div>
                 </div>
 
-                <div className="p-3 rounded-xl bg-slate-50 border border-slate-100 flex items-center gap-2.5">
-                  <Calendar className="h-4 w-4 text-purple-600 shrink-0" />
+                <div className="p-3 rounded-xl bg-slate-950/70 border border-slate-800 flex items-center gap-2.5">
+                  <Calendar className="h-4 w-4 text-purple-400 shrink-0" />
                   <div className="overflow-hidden">
                     <span className="text-[10px] text-slate-400 font-bold uppercase block">Date</span>
-                    <span className="text-xs font-bold text-slate-800 truncate block">
+                    <span className="text-xs font-bold text-white truncate block">
                       {extractedDate || (memory.createdAt ? new Date(memory.createdAt).toLocaleDateString() : "Milestone")}
                     </span>
                   </div>
                 </div>
 
                 {extractedLocation && (
-                  <div className="p-3 rounded-xl bg-slate-50 border border-slate-100 flex items-center gap-2.5">
-                    <MapPin className="h-4 w-4 text-rose-500 shrink-0" />
+                  <div className="p-3 rounded-xl bg-slate-950/70 border border-slate-800 flex items-center gap-2.5">
+                    <MapPin className="h-4 w-4 text-rose-400 shrink-0" />
                     <div className="overflow-hidden">
                       <span className="text-[10px] text-slate-400 font-bold uppercase block">Location</span>
-                      <span className="text-xs font-bold text-slate-800 truncate block">{extractedLocation}</span>
+                      <span className="text-xs font-bold text-white truncate block">{extractedLocation}</span>
                     </div>
                   </div>
                 )}
 
-                <div className="p-3 rounded-xl bg-slate-50 border border-slate-100 flex items-center gap-2.5">
-                  <Lock className="h-4 w-4 text-indigo-500 shrink-0" />
+                <div className="p-3 rounded-xl bg-slate-950/70 border border-slate-800 flex items-center gap-2.5">
+                  <Lock className="h-4 w-4 text-indigo-400 shrink-0" />
                   <div className="overflow-hidden">
                     <span className="text-[10px] text-slate-400 font-bold uppercase block">Visibility</span>
-                    <span className="text-xs font-bold text-slate-800 truncate block">{extractedPrivacy}</span>
+                    <span className="text-xs font-bold text-white truncate block">{extractedPrivacy}</span>
                   </div>
                 </div>
               </div>
 
               {/* Tagged Relatives */}
               {extractedTagged.length > 0 && (
-                <div className="pt-2 border-t border-slate-100 space-y-2">
+                <div className="pt-2 border-t border-slate-800 space-y-2">
                   <span className="text-[10px] font-bold text-slate-400 uppercase flex items-center gap-1.5">
-                    <Users className="h-3.5 w-3.5 text-purple-600" />
+                    <Users className="h-3.5 w-3.5 text-purple-400" />
                     <span>Tagged Relatives ({extractedTagged.length})</span>
                   </span>
                   <div className="flex flex-wrap gap-1.5">
                     {extractedTagged.map((name, idx) => (
                       <span
                         key={idx}
-                        className="px-2.5 py-1 rounded-lg bg-purple-50 text-purple-800 border border-purple-200 text-xs font-bold"
+                        className="px-2.5 py-1 rounded-lg bg-purple-950/50 text-purple-300 border border-purple-800/60 text-xs font-bold"
                       >
                         @{name}
                       </span>
@@ -322,10 +322,10 @@ export default function MemoryDetailPage() {
               )}
 
               {/* Uploader Footer */}
-              <div className="pt-4 border-t border-slate-100 flex items-center justify-between text-xs text-slate-500 font-medium">
+              <div className="pt-4 border-t border-slate-800 flex items-center justify-between text-xs text-slate-400 font-medium">
                 <div className="flex items-center gap-2">
-                  <UserCheck className="h-4 w-4 text-purple-600" />
-                  <span>Shared by <strong className="text-slate-800">{memory.sharedBy || "Sanctuary Owner"}</strong></span>
+                  <UserCheck className="h-4 w-4 text-purple-400" />
+                  <span>Shared by <strong className="text-white">{memory.sharedBy || "Sanctuary Owner"}</strong></span>
                 </div>
               </div>
             </div>

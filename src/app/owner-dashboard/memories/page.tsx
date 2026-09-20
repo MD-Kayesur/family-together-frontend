@@ -44,14 +44,14 @@ export default function MemoriesPage() {
     >
       <div className="space-y-8 pb-12">
         {/* Action Header */}
-        <div className="flex flex-wrap items-center justify-between gap-4 p-5 rounded-2xl bg-white border border-slate-200/80 shadow-sm">
+        <div className="flex flex-wrap items-center justify-between gap-4 p-5 rounded-2xl bg-slate-900 border border-slate-800 shadow-lg">
           <div className="flex items-center gap-3">
-            <div className="h-10 w-10 rounded-xl bg-purple-50 text-purple-600 flex items-center justify-center">
+            <div className="h-10 w-10 rounded-xl bg-purple-900/40 text-purple-400 border border-purple-800/50 flex items-center justify-center">
               <ImageIcon className="h-5 w-5" />
             </div>
             <div>
-              <h3 className="font-extrabold text-slate-900 text-sm">Owner Media Vault</h3>
-              <p className="text-xs text-slate-500 font-medium">
+              <h3 className="font-extrabold text-white text-sm">Owner Media Vault</h3>
+              <p className="text-xs text-slate-400 font-medium">
                 {memories.length} Memories & Milestone Media Items Preserved
               </p>
             </div>
@@ -68,7 +68,7 @@ export default function MemoriesPage() {
 
         {/* 1. Featured Media Slider Carousel Section */}
         {!isLoading && memories.length > 0 && (
-          <div className="p-6 rounded-3xl bg-slate-900 text-white shadow-xl space-y-4">
+          <div className="p-6 rounded-3xl bg-slate-900 border border-slate-800 text-white shadow-xl space-y-4">
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-2">
                 <SlidersHorizontal className="h-5 w-5 text-purple-400" />
@@ -83,18 +83,18 @@ export default function MemoriesPage() {
 
         {/* 2. All Memories Gallery Grid */}
         <div className="space-y-4">
-          <h3 className="font-extrabold text-slate-900 text-lg">All Family Memories</h3>
+          <h3 className="font-extrabold text-white text-lg">All Family Memories</h3>
 
           {isLoading ? (
-            <div className="p-12 text-center flex items-center justify-center gap-3 text-slate-500 text-sm bg-white rounded-3xl border border-slate-200">
-              <Loader2 className="h-5 w-5 animate-spin text-purple-600" />
+            <div className="p-12 text-center flex items-center justify-center gap-3 text-slate-400 text-sm bg-slate-900 rounded-3xl border border-slate-800">
+              <Loader2 className="h-5 w-5 animate-spin text-purple-500" />
               <span>Loading family memories from database...</span>
             </div>
           ) : memories.length === 0 ? (
-            <div className="p-12 text-center bg-white rounded-3xl border border-slate-200/80 space-y-3">
-              <ImageIcon className="h-10 w-10 text-slate-300 mx-auto" />
-              <h3 className="font-bold text-base text-slate-800">No memories uploaded yet</h3>
-              <p className="text-xs text-slate-500 max-w-sm mx-auto">
+            <div className="p-12 text-center bg-slate-900 rounded-3xl border border-slate-800 space-y-3">
+              <ImageIcon className="h-10 w-10 text-slate-600 mx-auto" />
+              <h3 className="font-bold text-base text-white">No memories uploaded yet</h3>
+              <p className="text-xs text-slate-400 max-w-sm mx-auto">
                 Preserve your first family photo or story in your private sanctuary archive.
               </p>
               <Link
@@ -121,20 +121,20 @@ export default function MemoriesPage() {
                   <div
                     key={mem.id || idx}
                     onClick={() => handleOpenLightbox(idx)}
-                    className="bg-white border border-slate-200/80 rounded-3xl p-5 shadow-sm flex flex-col justify-between space-y-4 hover:shadow-xl transition-all cursor-pointer group"
+                    className="bg-slate-900 border border-slate-800 rounded-3xl p-5 shadow-md flex flex-col justify-between space-y-4 hover:border-purple-500/50 hover:shadow-xl hover:shadow-purple-950/20 transition-all cursor-pointer group"
                   >
                     <div className="space-y-2">
-                      <div className="h-48 rounded-2xl overflow-hidden relative border border-slate-100">
+                      <div className="h-48 rounded-2xl overflow-hidden relative border border-slate-800">
                         <img
                           src={displayImg}
                           alt={mem.title}
                           className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
                         />
-                        <div className="absolute inset-0 bg-gradient-to-t from-slate-950/70 via-transparent to-transparent opacity-80" />
+                        <div className="absolute inset-0 bg-gradient-to-t from-slate-950/90 via-slate-950/20 to-transparent opacity-80" />
                         
                         {/* Top Left Media Count Badge */}
                         <div className="absolute top-3 left-3">
-                          <span className="bg-slate-900/80 backdrop-blur-md px-2.5 py-1 rounded-full text-[10px] font-bold text-white shadow-sm flex items-center gap-1.5 border border-white/20">
+                          <span className="bg-slate-950/85 backdrop-blur-md px-2.5 py-1 rounded-full text-[10px] font-bold text-white shadow-sm flex items-center gap-1.5 border border-white/20">
                             <ImageIcon className="h-3 w-3 text-purple-400" />
                             <span>{totalMediaCount} Media</span>
                           </span>
@@ -142,7 +142,7 @@ export default function MemoriesPage() {
 
                         {/* Top Right Click to View */}
                         <div className="absolute top-3 right-3 flex items-center gap-2">
-                          <span className="bg-white/90 backdrop-blur-md px-2.5 py-1 rounded-full text-[10px] font-bold text-slate-700 shadow-sm">
+                          <span className="bg-slate-950/85 backdrop-blur-md px-2.5 py-1 rounded-full text-[10px] font-bold text-slate-200 border border-white/20 shadow-sm">
                             Click to View
                           </span>
                         </div>
@@ -154,13 +154,13 @@ export default function MemoriesPage() {
                           {mem.mediaUrls.slice(0, 4).map((thumb, tIdx) => (
                             <div
                               key={tIdx}
-                              className="h-9 w-12 rounded-lg overflow-hidden border border-slate-200 shrink-0 bg-slate-100 shadow-xs"
+                              className="h-9 w-12 rounded-lg overflow-hidden border border-slate-800 shrink-0 bg-slate-950 shadow-xs"
                             >
                               <img src={thumb} alt="" className="w-full h-full object-cover" />
                             </div>
                           ))}
                           {mem.mediaUrls.length > 4 && (
-                            <span className="text-[10px] font-bold text-slate-400 px-1">
+                            <span className="text-[10px] font-bold text-slate-500 px-1">
                               +{mem.mediaUrls.length - 4}
                             </span>
                           )}
@@ -169,21 +169,21 @@ export default function MemoriesPage() {
                     </div>
 
                     <div className="space-y-1">
-                      <h4 className="font-extrabold text-slate-900 text-base leading-tight truncate">
+                      <h4 className="font-extrabold text-white text-base leading-tight truncate">
                         {mem.title}
                       </h4>
-                      <p className="text-xs text-slate-600 leading-relaxed line-clamp-2">
+                      <p className="text-xs text-slate-400 leading-relaxed line-clamp-2">
                         {mem.description || "No description provided."}
                       </p>
                     </div>
 
-                    <div className="pt-3 border-t border-slate-100 text-[11px] font-bold text-slate-400 flex items-center justify-between">
+                    <div className="pt-3 border-t border-slate-800 text-[11px] font-bold text-slate-500 flex items-center justify-between">
                       <span>Shared by {mem.sharedBy || "Sanctuary Owner"}</span>
                       <div className="flex items-center gap-2">
                         <div className="flex items-center gap-1" onClick={(e) => e.stopPropagation()}>
                           <Link
                             href={`/owner-dashboard/memories/create?id=${mem.id}`}
-                            className="p-1.5 rounded-lg bg-slate-100 hover:bg-purple-100 text-slate-600 hover:text-purple-700 border border-slate-200 transition-colors"
+                            className="p-1.5 rounded-lg bg-slate-800 hover:bg-purple-950 text-slate-300 hover:text-purple-300 border border-slate-700 transition-colors"
                             title="Edit Memory"
                           >
                             <Pencil className="h-3.5 w-3.5" />
@@ -191,7 +191,7 @@ export default function MemoriesPage() {
                           <button
                             type="button"
                             onClick={(e) => handleDeleteMemory(e, mem.id, mem.title)}
-                            className="p-1.5 rounded-lg bg-slate-100 hover:bg-rose-100 text-slate-600 hover:text-rose-600 border border-slate-200 transition-colors cursor-pointer"
+                            className="p-1.5 rounded-lg bg-slate-800 hover:bg-rose-950 text-slate-300 hover:text-rose-300 border border-slate-700 transition-colors cursor-pointer"
                             title="Delete Memory"
                           >
                             <Trash2 className="h-3.5 w-3.5" />
