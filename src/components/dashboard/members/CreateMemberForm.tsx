@@ -45,7 +45,7 @@ export default function CreateMemberForm({ role }: CreateMemberFormProps) {
 
   const queryRelativeTo = searchParams.get("relativeTo");
   const queryRelativeToName = searchParams.get("relativeToName");
-  const fromTab = searchParams.get("from") || "members";
+  const fromTab = searchParams.get("from") || searchParams.get("tab") || "members";
 
   const { user } = useAppSelector((state) => state.auth);
   const activeRole = role || user?.role || "MEMBER";

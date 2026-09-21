@@ -21,6 +21,7 @@ import DocumentsTab from "@/components/dashboard/tabs/DocumentsTab";
 import InvitationsTab from "@/components/dashboard/tabs/InvitationsTab";
 import SettingsTab from "@/components/dashboard/tabs/SettingsTab";
 import MessagesTab from "@/components/dashboard/tabs/MessagesTab";
+import CreateMemberForm from "@/components/dashboard/members/CreateMemberForm";
 
 function OwnerDashboardContent() {
   const searchParams = useSearchParams();
@@ -31,10 +32,19 @@ function OwnerDashboardContent() {
     case "users":
       return <UsersTab />;
     case "family":
+      if (searchParams?.get("action") === "create" || searchParams?.get("view") === "create") {
+        return <CreateMemberForm role="OWNER" />;
+      }
       return <FamilyTab />;
     case "tree":
+      if (searchParams?.get("action") === "create" || searchParams?.get("view") === "create") {
+        return <CreateMemberForm role="OWNER" />;
+      }
       return <TreeTab />;
     case "members":
+      if (searchParams?.get("action") === "create" || searchParams?.get("view") === "create") {
+        return <CreateMemberForm role="OWNER" />;
+      }
       return <MembersTab />;
     case "relationships":
       return <RelationshipsTab />;

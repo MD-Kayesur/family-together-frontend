@@ -48,10 +48,10 @@ export default function MembersTab({ role, currentUserId }: MembersTabProps = {}
 
   const handleAddMember = () => {
     const targetBase =
-      role === "MEMBER"
-        ? "/user-dashboard/members/create"
-        : "/owner-dashboard/members/create";
+      role === "MEMBER" ? "/user-dashboard" : "/owner-dashboard";
     const params = new URLSearchParams();
+    params.set("tab", "members");
+    params.set("action", "create");
     if (currentMember?.id) {
       params.set("relativeTo", currentMember.id);
     }
@@ -63,7 +63,7 @@ export default function MembersTab({ role, currentUserId }: MembersTabProps = {}
     }
     params.set("from", "members");
     const qs = params.toString();
-    router.push(`${targetBase}${qs ? `?${qs}` : ""}`);
+    router.push(`${targetBase}?${qs}`);
   };
 
   return (

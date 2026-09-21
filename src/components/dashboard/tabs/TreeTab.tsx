@@ -33,10 +33,10 @@ export default function TreeTab({ role, currentUserId }: TreeTabProps) {
 
   const handleAddRelative = () => {
     const targetBase =
-      role === "MEMBER"
-        ? "/user-dashboard/members/create"
-        : "/owner-dashboard/members/create";
+      role === "MEMBER" ? "/user-dashboard" : "/owner-dashboard";
     const params = new URLSearchParams();
+    params.set("tab", "tree");
+    params.set("action", "create");
     if (currentMember?.id) {
       params.set("relativeTo", currentMember.id);
     }
@@ -48,7 +48,7 @@ export default function TreeTab({ role, currentUserId }: TreeTabProps) {
     }
     params.set("from", "tree");
     const qs = params.toString();
-    router.push(`${targetBase}${qs ? `?${qs}` : ""}`);
+    router.push(`${targetBase}?${qs}`);
   };
 
   return (

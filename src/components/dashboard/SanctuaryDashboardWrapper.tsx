@@ -84,10 +84,13 @@ function SidebarNavLinks({ isOwnerOrAdmin, pathname }: SidebarNavLinksProps) {
         const Icon = item.icon;
         const isActive = isOwnerOrAdmin
           ? (pathname === "/owner-dashboard" && currentTab === item.tabKey) ||
-            pathname === `/owner-dashboard/${item.tabKey}`
+            pathname === `/owner-dashboard/${item.tabKey}` ||
+            pathname.startsWith(`/owner-dashboard/${item.tabKey}/`)
           : (pathname === "/user-dashboard" && currentTab === item.tabKey) ||
             (pathname === "/user-dashboard" && !searchParams?.get("tab") && item.tabKey === "dashboard") ||
-            pathname === item.href;
+            pathname === item.href ||
+            pathname === `/user-dashboard/${item.tabKey}` ||
+            pathname.startsWith(`/user-dashboard/${item.tabKey}/`);
 
         return (
           <Link

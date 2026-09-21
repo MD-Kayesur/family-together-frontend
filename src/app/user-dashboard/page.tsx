@@ -29,6 +29,7 @@ import MessagesTab from "@/components/dashboard/tabs/MessagesTab";
 import FamilyTab from "@/components/dashboard/tabs/FamilyTab";
 import DocumentsTab from "@/components/dashboard/tabs/DocumentsTab";
 import SettingsTab from "@/components/dashboard/tabs/SettingsTab";
+import CreateMemberForm from "@/components/dashboard/members/CreateMemberForm";
 
 interface UserOverviewTabProps {
   user: any;
@@ -356,8 +357,14 @@ function UserDashboardContent() {
 
   switch (currentTab) {
     case "tree":
+      if (searchParams?.get("action") === "create" || searchParams?.get("view") === "create") {
+        return <CreateMemberForm role="MEMBER" />;
+      }
       return <TreeTab role="MEMBER" currentUserId={user.id} />;
     case "members":
+      if (searchParams?.get("action") === "create" || searchParams?.get("view") === "create") {
+        return <CreateMemberForm role="MEMBER" />;
+      }
       return <MembersTab role="MEMBER" currentUserId={user.id} />;
     case "messages":
       return <MessagesTab role="MEMBER" currentUserId={user.id} />;
