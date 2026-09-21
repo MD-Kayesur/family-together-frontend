@@ -21,14 +21,14 @@ import {
   Briefcase,
   Mail,
 } from "lucide-react";
-import AddMemberModal from "@/components/modals/AddMemberModal";
+import { useRouter } from "next/navigation";
 
 export default function AdminMembersPage() {
+  const router = useRouter();
   const { data: members = [], isLoading, refetch } = useGetMembersQuery();
   const [deleteMember] = useDeleteMemberMutation();
 
   const [searchTerm, setSearchTerm] = useState("");
-  const [isAddMemberOpen, setIsAddMemberOpen] = useState(false);
 
   const handleDelete = async (id: string, name: string) => {
     if (
@@ -73,7 +73,7 @@ export default function AdminMembersPage() {
 
         <button
           type="button"
-          onClick={() => setIsAddMemberOpen(true)}
+          onClick={() => router.push("/admin-dashboard/members/create")}
           className="px-5 py-3 rounded-xl bg-purple-600 hover:bg-purple-700 text-white font-bold text-xs shadow-lg shadow-purple-600/25 flex items-center justify-center gap-2 cursor-pointer transition-all hover:scale-[1.02]"
         >
           <Plus className="h-4 w-4 stroke-[3]" />
@@ -118,7 +118,7 @@ export default function AdminMembersPage() {
           </div>
           <button
             type="button"
-            onClick={() => setIsAddMemberOpen(true)}
+            onClick={() => router.push("/admin-dashboard/members/create")}
             className="px-4 py-2.5 rounded-xl bg-purple-600 hover:bg-purple-700 text-white font-bold text-xs shadow-md shadow-purple-600/20 cursor-pointer"
           >
             + Add Relative / Member
@@ -213,14 +213,6 @@ export default function AdminMembersPage() {
         </div>
       )}
 
-      {/* Add Member Modal with Real-Time Deduplication */}
-      <AddMemberModal
-        isOpen={isAddMemberOpen}
-        onClose={() => {
-          setIsAddMemberOpen(false);
-          refetch();
-        }}
-      />
     </div>
   );
 }

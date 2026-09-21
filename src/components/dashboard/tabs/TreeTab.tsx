@@ -1,8 +1,8 @@
 "use client";
 
 import React, { useState } from "react";
+import { useRouter } from "next/navigation";
 import { Plus, Move, Link2, Sparkles, Users, Layers, ShieldCheck, Heart, TreePine } from "lucide-react";
-import AddMemberModal from "@/components/modals/AddMemberModal";
 import InteractiveFamilyTreeCanvas from "@/components/tree/InteractiveFamilyTreeCanvas";
 import LandingFamilyTreeCanvas from "@/components/tree/LandingFamilyTreeCanvas";
 import { useGetMembersQuery, useGetRelationshipsQuery } from "@/redux/api/familyApi";
@@ -14,7 +14,7 @@ interface TreeTabProps {
 }
 
 export default function TreeTab({ role, currentUserId }: TreeTabProps) {
-  const [isAddMemberOpen, setIsAddMemberOpen] = useState(false);
+  const router = useRouter();
   const [canvasMode, setCanvasMode] = useState<"LANDING" | "DB">("LANDING");
   const { data: members = [], refetch: refetchMembers } = useGetMembersQuery();
   const { data: relationships = [], refetch: refetchRelationships } = useGetRelationshipsQuery();
@@ -30,6 +30,26 @@ export default function TreeTab({ role, currentUserId }: TreeTabProps) {
         (m.email?.toLowerCase() === activeUserEmail.toLowerCase() ||
           m.user?.email?.toLowerCase() === activeUserEmail.toLowerCase()))
   );
+
+  const handleAddRelative = () => {
+    const targetBase =
+      role === "MEMBER"
+        ? "/user-dashboard/members/create"
+        : "/owner-dashboard/members/create";
+    const params = new URLSearchParams();
+    if (currentMember?.id) {
+      params.set("relativeTo", currentMember.id);
+    }
+    if (currentMember) {
+      params.set(
+        "relativeToName",
+        `${currentMember.firstName} ${currentMember.lastName}`
+      );
+    }
+    params.set("from", "tree");
+    const qs = params.toString();
+    router.push(`${targetBase}${qs ? `?${qs}` : ""}`);
+  };
 
   return (
     <div className="space-y-10 pb-12">
@@ -78,7 +98,7 @@ export default function TreeTab({ role, currentUserId }: TreeTabProps) {
 
           <button
             type="button"
-            onClick={() => setIsAddMemberOpen(true)}
+            onClick={handleAddRelative}
             className="px-4 py-2 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white font-bold text-xs shadow-md shadow-indigo-600/25 flex items-center gap-2 cursor-pointer shrink-0"
           >
             <Plus className="h-4 w-4" />
@@ -179,18 +199,6 @@ export default function TreeTab({ role, currentUserId }: TreeTabProps) {
           </div>
         </div>
       )}
-
-      <AddMemberModal
-        isOpen={isAddMemberOpen}
-        onClose={() => {
-          setIsAddMemberOpen(false);
-          refetchMembers();
-          refetchRelationships();
-        }}
-        relativeToPersonId={currentMember?.id}
-        relativeToName={currentMember ? `${currentMember.firstName} ${currentMember.lastName}` : undefined}
-        role={role}
-      />
     </div>
   );
 }

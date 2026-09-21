@@ -1,10 +1,10 @@
 "use client";
 
 import React, { useState } from "react";
+import { useRouter } from "next/navigation";
 import { useGetMembersQuery, useDeleteMemberMutation } from "@/redux/api/familyApi";
 import { useAppSelector } from "@/redux/store";
 import { Users, Plus, Search, Trash2, Edit, Loader2 } from "lucide-react";
-import AddMemberModal from "@/components/modals/AddMemberModal";
 
 interface MembersTabProps {
   role?: string;
@@ -12,10 +12,10 @@ interface MembersTabProps {
 }
 
 export default function MembersTab({ role, currentUserId }: MembersTabProps = {}) {
+  const router = useRouter();
   const { data: members = [], isLoading, refetch } = useGetMembersQuery();
   const [deleteMember] = useDeleteMemberMutation();
   const [searchQuery, setSearchQuery] = useState("");
-  const [isAddMemberOpen, setIsAddMemberOpen] = useState(false);
 
   const { user } = useAppSelector((state) => state.auth);
   const activeUserId = currentUserId || user?.id;
@@ -46,6 +46,26 @@ export default function MembersTab({ role, currentUserId }: MembersTabProps = {}
     }
   };
 
+  const handleAddMember = () => {
+    const targetBase =
+      role === "MEMBER"
+        ? "/user-dashboard/members/create"
+        : "/owner-dashboard/members/create";
+    const params = new URLSearchParams();
+    if (currentMember?.id) {
+      params.set("relativeTo", currentMember.id);
+    }
+    if (currentMember) {
+      params.set(
+        "relativeToName",
+        `${currentMember.firstName} ${currentMember.lastName}`
+      );
+    }
+    params.set("from", "members");
+    const qs = params.toString();
+    router.push(`${targetBase}${qs ? `?${qs}` : ""}`);
+  };
+
   return (
     <div className="space-y-6">
       {/* Search & Action Bar */}
@@ -63,7 +83,7 @@ export default function MembersTab({ role, currentUserId }: MembersTabProps = {}
 
         <button
           type="button"
-          onClick={() => setIsAddMemberOpen(true)}
+          onClick={handleAddMember}
           className="w-full sm:w-auto px-4 py-2 rounded-xl bg-purple-600 hover:bg-purple-700 text-white font-bold text-xs shadow-md shadow-purple-600/25 flex items-center justify-center gap-2 cursor-pointer transition-all hover:scale-[1.02]"
         >
           <Plus className="h-4 w-4" />
@@ -88,7 +108,7 @@ export default function MembersTab({ role, currentUserId }: MembersTabProps = {}
           </p>
           <button
             type="button"
-            onClick={() => setIsAddMemberOpen(true)}
+            onClick={handleAddMember}
             className="px-4 py-2 rounded-xl bg-purple-600 text-white font-bold text-xs shadow-md hover:bg-purple-700 transition-all cursor-pointer"
           >
             + {role === "MEMBER" ? "Add Relative" : "Add Member"}
@@ -138,17 +158,6 @@ export default function MembersTab({ role, currentUserId }: MembersTabProps = {}
           ))}
         </div>
       )}
-
-      <AddMemberModal
-        isOpen={isAddMemberOpen}
-        onClose={() => {
-          setIsAddMemberOpen(false);
-          refetch();
-        }}
-        relativeToPersonId={currentMember?.id}
-        relativeToName={currentMember ? `${currentMember.firstName} ${currentMember.lastName}` : undefined}
-        role={role}
-      />
     </div>
   );
 }
