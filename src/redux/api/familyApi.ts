@@ -96,6 +96,40 @@ export interface ActivityRecord {
   user?: string;
 }
 
+export interface PaginationMeta {
+  total: number;
+  page: number;
+  limit: number;
+  totalPages: number;
+  hasNextPage: boolean;
+  hasPrevPage: boolean;
+}
+
+export type PaginatedList<T> = T[] & { meta?: PaginationMeta; data?: T[] };
+
+export function transformPaginatedList<T>(response: any): PaginatedList<T> {
+  if (response && Array.isArray(response.data)) {
+    const list = [...response.data] as any;
+    list.meta = response.meta;
+    list.data = response.data;
+    return list;
+  }
+  if (Array.isArray(response)) {
+    const list = [...response] as any;
+    list.meta = {
+      total: response.length,
+      page: 1,
+      limit: response.length,
+      totalPages: 1,
+      hasNextPage: false,
+      hasPrevPage: false,
+    };
+    list.data = response;
+    return list;
+  }
+  return response;
+}
+
 export const familyApi = baseApi.injectEndpoints({
   endpoints: (builder) => ({
     getSanctuary: builder.query<SanctuaryResponse, void>({
@@ -113,12 +147,37 @@ export const familyApi = baseApi.injectEndpoints({
       }),
       invalidatesTags: ["Sanctuary"],
     }),
-    getMembers: builder.query<FamilyMemberRecord[], void>({
-      query: () => "/family/members",
+    getMembers: builder.query<
+      PaginatedList<FamilyMemberRecord>,
+      { page?: number; limit?: number; search?: string; q?: string } | void
+    >({
+      query: (params) => {
+        if (!params) return "/family/members";
+        const sp = new URLSearchParams();
+        if (params.page) sp.set("page", String(params.page));
+        if (params.limit) sp.set("limit", String(params.limit));
+        if (params.search || params.q) sp.set("search", params.search || params.q || "");
+        const qs = sp.toString();
+        return qs ? `/family/members?${qs}` : "/family/members";
+      },
+      transformResponse: (res) => transformPaginatedList<FamilyMemberRecord>(res),
       providesTags: ["Members"],
     }),
-    searchMembers: builder.query<FamilyMemberRecord[], string>({
-      query: (q) => `/family/members/search?q=${encodeURIComponent(q)}`,
+    searchMembers: builder.query<
+      PaginatedList<FamilyMemberRecord>,
+      string | { q: string; page?: number; limit?: number }
+    >({
+      query: (arg) => {
+        if (typeof arg === "string") {
+          return `/family/members/search?q=${encodeURIComponent(arg)}`;
+        }
+        const sp = new URLSearchParams();
+        sp.set("q", arg.q);
+        if (arg.page) sp.set("page", String(arg.page));
+        if (arg.limit) sp.set("limit", String(arg.limit));
+        return `/family/members/search?${sp.toString()}`;
+      },
+      transformResponse: (res) => transformPaginatedList<FamilyMemberRecord>(res),
       providesTags: ["Members"],
     }),
     addMember: builder.mutation<
@@ -170,15 +229,23 @@ export const familyApi = baseApi.injectEndpoints({
       }),
       invalidatesTags: ["Sanctuary", "Members", "Relationships", "Activity"],
     }),
-    getMemories: builder.query<MemoryRecord[], { userId?: string; userEmail?: string } | void>({
+    getMemories: builder.query<
+      PaginatedList<MemoryRecord>,
+      { userId?: string; userEmail?: string; page?: number; limit?: number; search?: string; category?: string } | void
+    >({
       query: (params) => {
         if (!params) return "/family/memories";
         const queryParams = new URLSearchParams();
         if (params.userId) queryParams.set("userId", params.userId);
         if (params.userEmail) queryParams.set("userEmail", params.userEmail);
+        if (params.page) queryParams.set("page", String(params.page));
+        if (params.limit) queryParams.set("limit", String(params.limit));
+        if (params.search) queryParams.set("search", params.search);
+        if (params.category) queryParams.set("category", params.category);
         const qs = queryParams.toString();
         return qs ? `/family/memories?${qs}` : "/family/memories";
       },
+      transformResponse: (res) => transformPaginatedList<MemoryRecord>(res),
       providesTags: ["Memories"],
     }),
     addMemory: builder.mutation<
@@ -241,8 +308,20 @@ export const familyApi = baseApi.injectEndpoints({
       }),
       invalidatesTags: ["Sanctuary", "Memories", "Activity"],
     }),
-    getEvents: builder.query<EventRecord[], void>({
-      query: () => "/family/events",
+    getEvents: builder.query<
+      PaginatedList<EventRecord>,
+      { page?: number; limit?: number; search?: string } | void
+    >({
+      query: (params) => {
+        if (!params) return "/family/events";
+        const sp = new URLSearchParams();
+        if (params.page) sp.set("page", String(params.page));
+        if (params.limit) sp.set("limit", String(params.limit));
+        if (params.search) sp.set("search", params.search);
+        const qs = sp.toString();
+        return qs ? `/family/events?${qs}` : "/family/events";
+      },
+      transformResponse: (res) => transformPaginatedList<EventRecord>(res),
       providesTags: ["Events"],
     }),
     addEvent: builder.mutation<
@@ -256,8 +335,21 @@ export const familyApi = baseApi.injectEndpoints({
       }),
       invalidatesTags: ["Sanctuary", "Events"],
     }),
-    getRelationships: builder.query<RelationshipRecord[], void>({
-      query: () => "/family/relationships",
+    getRelationships: builder.query<
+      PaginatedList<RelationshipRecord>,
+      { page?: number; limit?: number; search?: string; personId?: string } | void
+    >({
+      query: (params) => {
+        if (!params) return "/family/relationships";
+        const sp = new URLSearchParams();
+        if (params.page) sp.set("page", String(params.page));
+        if (params.limit) sp.set("limit", String(params.limit));
+        if (params.search) sp.set("search", params.search);
+        if (params.personId) sp.set("personId", params.personId);
+        const qs = sp.toString();
+        return qs ? `/family/relationships?${qs}` : "/family/relationships";
+      },
+      transformResponse: (res) => transformPaginatedList<RelationshipRecord>(res),
       providesTags: ["Relationships"],
     }),
     addRelationship: builder.mutation<
@@ -271,8 +363,21 @@ export const familyApi = baseApi.injectEndpoints({
       }),
       invalidatesTags: ["Sanctuary", "Relationships"],
     }),
-    getDocuments: builder.query<DocumentRecord[], void>({
-      query: () => "/family/documents",
+    getDocuments: builder.query<
+      PaginatedList<DocumentRecord>,
+      { page?: number; limit?: number; search?: string; category?: string } | void
+    >({
+      query: (params) => {
+        if (!params) return "/family/documents";
+        const sp = new URLSearchParams();
+        if (params.page) sp.set("page", String(params.page));
+        if (params.limit) sp.set("limit", String(params.limit));
+        if (params.search) sp.set("search", params.search);
+        if (params.category) sp.set("category", params.category);
+        const qs = sp.toString();
+        return qs ? `/family/documents?${qs}` : "/family/documents";
+      },
+      transformResponse: (res) => transformPaginatedList<DocumentRecord>(res),
       providesTags: ["Documents"],
     }),
     addDocument: builder.mutation<
@@ -320,8 +425,21 @@ export const familyApi = baseApi.injectEndpoints({
       }),
       invalidatesTags: ["Sanctuary", "Documents"],
     }),
-    getInvitations: builder.query<InvitationRecord[], void>({
-      query: () => "/family/invitations",
+    getInvitations: builder.query<
+      PaginatedList<InvitationRecord>,
+      { page?: number; limit?: number; search?: string; status?: string } | void
+    >({
+      query: (params) => {
+        if (!params) return "/family/invitations";
+        const sp = new URLSearchParams();
+        if (params.page) sp.set("page", String(params.page));
+        if (params.limit) sp.set("limit", String(params.limit));
+        if (params.search) sp.set("search", params.search);
+        if (params.status) sp.set("status", params.status);
+        const qs = sp.toString();
+        return qs ? `/family/invitations?${qs}` : "/family/invitations";
+      },
+      transformResponse: (res) => transformPaginatedList<InvitationRecord>(res),
       providesTags: ["Invitations"],
     }),
     addInvitation: builder.mutation<
@@ -346,8 +464,21 @@ export const familyApi = baseApi.injectEndpoints({
       }),
       invalidatesTags: ["Sanctuary", "Invitations", "Members"],
     }),
-    getActivityLogs: builder.query<ActivityRecord[], void>({
-      query: () => "/family/activity-logs",
+    getActivityLogs: builder.query<
+      PaginatedList<ActivityRecord>,
+      { page?: number; limit?: number; search?: string; type?: string } | void
+    >({
+      query: (params) => {
+        if (!params) return "/family/activity-logs";
+        const sp = new URLSearchParams();
+        if (params.page) sp.set("page", String(params.page));
+        if (params.limit) sp.set("limit", String(params.limit));
+        if (params.search) sp.set("search", params.search);
+        if (params.type) sp.set("type", params.type);
+        const qs = sp.toString();
+        return qs ? `/family/activity-logs?${qs}` : "/family/activity-logs";
+      },
+      transformResponse: (res) => transformPaginatedList<ActivityRecord>(res),
       providesTags: ["Sanctuary"],
     }),
     updateSanctuarySettings: builder.mutation<

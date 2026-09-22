@@ -1,4 +1,5 @@
 import { baseApi } from "./baseApi";
+import { transformPaginatedList, PaginatedList } from "./familyApi";
 
 export interface AdminUserRecord {
   id: string;
@@ -29,8 +30,22 @@ export const adminApi = baseApi.injectEndpoints({
       query: () => "/family/admin/stats",
       providesTags: ["AdminStats"],
     }),
-    getUsersList: builder.query<AdminUserRecord[], void>({
-      query: () => "/users",
+    getUsersList: builder.query<
+      PaginatedList<AdminUserRecord>,
+      { page?: number; limit?: number; search?: string; role?: string; status?: string } | void
+    >({
+      query: (params) => {
+        if (!params) return "/users";
+        const sp = new URLSearchParams();
+        if (params.page) sp.set("page", String(params.page));
+        if (params.limit) sp.set("limit", String(params.limit));
+        if (params.search) sp.set("search", params.search);
+        if (params.role) sp.set("role", params.role);
+        if (params.status) sp.set("status", params.status);
+        const qs = sp.toString();
+        return qs ? `/users?${qs}` : "/users";
+      },
+      transformResponse: (res) => transformPaginatedList<AdminUserRecord>(res),
       providesTags: ["UsersList"],
     }),
     updateUserRole: builder.mutation<
