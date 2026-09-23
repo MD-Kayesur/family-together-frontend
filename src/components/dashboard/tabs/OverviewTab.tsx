@@ -290,7 +290,7 @@ export default function OverviewTab() {
             </div>
 
             {/* Interactive Bar Chart Visualization */}
-            <div className="h-56 flex items-end justify-between gap-3 pt-6 px-2 border-t border-slate-800">
+            <div className="h-56 flex items-end justify-between gap-1.5 sm:gap-3 pt-6 px-1 sm:px-2 border-t border-slate-800">
               {monthlyGrowth.map((item, idx) => (
                 <div key={idx} className="flex-1 flex flex-col items-center gap-2 group relative">
                   <div className="absolute -top-9 opacity-0 group-hover:opacity-100 transition-opacity bg-slate-950 border border-slate-800 text-white text-[10px] font-bold px-2 py-1 rounded-md shadow-md whitespace-nowrap pointer-events-none z-20">
