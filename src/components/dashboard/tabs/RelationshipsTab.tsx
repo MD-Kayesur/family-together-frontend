@@ -42,36 +42,38 @@ export default function RelationshipsTab() {
         </div>
       ) : (
         <div className="bg-slate-900 border border-slate-800 rounded-2xl overflow-hidden shadow-sm">
-          <table className="w-full text-left text-xs text-slate-300">
-            <thead className="bg-slate-950 border-b border-slate-800 text-slate-400 font-bold uppercase tracking-wider">
-              <tr>
-                <th className="px-6 py-3.5">From Relative</th>
-                <th className="px-6 py-3.5">Relationship Type</th>
-                <th className="px-6 py-3.5">To Relative</th>
-                <th className="px-6 py-3.5">Verification Status</th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-slate-800 font-medium">
-              {relationships.map((rel) => (
-                <tr key={rel.id} className="hover:bg-slate-800/60 transition-colors">
-                  <td className="px-6 py-4 font-bold text-white">{rel.from || "Relative A"}</td>
-                  <td className="px-6 py-4">
-                    <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-indigo-950/80 border border-indigo-800/60 text-indigo-300 font-bold text-[11px]">
-                      <GitMerge className="h-3.5 w-3.5" />
-                      {rel.type}
-                    </span>
-                  </td>
-                  <td className="px-6 py-4 font-bold text-white">{rel.to || "Relative B"}</td>
-                  <td className="px-6 py-4">
-                    <span className="inline-flex items-center gap-1 text-emerald-400 font-bold">
-                      <ShieldCheck className="h-4 w-4" />
-                      {rel.status}
-                    </span>
-                  </td>
+          <div className="overflow-x-auto">
+            <table className="w-full text-left text-xs text-slate-300">
+              <thead className="bg-slate-950 border-b border-slate-800 text-slate-400 font-bold uppercase tracking-wider">
+                <tr>
+                  <th className="px-6 py-3.5 whitespace-nowrap">From Relative</th>
+                  <th className="px-6 py-3.5 whitespace-nowrap">Relationship Type</th>
+                  <th className="px-6 py-3.5 whitespace-nowrap">To Relative</th>
+                  <th className="px-6 py-3.5 whitespace-nowrap">Verification Status</th>
                 </tr>
-              ))}
-            </tbody>
-          </table>
+              </thead>
+              <tbody className="divide-y divide-slate-800 font-medium">
+                {relationships.map((rel) => (
+                  <tr key={rel.id} className="hover:bg-slate-800/60 transition-colors">
+                    <td className="px-6 py-4 font-bold text-white whitespace-nowrap">{rel.from || "Relative A"}</td>
+                    <td className="px-6 py-4 whitespace-nowrap">
+                      <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-indigo-950/80 border border-indigo-800/60 text-indigo-300 font-bold text-[11px]">
+                        <GitMerge className="h-3.5 w-3.5" />
+                        {rel.type}
+                      </span>
+                    </td>
+                    <td className="px-6 py-4 font-bold text-white whitespace-nowrap">{rel.to || "Relative B"}</td>
+                    <td className="px-6 py-4 whitespace-nowrap">
+                      <span className="inline-flex items-center gap-1 text-emerald-400 font-bold">
+                        <ShieldCheck className="h-4 w-4" />
+                        {rel.status}
+                      </span>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
         </div>
       )}
     </div>

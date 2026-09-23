@@ -81,7 +81,7 @@ export default function UserNavbarAvatarMenu() {
 
       {/* User Account Dropdown Card */}
       {isOpen && (
-        <div className="absolute right-0 top-full mt-2 w-64 bg-white dark:bg-stone-900 border border-slate-200 dark:border-stone-800 rounded-3xl shadow-2xl p-3 z-50 animate-fadeIn space-y-2">
+        <div className="absolute right-0 top-full mt-2 w-[calc(100vw-1.5rem)] max-w-[260px] sm:w-64 bg-white dark:bg-stone-900 border border-slate-200 dark:border-stone-800 rounded-3xl shadow-2xl p-3 z-50 animate-fadeIn space-y-2">
           {/* Header Summary */}
           <div className="p-3 rounded-2xl bg-slate-50 dark:bg-stone-800/60 border border-slate-100 dark:border-stone-800 space-y-2">
             <div className="flex items-center gap-3">

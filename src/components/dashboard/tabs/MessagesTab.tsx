@@ -18,6 +18,7 @@ import {
   Heart,
   Pin,
   Check,
+  ArrowLeft,
 } from "lucide-react";
 import { useGetMembersQuery } from "@/redux/api/familyApi";
 import { useAppSelector } from "@/redux/store";
@@ -59,6 +60,7 @@ export default function MessagesTab({ role = "MEMBER", currentUserId }: Messages
   const [activeFilter, setActiveFilter] = useState<"ALL" | "CHANNELS" | "DIRECT">("ALL");
   const [searchQuery, setSearchQuery] = useState("");
   const [activeConversationId, setActiveConversationId] = useState("sanctuary-circle");
+  const [mobileView, setMobileView] = useState<"list" | "chat">("list");
   const [inputText, setInputText] = useState("");
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
@@ -226,7 +228,7 @@ export default function MessagesTab({ role = "MEMBER", currentUserId }: Messages
   return (
     <div className="h-[calc(100vh-140px)] min-h-[580px] rounded-3xl bg-slate-900 border border-slate-800 shadow-2xl overflow-hidden flex flex-col md:flex-row">
       {/* 1. Left Sidebar: Contacts & Channels */}
-      <div className="w-full md:w-80 lg:w-96 border-b md:border-b-0 md:border-r border-slate-800 flex flex-col bg-slate-900/90 shrink-0">
+      <div className={`w-full md:w-80 lg:w-96 border-b md:border-b-0 md:border-r border-slate-800 flex-col bg-slate-900/90 shrink-0 ${mobileView === "chat" ? "hidden md:flex" : "flex"}`}>
         {/* Header & Search */}
         <div className="p-4 border-b border-slate-800 space-y-3">
           <div className="flex items-center justify-between">
@@ -296,6 +298,7 @@ export default function MessagesTab({ role = "MEMBER", currentUserId }: Messages
                   type="button"
                   onClick={() => {
                     setActiveConversationId(conv.id);
+                    setMobileView("chat");
                     // Mark as read
                     setConversations((prev) =>
                       prev.map((c) => (c.id === conv.id ? { ...c, unreadCount: 0 } : c))
@@ -365,19 +368,29 @@ export default function MessagesTab({ role = "MEMBER", currentUserId }: Messages
       </div>
 
       {/* 2. Right Main Chat Area */}
-      <div className="flex-1 flex flex-col bg-slate-950/80 min-w-0">
+      <div className={`flex-1 flex-col bg-slate-950/80 min-w-0 ${mobileView === "list" ? "hidden md:flex" : "flex"}`}>
         {/* Active Conversation Top Bar */}
-        <div className="h-16 shrink-0 px-6 border-b border-slate-800 bg-slate-900/60 backdrop-blur-md flex items-center justify-between">
-          <div className="flex items-center gap-3 min-w-0">
+        <div className="h-16 shrink-0 px-4 sm:px-6 border-b border-slate-800 bg-slate-900/60 backdrop-blur-md flex items-center justify-between gap-3">
+          <div className="flex items-center gap-2.5 sm:gap-3 min-w-0">
+            {/* Back Button for Mobile */}
+            <button
+              type="button"
+              onClick={() => setMobileView("list")}
+              className="md:hidden p-2 -ml-2 rounded-xl text-slate-400 hover:text-white hover:bg-slate-800 transition-colors cursor-pointer shrink-0"
+              aria-label="Back to chat list"
+            >
+              <ArrowLeft className="h-5 w-5" />
+            </button>
+
             <div
-              className={`h-10 w-10 rounded-2xl font-bold flex items-center justify-center text-sm shrink-0 shadow-sm ${
+              className={`h-9 sm:h-10 w-9 sm:w-10 rounded-2xl font-bold flex items-center justify-center text-sm shrink-0 shadow-sm ${
                 activeConversation?.type === "GROUP"
                   ? "bg-indigo-600 text-white"
                   : "bg-purple-950 text-purple-300 border border-purple-800"
               }`}
             >
               {activeConversation?.type === "GROUP" ? (
-                <Users className="h-5 w-5" />
+                <Users className="h-4 sm:h-5 w-4 sm:w-5" />
               ) : (
                 activeConversation?.name.charAt(0).toUpperCase()
               )}

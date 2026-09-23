@@ -110,7 +110,7 @@ export default function TreeTab({ role, currentUserId }: TreeTabProps) {
       {/* 1. Full Page Hero 2D Canvas Section */}
       <div className="w-full">
         {canvasMode === "LANDING" ? (
-          <div className="w-full h-[720px] rounded-2xl overflow-hidden border border-slate-800 shadow-2xl relative bg-slate-950">
+          <div className="w-full h-[480px] sm:h-[580px] lg:h-[720px] rounded-2xl overflow-hidden border border-slate-800 shadow-2xl relative bg-slate-950">
             <LandingFamilyTreeCanvas
               variant="fullscreen"
               readOnly={false}
