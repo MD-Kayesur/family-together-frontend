@@ -6,10 +6,28 @@ import {
   useUpdateInvitationStatusMutation,
   useAddInvitationMutation,
 } from "@/redux/api/familyApi";
-import { Mail, Plus, Check, X, Clock, UserPlus, Loader2 } from "lucide-react";
+import { Mail, Plus, Check, X, Clock, UserPlus, Loader2, Search } from "lucide-react";
+import { usePaginationSearch } from "@/hooks/usePaginationSearch";
+import PaginationControls from "@/components/common/PaginationControls";
 
 export default function InvitationsTab() {
-  const { data: invitations = [], isLoading, refetch } = useGetInvitationsQuery();
+  const {
+    searchTerm,
+    debouncedSearch,
+    page,
+    limit,
+    setLimit,
+    setSearchTerm,
+    setPage,
+    clearSearch,
+  } = usePaginationSearch({ defaultLimit: 8, searchParamKey: "search" });
+
+  const { data: invitations = [], isLoading, refetch } = useGetInvitationsQuery({
+    page,
+    limit,
+    search: debouncedSearch,
+  });
+
   const [updateInvitationStatus] = useUpdateInvitationStatusMutation();
   const [addInvitation] = useAddInvitationMutation();
 
@@ -18,6 +36,8 @@ export default function InvitationsTab() {
   const [email, setEmail] = useState("");
   const [role, setRole] = useState("MEMBER");
   const [note, setNote] = useState("");
+
+  const paginationMeta = (invitations as any)?.meta;
 
   const handleAction = async (id: string, action: "APPROVED" | "REJECTED") => {
     try {
@@ -45,18 +65,43 @@ export default function InvitationsTab() {
 
   return (
     <div className="space-y-6">
-      <div className="flex items-center justify-between p-4 rounded-2xl bg-slate-900 border border-slate-800 shadow-xl">
-        <div className="flex items-center gap-2">
-          <Mail className="h-5 w-5 text-purple-400" />
-          <span className="font-bold text-xs text-white">
-            {invitations.filter((i) => i.status === "PENDING").length} Pending Access Requests
-          </span>
+      {/* Top Header & Search Bar */}
+      <div className="flex flex-col sm:flex-row items-center justify-between gap-4 p-4 rounded-2xl bg-slate-900 border border-slate-800 shadow-xl">
+        <div className="flex flex-col sm:flex-row items-center gap-3 w-full sm:w-auto">
+          <div className="flex items-center gap-2">
+            <Mail className="h-5 w-5 text-purple-400" />
+            <span className="font-bold text-xs text-white">
+              {invitations.filter((i) => i.status === "PENDING").length} Pending Access Requests
+            </span>
+          </div>
+
+          {/* Search Input with Live Route Sync */}
+          <div className="relative w-full sm:w-64">
+            <Search className="h-4 w-4 absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
+            <input
+              type="text"
+              placeholder="Search invitees..."
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              className="w-full pl-9 pr-9 py-2 bg-slate-950 border border-slate-800 rounded-xl text-xs text-white placeholder:text-slate-500 focus:outline-none focus:ring-2 focus:ring-purple-500 font-medium"
+            />
+            {searchTerm && (
+              <button
+                type="button"
+                onClick={clearSearch}
+                className="absolute right-2.5 top-1/2 -translate-y-1/2 p-1 text-slate-400 hover:text-white rounded-md cursor-pointer"
+                title="Clear search"
+              >
+                <X className="h-3.5 w-3.5" />
+              </button>
+            )}
+          </div>
         </div>
 
         <button
           type="button"
           onClick={() => setIsSending(!isSending)}
-          className="px-4 py-2 rounded-xl bg-purple-600 hover:bg-purple-700 text-white font-bold text-xs shadow-md flex items-center gap-2 cursor-pointer transition-all"
+          className="w-full sm:w-auto px-4 py-2 rounded-xl bg-purple-600 hover:bg-purple-700 text-white font-bold text-xs shadow-md flex items-center justify-center gap-2 cursor-pointer transition-all"
         >
           <UserPlus className="h-4 w-4" />
           <span>{isSending ? "Close Form" : "Send New Invitation"}</span>
@@ -136,9 +181,9 @@ export default function InvitationsTab() {
       ) : invitations.length === 0 ? (
         <div className="p-12 text-center bg-slate-900 rounded-3xl border border-slate-800 space-y-3">
           <Mail className="h-10 w-10 text-slate-500 mx-auto" />
-          <h3 className="font-bold text-base text-white">No invitations</h3>
+          <h3 className="font-bold text-base text-white">No invitations found</h3>
           <p className="text-xs text-slate-400 max-w-sm mx-auto">
-            Send an email invitation to invite a family member to your sanctuary.
+            {searchTerm ? `No invitations match "${searchTerm}".` : "Send an email invitation to invite a family member to your sanctuary."}
           </p>
         </div>
       ) : (
@@ -150,7 +195,7 @@ export default function InvitationsTab() {
             >
               <div className="flex items-center gap-4">
                 <div className="h-12 w-12 rounded-2xl bg-indigo-950/60 text-indigo-300 border border-indigo-800/60 font-extrabold text-base flex items-center justify-center">
-                  {inv.name.charAt(0)}
+                  {inv.name ? inv.name.charAt(0) : "I"}
                 </div>
                 <div className="space-y-0.5">
                   <div className="flex items-center gap-2">
@@ -196,6 +241,20 @@ export default function InvitationsTab() {
               )}
             </div>
           ))}
+
+          {/* Pagination Controls */}
+          {paginationMeta && paginationMeta.total > 0 && (
+            <PaginationControls
+              meta={paginationMeta}
+              currentPage={page}
+              onPageChange={setPage}
+              limit={limit}
+              onLimitChange={setLimit}
+              isLoading={isLoading}
+              itemLabel="invitations"
+              className="mt-4"
+            />
+          )}
         </div>
       )}
     </div>
