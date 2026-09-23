@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React from "react";
 import {
   useGetMembersQuery,
   useDeleteMemberMutation,
@@ -20,15 +20,35 @@ import {
   MapPin,
   Briefcase,
   Mail,
+  X,
 } from "lucide-react";
 import { useRouter } from "next/navigation";
+import { usePaginationSearch } from "@/hooks/usePaginationSearch";
+import PaginationControls from "@/components/common/PaginationControls";
 
 export default function AdminMembersPage() {
   const router = useRouter();
-  const { data: members = [], isLoading, refetch } = useGetMembersQuery();
+
+  const {
+    searchTerm,
+    debouncedSearch,
+    page,
+    limit,
+    setLimit,
+    setSearchTerm,
+    setPage,
+    clearSearch,
+  } = usePaginationSearch({ defaultLimit: 9, searchParamKey: "search" });
+
+  const { data: members = [], isLoading, refetch } = useGetMembersQuery({
+    page,
+    limit,
+    search: debouncedSearch,
+  });
+
   const [deleteMember] = useDeleteMemberMutation();
 
-  const [searchTerm, setSearchTerm] = useState("");
+  const paginationMeta = (members as any)?.meta;
 
   const handleDelete = async (id: string, name: string) => {
     if (
@@ -44,14 +64,6 @@ export default function AdminMembersPage() {
       }
     }
   };
-
-  const filteredMembers = members.filter((m) => {
-    const fullName = `${m.firstName || ""} ${m.lastName || ""}`.toLowerCase();
-    const email = ((m as any).email || "").toLowerCase();
-    const query = searchTerm.toLowerCase();
-
-    return fullName.includes(query) || email.includes(query);
-  });
 
   return (
     <div className="space-y-8">
@@ -90,12 +102,22 @@ export default function AdminMembersPage() {
             placeholder="Search member by name or email..."
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
-            className="w-full pl-9 pr-4 py-2 bg-slate-950 border border-slate-800 rounded-xl text-xs text-white focus:outline-none focus:ring-2 focus:ring-purple-500 font-medium placeholder:text-slate-500"
+            className="w-full pl-9 pr-9 py-2 bg-slate-950 border border-slate-800 rounded-xl text-xs text-white focus:outline-none focus:ring-2 focus:ring-purple-500 font-medium placeholder:text-slate-500"
           />
+          {searchTerm && (
+            <button
+              type="button"
+              onClick={clearSearch}
+              className="absolute right-2.5 top-1/2 -translate-y-1/2 p-1 text-slate-400 hover:text-white rounded-md cursor-pointer"
+              title="Clear search"
+            >
+              <X className="h-3.5 w-3.5" />
+            </button>
+          )}
         </div>
 
         <div className="text-xs font-semibold text-slate-400">
-          Showing {filteredMembers.length} of {members.length} registered family members
+          Showing {members.length} of {paginationMeta?.total ?? members.length} registered family members
         </div>
       </div>
 
@@ -105,7 +127,7 @@ export default function AdminMembersPage() {
           <Loader2 className="h-5 w-5 animate-spin text-purple-500" />
           <span>Loading family member profiles from database...</span>
         </div>
-      ) : filteredMembers.length === 0 ? (
+      ) : members.length === 0 ? (
         <div className="p-12 text-center bg-slate-900 rounded-3xl border border-slate-800 space-y-4 shadow-xl">
           <Users className="h-12 w-12 text-slate-600 mx-auto" />
           <div className="space-y-1">
@@ -113,7 +135,9 @@ export default function AdminMembersPage() {
               No family members found
             </h3>
             <p className="text-xs text-slate-400 max-w-sm mx-auto">
-              No family member records match your current search term. Click below to add a new relative or member.
+              {searchTerm
+                ? `No family member records match "${searchTerm}".`
+                : "No family member records found. Click below to add a new relative or member."}
             </p>
           </div>
           <button
@@ -125,94 +149,108 @@ export default function AdminMembersPage() {
           </button>
         </div>
       ) : (
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-          {filteredMembers.map((member) => (
-            <div
-              key={member.id}
-              className="bg-slate-900 border border-slate-800 rounded-2xl p-6 shadow-xl flex flex-col justify-between space-y-4 hover:border-purple-500/50 transition-all group"
-            >
-              <div className="space-y-3">
-                <div className="flex items-start justify-between">
-                  <div className="flex items-center gap-3">
-                    <div className="h-12 w-12 rounded-2xl bg-purple-950/80 text-purple-300 border border-purple-800/60 font-extrabold text-base flex items-center justify-center shadow-sm group-hover:scale-105 transition-transform">
-                      {member.firstName ? member.firstName.charAt(0).toUpperCase() : "M"}
-                    </div>
-                    <div>
-                      <h4 className="font-extrabold text-white text-base leading-tight">
-                        {member.firstName} {member.lastName}
-                      </h4>
-                      <div className="flex flex-wrap items-center gap-1.5 mt-1">
-                        <span className="text-[10px] font-extrabold text-purple-400 bg-purple-950/60 px-2 py-0.5 rounded-full uppercase border border-purple-800">
-                          {member.gender || "MEMBER"}
-                        </span>
-                        {(member as any).isDeceased ? (
-                          <span className="text-[10px] font-bold text-rose-300 bg-rose-950/60 px-2 py-0.5 rounded-full border border-rose-800">
-                            Deceased
+        <div className="space-y-6">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+            {members.map((member) => (
+              <div
+                key={member.id}
+                className="bg-slate-900 border border-slate-800 rounded-2xl p-6 shadow-xl flex flex-col justify-between space-y-4 hover:border-purple-500/50 transition-all group"
+              >
+                <div className="space-y-3">
+                  <div className="flex items-start justify-between">
+                    <div className="flex items-center gap-3">
+                      <div className="h-12 w-12 rounded-2xl bg-purple-950/80 text-purple-300 border border-purple-800/60 font-extrabold text-base flex items-center justify-center shadow-sm group-hover:scale-105 transition-transform">
+                        {member.firstName ? member.firstName.charAt(0).toUpperCase() : "M"}
+                      </div>
+                      <div>
+                        <h4 className="font-extrabold text-white text-base leading-tight">
+                          {member.firstName} {member.lastName}
+                        </h4>
+                        <div className="flex flex-wrap items-center gap-1.5 mt-1">
+                          <span className="text-[10px] font-extrabold text-purple-400 bg-purple-950/60 px-2 py-0.5 rounded-full uppercase border border-purple-800">
+                            {member.gender || "MEMBER"}
                           </span>
-                        ) : (
-                          <span className="text-[10px] font-bold text-emerald-300 bg-emerald-950/60 px-2 py-0.5 rounded-full border border-emerald-800">
-                            Living
-                          </span>
-                        )}
+                          {(member as any).isDeceased ? (
+                            <span className="text-[10px] font-bold text-rose-300 bg-rose-950/60 px-2 py-0.5 rounded-full border border-rose-800">
+                              Deceased
+                            </span>
+                          ) : (
+                            <span className="text-[10px] font-bold text-emerald-300 bg-emerald-950/60 px-2 py-0.5 rounded-full border border-emerald-800">
+                              Living
+                            </span>
+                          )}
+                        </div>
                       </div>
                     </div>
+
+                    <button
+                      type="button"
+                      onClick={() =>
+                        handleDelete(member.id, `${member.firstName} ${member.lastName}`)
+                      }
+                      className="p-1.5 text-slate-400 hover:text-rose-400 hover:bg-rose-950/40 rounded-lg transition-colors cursor-pointer"
+                      title="Delete member profile"
+                    >
+                      <Trash2 className="h-4 w-4" />
+                    </button>
                   </div>
 
-                  <button
-                    type="button"
-                    onClick={() =>
-                      handleDelete(member.id, `${member.firstName} ${member.lastName}`)
-                    }
-                    className="p-1.5 text-slate-400 hover:text-rose-400 hover:bg-rose-950/40 rounded-lg transition-colors cursor-pointer"
-                    title="Delete member profile"
-                  >
-                    <Trash2 className="h-4 w-4" />
-                  </button>
+                  <div className="space-y-1.5 text-xs text-slate-400 pt-1">
+                    {(member as any).email && (
+                      <div className="flex items-center gap-2 text-slate-300 font-medium">
+                        <Mail className="h-3.5 w-3.5 text-purple-400 shrink-0" />
+                        <span className="truncate">{(member as any).email}</span>
+                      </div>
+                    )}
+
+                    {(member as any).dob && (
+                      <div className="flex items-center gap-2">
+                        <Calendar className="h-3.5 w-3.5 text-slate-400 shrink-0" />
+                        <span>Born: {(member as any).dob}</span>
+                      </div>
+                    )}
+
+                    {(member as any).birthplace && (
+                      <div className="flex items-center gap-2">
+                        <MapPin className="h-3.5 w-3.5 text-slate-400 shrink-0" />
+                        <span>{(member as any).birthplace}</span>
+                      </div>
+                    )}
+
+                    {(member as any).occupation && (
+                      <div className="flex items-center gap-2">
+                        <Briefcase className="h-3.5 w-3.5 text-slate-400 shrink-0" />
+                        <span>{(member as any).occupation}</span>
+                      </div>
+                    )}
+                  </div>
                 </div>
 
-                <div className="space-y-1.5 text-xs text-slate-400 pt-1">
-                  {(member as any).email && (
-                    <div className="flex items-center gap-2 text-slate-300 font-medium">
-                      <Mail className="h-3.5 w-3.5 text-purple-400 shrink-0" />
-                      <span className="truncate">{(member as any).email}</span>
-                    </div>
-                  )}
-
-                  {(member as any).dob && (
-                    <div className="flex items-center gap-2">
-                      <Calendar className="h-3.5 w-3.5 text-slate-400 shrink-0" />
-                      <span>Born: {(member as any).dob}</span>
-                    </div>
-                  )}
-
-                  {(member as any).birthplace && (
-                    <div className="flex items-center gap-2">
-                      <MapPin className="h-3.5 w-3.5 text-slate-400 shrink-0" />
-                      <span>{(member as any).birthplace}</span>
-                    </div>
-                  )}
-
-                  {(member as any).occupation && (
-                    <div className="flex items-center gap-2">
-                      <Briefcase className="h-3.5 w-3.5 text-slate-400 shrink-0" />
-                      <span>{(member as any).occupation}</span>
-                    </div>
-                  )}
+                <div className="pt-3 border-t border-slate-800 flex items-center justify-between text-[11px] font-semibold text-slate-400">
+                  <span className="flex items-center gap-1 text-emerald-400 font-bold">
+                    <CheckCircle2 className="h-3.5 w-3.5" />
+                    <span>Sanctuary Record</span>
+                  </span>
+                  <span>ID: {member.id.substring(0, 8)}...</span>
                 </div>
               </div>
+            ))}
+          </div>
 
-              <div className="pt-3 border-t border-slate-800 flex items-center justify-between text-[11px] font-semibold text-slate-400">
-                <span className="flex items-center gap-1 text-emerald-400 font-bold">
-                  <CheckCircle2 className="h-3.5 w-3.5" />
-                  <span>Sanctuary Record</span>
-                </span>
-                <span>ID: {member.id.substring(0, 8)}...</span>
-              </div>
-            </div>
-          ))}
+          {/* Pagination Controls */}
+          {paginationMeta && paginationMeta.total > 0 && (
+            <PaginationControls
+              meta={paginationMeta}
+              currentPage={page}
+              onPageChange={setPage}
+              limit={limit}
+              onLimitChange={setLimit}
+              isLoading={isLoading}
+              itemLabel="members"
+            />
+          )}
         </div>
       )}
-
     </div>
   );
 }

@@ -1,10 +1,12 @@
 "use client";
 
-import React, { useState } from "react";
+import React from "react";
 import { useRouter } from "next/navigation";
 import { useGetMembersQuery, useDeleteMemberMutation } from "@/redux/api/familyApi";
 import { useAppSelector } from "@/redux/store";
-import { Users, Plus, Search, Trash2, Edit, Loader2 } from "lucide-react";
+import { Users, Plus, Search, Trash2, X, Loader2 } from "lucide-react";
+import { usePaginationSearch } from "@/hooks/usePaginationSearch";
+import PaginationControls from "@/components/common/PaginationControls";
 
 interface MembersTabProps {
   role?: string;
@@ -13,9 +15,25 @@ interface MembersTabProps {
 
 export default function MembersTab({ role, currentUserId }: MembersTabProps = {}) {
   const router = useRouter();
-  const { data: members = [], isLoading, refetch } = useGetMembersQuery();
+
+  const {
+    searchTerm,
+    debouncedSearch,
+    page,
+    limit,
+    setLimit,
+    setSearchTerm,
+    setPage,
+    clearSearch,
+  } = usePaginationSearch({ defaultLimit: 9, searchParamKey: "search" });
+
+  const { data: members = [], isLoading, refetch } = useGetMembersQuery({
+    page,
+    limit,
+    search: debouncedSearch,
+  });
+
   const [deleteMember] = useDeleteMemberMutation();
-  const [searchQuery, setSearchQuery] = useState("");
 
   const { user } = useAppSelector((state) => state.auth);
   const activeUserId = currentUserId || user?.id;
@@ -27,12 +45,6 @@ export default function MembersTab({ role, currentUserId }: MembersTabProps = {}
       (activeUserEmail &&
         (m.email?.toLowerCase() === activeUserEmail.toLowerCase() ||
           m.user?.email?.toLowerCase() === activeUserEmail.toLowerCase()))
-  );
-
-  const filteredMembers = members.filter((m) =>
-    `${m.firstName} ${m.lastName} ${m.bio || ""}`
-      .toLowerCase()
-      .includes(searchQuery.toLowerCase())
   );
 
   const handleDelete = async (id: string, name: string) => {
@@ -66,6 +78,8 @@ export default function MembersTab({ role, currentUserId }: MembersTabProps = {}
     router.push(`${targetBase}?${qs}`);
   };
 
+  const paginationMeta = (members as any)?.meta;
+
   return (
     <div className="space-y-6">
       {/* Search & Action Bar */}
@@ -74,11 +88,21 @@ export default function MembersTab({ role, currentUserId }: MembersTabProps = {}
           <Search className="h-4 w-4 absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
           <input
             type="text"
-            placeholder="Search member by name..."
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-            className="w-full pl-9 pr-4 py-2 bg-slate-950 border border-slate-800 rounded-xl text-xs text-white placeholder:text-slate-500 focus:outline-none focus:ring-2 focus:ring-purple-500 font-medium"
+            placeholder="Search member by name, bio, city..."
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+            className="w-full pl-9 pr-9 py-2 bg-slate-950 border border-slate-800 rounded-xl text-xs text-white placeholder:text-slate-500 focus:outline-none focus:ring-2 focus:ring-purple-500 font-medium"
           />
+          {searchTerm && (
+            <button
+              type="button"
+              onClick={clearSearch}
+              className="absolute right-2.5 top-1/2 -translate-y-1/2 p-1 text-slate-400 hover:text-white rounded-md cursor-pointer"
+              title="Clear search"
+            >
+              <X className="h-3.5 w-3.5" />
+            </button>
+          )}
         </div>
 
         <button
@@ -95,69 +119,97 @@ export default function MembersTab({ role, currentUserId }: MembersTabProps = {}
       {isLoading ? (
         <div className="p-12 text-center flex items-center justify-center gap-3 text-slate-400 text-sm">
           <Loader2 className="h-5 w-5 animate-spin text-purple-500" />
-          <span>Loading family members from database...</span>
+          <span>Searching family members in database...</span>
         </div>
-      ) : filteredMembers.length === 0 ? (
+      ) : members.length === 0 ? (
         <div className="p-12 text-center bg-slate-900 rounded-3xl border border-slate-800 space-y-3">
           <Users className="h-10 w-10 text-slate-500 mx-auto" />
-          <h3 className="font-bold text-base text-white">No members found</h3>
+          <h3 className="font-bold text-base text-white">
+            {searchTerm ? `No members found matching "${searchTerm}"` : "No members found"}
+          </h3>
           <p className="text-xs text-slate-400 max-w-sm mx-auto">
-            {role === "MEMBER"
+            {searchTerm
+              ? "Try adjusting your search keywords or clear the filter."
+              : role === "MEMBER"
               ? "Add your first relative to start expanding your personal family tree."
               : "Add your first family member to start building your private PostgreSQL sanctuary tree."}
           </p>
-          <button
-            type="button"
-            onClick={handleAddMember}
-            className="px-4 py-2 rounded-xl bg-purple-600 text-white font-bold text-xs shadow-md hover:bg-purple-700 transition-all cursor-pointer"
-          >
-            + {role === "MEMBER" ? "Add Relative" : "Add Member"}
-          </button>
+          {searchTerm ? (
+            <button
+              type="button"
+              onClick={clearSearch}
+              className="px-4 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-white font-bold text-xs shadow-md cursor-pointer"
+            >
+              Clear Filter
+            </button>
+          ) : (
+            <button
+              type="button"
+              onClick={handleAddMember}
+              className="px-4 py-2 rounded-xl bg-purple-600 text-white font-bold text-xs shadow-md hover:bg-purple-700 transition-all cursor-pointer"
+            >
+              + {role === "MEMBER" ? "Add Relative" : "Add Member"}
+            </button>
+          )}
         </div>
       ) : (
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-          {filteredMembers.map((member) => (
-            <div
-              key={member.id}
-              className="bg-slate-900 border border-slate-800 rounded-2xl p-6 shadow-xl flex flex-col justify-between space-y-4 hover:border-slate-700 transition-all"
-            >
-              <div className="flex items-start justify-between">
-                <div className="flex items-center gap-3">
-                  <div className="h-12 w-12 rounded-2xl bg-indigo-950/60 text-indigo-300 border border-indigo-800/60 font-extrabold text-base flex items-center justify-center shadow-sm">
-                    {member.firstName.charAt(0)}
+        <div className="space-y-6">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+            {members.map((member) => (
+              <div
+                key={member.id}
+                className="bg-slate-900 border border-slate-800 rounded-2xl p-6 shadow-xl flex flex-col justify-between space-y-4 hover:border-slate-700 transition-all"
+              >
+                <div className="flex items-start justify-between">
+                  <div className="flex items-center gap-3">
+                    <div className="h-12 w-12 rounded-2xl bg-indigo-950/60 text-indigo-300 border border-indigo-800/60 font-extrabold text-base flex items-center justify-center shadow-sm">
+                      {member.firstName.charAt(0)}
+                    </div>
+                    <div>
+                      <h4 className="font-extrabold text-white text-base leading-tight">
+                        {member.firstName} {member.lastName}
+                      </h4>
+                      <span className="text-[11px] font-bold text-indigo-300 bg-indigo-950/50 border border-indigo-800/50 px-2 py-0.5 rounded-full inline-block mt-0.5">
+                        {member.gender || "MEMBER"}
+                      </span>
+                    </div>
                   </div>
-                  <div>
-                    <h4 className="font-extrabold text-white text-base leading-tight">
-                      {member.firstName} {member.lastName}
-                    </h4>
-                    <span className="text-[11px] font-bold text-indigo-300 bg-indigo-950/50 border border-indigo-800/50 px-2 py-0.5 rounded-full inline-block mt-0.5">
-                      {member.gender || "MEMBER"}
-                    </span>
-                  </div>
+
+                  <button
+                    type="button"
+                    onClick={() => handleDelete(member.id, `${member.firstName} ${member.lastName}`)}
+                    className="p-1.5 text-slate-400 hover:text-rose-400 hover:bg-rose-950/40 rounded-lg transition-colors cursor-pointer"
+                    title="Delete member from database"
+                  >
+                    <Trash2 className="h-4 w-4" />
+                  </button>
                 </div>
 
-                <button
-                  type="button"
-                  onClick={() => handleDelete(member.id, `${member.firstName} ${member.lastName}`)}
-                  className="p-1.5 text-slate-400 hover:text-rose-400 hover:bg-rose-950/40 rounded-lg transition-colors cursor-pointer"
-                  title="Delete member from database"
-                >
-                  <Trash2 className="h-4 w-4" />
-                </button>
-              </div>
+                <p className="text-xs text-slate-300 leading-relaxed italic">
+                  {member.bio || "No biography added."}
+                </p>
 
-              <p className="text-xs text-slate-300 leading-relaxed italic">
-                {member.bio || "No biography added."}
-              </p>
-
-              <div className="pt-3 border-t border-slate-800 text-[11px] font-medium text-slate-400 flex items-center justify-between">
-                <span>ID: {member.id.substring(0, 8)}...</span>
-                <span className="text-emerald-400 font-semibold">Active in PostgreSQL</span>
+                <div className="pt-3 border-t border-slate-800 text-[11px] font-medium text-slate-400 flex items-center justify-between">
+                  <span>ID: {member.id.substring(0, 8)}...</span>
+                  <span className="text-emerald-400 font-semibold">Active in PostgreSQL</span>
+                </div>
               </div>
-            </div>
-          ))}
+            ))}
+          </div>
+
+          {/* Pagination Controls */}
+          <PaginationControls
+            meta={paginationMeta}
+            currentPage={page}
+            onPageChange={setPage}
+            limit={limit}
+            onLimitChange={setLimit}
+            isLoading={isLoading}
+            itemLabel="family members"
+          />
         </div>
       )}
     </div>
   );
 }
+

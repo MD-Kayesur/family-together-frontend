@@ -4,9 +4,11 @@ import React, { useState } from "react";
 import Link from "next/link";
 import { useGetMemoriesQuery, useDeleteMemoryMutation } from "@/redux/api/familyApi";
 import { useAppSelector } from "@/redux/store";
-import { Image as ImageIcon, Plus, Heart, Sparkles, Loader2, SlidersHorizontal, Pencil, Trash2 } from "lucide-react";
+import { Image as ImageIcon, Plus, Heart, Sparkles, Loader2, SlidersHorizontal, Pencil, Trash2, Search, X } from "lucide-react";
 import MediaSliderCarousel from "@/components/memories/MediaSliderCarousel";
 import MediaLightboxModal from "@/components/modals/MediaLightboxModal";
+import { usePaginationSearch } from "@/hooks/usePaginationSearch";
+import PaginationControls from "@/components/common/PaginationControls";
 
 interface MemoriesTabProps {
   role?: string;
@@ -14,12 +16,34 @@ interface MemoriesTabProps {
 
 export default function MemoriesTab({ role }: MemoriesTabProps = {}) {
   const { user } = useAppSelector((state) => state.auth);
+
+  const {
+    searchTerm,
+    debouncedSearch,
+    page,
+    limit,
+    setLimit,
+    setSearchTerm,
+    setPage,
+    clearSearch,
+  } = usePaginationSearch({ defaultLimit: 6, searchParamKey: "search" });
+
   const { data: memories = [], isLoading, refetch } = useGetMemoriesQuery(
-    user ? { userId: user.id, userEmail: user.email } : undefined
+    user
+      ? {
+          userId: user.id,
+          userEmail: user.email,
+          page,
+          limit,
+          search: debouncedSearch,
+        }
+      : undefined
   );
   const [deleteMemory] = useDeleteMemoryMutation();
   const [isLightboxOpen, setIsLightboxOpen] = useState(false);
   const [lightboxIndex, setLightboxIndex] = useState(0);
+
+  const paginationMeta = (memories as any)?.meta;
 
   const sampleImages = [
     "https://images.unsplash.com/photo-1511895426328-dc8714191300?auto=format&fit=crop&w=800&q=80",
@@ -58,18 +82,42 @@ export default function MemoriesTab({ role }: MemoriesTabProps = {}) {
               {role === "MEMBER" ? "Family Memories Vault" : "Owner Media Vault"}
             </h3>
             <p className="text-xs text-slate-400 font-medium">
-              {memories.length} Memories & Milestone Media Items Preserved
+              {paginationMeta ? `${paginationMeta.total} Total Memories` : `${memories.length} Memories`} Preserved
             </p>
           </div>
         </div>
 
-        <Link
-          href={role === "MEMBER" ? "/user-dashboard/memories/create" : "/owner-dashboard/memories/create"}
-          className="px-4 py-2.5 rounded-xl bg-purple-600 hover:bg-purple-700 text-white font-bold text-xs shadow-md shadow-purple-600/25 flex items-center gap-2 cursor-pointer transition-all hover:scale-[1.02]"
-        >
-          <Plus className="h-4 w-4" />
-          <span>Upload Memory</span>
-        </Link>
+        <div className="flex items-center gap-3 w-full sm:w-auto">
+          {/* Search Box with Realtime Route URL Sync */}
+          <div className="relative flex-1 sm:w-64">
+            <Search className="h-4 w-4 absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
+            <input
+              type="text"
+              placeholder="Search memories by title, story..."
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              className="w-full pl-9 pr-8 py-2 bg-slate-950 border border-slate-800 rounded-xl text-xs text-white placeholder:text-slate-500 focus:outline-none focus:ring-2 focus:ring-purple-500 font-medium"
+            />
+            {searchTerm && (
+              <button
+                type="button"
+                onClick={clearSearch}
+                className="absolute right-2.5 top-1/2 -translate-y-1/2 p-1 text-slate-400 hover:text-white rounded-md cursor-pointer"
+                title="Clear search"
+              >
+                <X className="h-3 w-3" />
+              </button>
+            )}
+          </div>
+
+          <Link
+            href={role === "MEMBER" ? "/user-dashboard/memories/create" : "/owner-dashboard/memories/create"}
+            className="px-4 py-2.5 rounded-xl bg-purple-600 hover:bg-purple-700 text-white font-bold text-xs shadow-md shadow-purple-600/25 flex items-center gap-2 cursor-pointer transition-all hover:scale-[1.02] shrink-0"
+          >
+            <Plus className="h-4 w-4" />
+            <span>Upload Memory</span>
+          </Link>
+        </div>
       </div>
 
       {/* 1. Featured Media Slider Carousel Section */}
@@ -112,7 +160,8 @@ export default function MemoriesTab({ role }: MemoriesTabProps = {}) {
             </Link>
           </div>
         ) : (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          <div className="space-y-6">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {memories.map((mem, idx) => {
               const displayImg =
                 mem.mediaUrls && mem.mediaUrls.length > 0
@@ -214,8 +263,20 @@ export default function MemoriesTab({ role }: MemoriesTabProps = {}) {
               );
             })}
           </div>
-        )}
-      </div>
+
+          {/* Pagination Controls */}
+          <PaginationControls
+            meta={paginationMeta}
+            currentPage={page}
+            onPageChange={setPage}
+            limit={limit}
+            onLimitChange={setLimit}
+            isLoading={isLoading}
+            itemLabel="memories"
+          />
+        </div>
+      )}
+    </div>
 
       {/* Lightbox Modal */}
       <MediaLightboxModal

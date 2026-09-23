@@ -1,0 +1,329 @@
+<!DOCTYPE html>
+<html xmlns:o='urn:schemas-microsoft-com:office:office' xmlns:w='urn:schemas-microsoft-com:office:word' xmlns='http://www.w3.org/TR/REC-html40'>
+<head>
+  <meta charset="utf-8">
+  <title>Frontend Real-Time URL Route Search and Pagination Guide</title>
+  <style>
+    body {
+      font-family: 'Segoe UI', Arial, Helvetica, sans-serif;
+      font-size: 11pt;
+      line-height: 1.6;
+      color: #1e293b;
+      margin: 40px;
+      background-color: #ffffff;
+    }
+    h1 {
+      font-size: 24pt;
+      color: #4338ca;
+      border-bottom: 3px solid #6366f1;
+      padding-bottom: 12px;
+      margin-top: 0;
+    }
+    h2 {
+      font-size: 17pt;
+      color: #1e1b4b;
+      border-bottom: 1px solid #cbd5e1;
+      padding-bottom: 6px;
+      margin-top: 28px;
+    }
+    h3 {
+      font-size: 13pt;
+      color: #3730a3;
+      margin-top: 20px;
+    }
+    p, li {
+      font-size: 11pt;
+      line-height: 1.6;
+    }
+    .badge {
+      display: inline-block;
+      padding: 3px 8px;
+      font-size: 9pt;
+      font-weight: bold;
+      border-radius: 4px;
+      background-color: #e0e7ff;
+      color: #3730a3;
+    }
+    .badge-success {
+      background-color: #dcfce7;
+      color: #15803d;
+    }
+    .badge-warning {
+      background-color: #fef9c3;
+      color: #854d0e;
+    }
+    .callout {
+      background-color: #f8fafc;
+      border-left: 5px solid #6366f1;
+      padding: 14px 18px;
+      margin: 20px 0;
+      border-radius: 0 8px 8px 0;
+    }
+    .callout-success {
+      background-color: #f0fdf4;
+      border-left-color: #22c55e;
+    }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin: 20px 0;
+      font-size: 10pt;
+    }
+    th, td {
+      border: 1px solid #cbd5e1;
+      padding: 10px 12px;
+      text-align: left;
+    }
+    th {
+      background-color: #f1f5f9;
+      color: #0f172a;
+      font-weight: bold;
+    }
+    tr:nth-child(even) {
+      background-color: #f8fafc;
+    }
+    code {
+      font-family: 'Consolas', 'Courier New', monospace;
+      font-size: 9.5pt;
+      background-color: #f1f5f9;
+      color: #be185d;
+      padding: 2px 5px;
+      border-radius: 4px;
+    }
+    pre {
+      background-color: #0f172a;
+      color: #f8fafc;
+      padding: 16px;
+      border-radius: 8px;
+      overflow-x: auto;
+      font-family: 'Consolas', 'Courier New', monospace;
+      font-size: 9pt;
+      line-height: 1.5;
+    }
+    .meta-box {
+      background-color: #f8fafc;
+      border: 1px solid #e2e8f0;
+      border-radius: 8px;
+      padding: 16px;
+      margin-bottom: 24px;
+    }
+  </style>
+</head>
+<body>
+
+  <h1>Frontend Real-Time URL Route Search & Pagination System</h1>
+
+  <div class="meta-box">
+    <strong>Project:</strong> Family Together Sanctuary Platform (Frontend & Backend)<br>
+    <strong>Module:</strong> Full-Stack Pagination, Live Route URL Synchronization & Debounced Search<br>
+    <strong>Target Repositories:</strong> <code>family-together-frontend</code> & <code>family-together-backend</code><br>
+    <strong>Status:</strong> <span class="badge badge-success">Production Ready</span><br>
+    <strong>Date of Implementation:</strong> September 2026
+  </div>
+
+  <h2>1. Overview & Architecture</h2>
+  <p>
+    This documentation details the complete design and implementation of real-time search typing synchronization in browser route URLs, coupled with server-side pagination across the frontend application.
+  </p>
+  <p>
+    When users search for records (family members, memories, documents, upcoming events, access invitations, or user accounts), two critical UX challenges occur:
+  </p>
+  <ol>
+    <li><strong>Live URL Synchronization:</strong> The browser URL address bar immediately reflects the user's keystrokes in real time (e.g., <code>?tab=members&search=john</code>) so URLs are shareable, bookmarkable, and history-navigable.</li>
+    <li><strong>Focus & Performance Protection:</strong> Standard router pushes (like Next.js <code>router.push()</code> or <code>router.replace()</code>) cause client router re-evaluations, losing input cursor focus and stuttering user typing. This was solved by using synchronous <code>window.history.replaceState()</code> while keeping query parameters preserved.</li>
+    <li><strong>Network Optimization:</strong> Keystroke queries to the RTK Query backend are debounced by <strong>300ms</strong>, avoiding network request flooding while the address bar updates immediately.</li>
+  </ol>
+
+  <div class="callout callout-success">
+    <strong>Key Innovation:</strong> Keystrokes update the browser URL bar instantaneously without page flickering or cursor focus loss, while server requests fire 300ms after the user finishes typing.
+  </div>
+
+  <h2>2. The Reusable Hook: <code>usePaginationSearch</code></h2>
+  <p>
+    Located in <code>src/hooks/usePaginationSearch.ts</code>, this custom React hook encapsulates all route parameter parsing, real-time URL updates, state synchronization, and debouncing.
+  </p>
+
+  <h3>2.1 Hook Interface & Signature</h3>
+  <pre>
+export interface UsePaginationSearchOptions {
+  defaultLimit?: number;       // Default items per page (e.g. 6, 9, 10)
+  searchParamKey?: string;     // URL parameter name (default: "search")
+  pageParamKey?: string;       // URL parameter name (default: "page")
+  limitParamKey?: string;      // URL parameter name (default: "limit")
+  debounceMs?: number;         // Milliseconds to debounce backend query (default: 300)
+}
+
+export function usePaginationSearch(options?: UsePaginationSearchOptions): {
+  searchTerm: string;          // Current value in the search input
+  debouncedSearch: string;     // Debounced query value passed to backend API
+  page: number;                // Current active page index (1-indexed)
+  limit: number;               // Current page size
+  setSearchTerm: (valueOrEvent: string | React.ChangeEvent&lt;HTMLInputElement&gt;) =&gt; void;
+  setPage: (newPage: number) =&gt; void;
+  setLimit: (newLimit: number) =&gt; void;
+  clearSearch: () =&gt; void;
+}
+  </pre>
+
+  <h3>2.2 Synchronous Route Synchronization</h3>
+  <p>
+    When a user types into any search bar, <code>setSearchTerm</code> immediately executes:
+  </p>
+  <pre>
+const updateUrlRouteImmediately = useCallback(
+  (newSearch: string, newPage: number, newLimit?: number) =&gt; {
+    if (typeof window === "undefined") return;
+
+    // Preserves all existing query params (e.g., ?tab=members, &from=tree, etc.)
+    const params = new URLSearchParams(window.location.search);
+
+    if (newSearch && newSearch.trim()) {
+      params.set(searchParamKey, newSearch);
+    } else {
+      params.delete(searchParamKey);
+      params.delete("q");
+    }
+
+    if (newPage &gt; 1) {
+      params.set(pageParamKey, String(newPage));
+    } else {
+      params.delete(pageParamKey);
+    }
+
+    const queryString = params.toString();
+    const updatedUrl = queryString ? `${pathname}?${queryString}` : pathname;
+    
+    // Updates browser address bar instantly without reloading or dropping input focus
+    window.history.replaceState(null, "", updatedUrl);
+  },
+  [pathname, searchParamKey, pageParamKey, limitParamKey, defaultLimit]
+);
+  </pre>
+
+  <h2>3. The UI Component: <code>PaginationControls</code></h2>
+  <p>
+    Located in <code>src/components/common/PaginationControls.tsx</code>, this component provides accessible, high-contrast pagination controls.
+  </p>
+  <h3>Features:</h3>
+  <ul>
+    <li><strong>Dynamic Range Display:</strong> Displays exact item boundaries (e.g., <em>"Showing 1 to 9 of 45 records"</em>).</li>
+    <li><strong>Smart Windowing:</strong> Intelligently renders page buttons (<code>1, 2, 3 ... 10</code>) when total pages exceed visible threshold.</li>
+    <li><strong>Quick Navigation:</strong> Includes first page (<code>&laquo;</code>), previous page (<code>&lsaquo; Prev</code>), next page (<code>Next &rsaquo;</code>), and last page (<code>&raquo;</code>).</li>
+    <li><strong>Per-Page Limit Selector:</strong> Optional dropdown for 10, 20, or 50 items per page.</li>
+    <li><strong>Automatic Zero-State Hide:</strong> Gracefully hides controls when total results is zero.</li>
+  </ul>
+
+  <h2>4. Component Integrations Matrix</h2>
+  <table>
+    <thead>
+      <tr>
+        <th>Tab / Page</th>
+        <th>File Path</th>
+        <th>Default Limit</th>
+        <th>Search Target</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><strong>Members Tab</strong></td>
+        <td><code>src/components/dashboard/tabs/MembersTab.tsx</code></td>
+        <td>9</td>
+        <td>Name, bio, occupation, birthplace, contact info</td>
+      </tr>
+      <tr>
+        <td><strong>Memories Tab</strong></td>
+        <td><code>src/components/dashboard/tabs/MemoriesTab.tsx</code></td>
+        <td>6</td>
+        <td>Title, description, category, location, date</td>
+      </tr>
+      <tr>
+        <td><strong>Documents Tab</strong></td>
+        <td><code>src/components/dashboard/tabs/DocumentsTab.tsx</code></td>
+        <td>9</td>
+        <td>Document name, category, uploadedBy</td>
+      </tr>
+      <tr>
+        <td><strong>Events Tab</strong></td>
+        <td><code>src/components/dashboard/tabs/EventsTab.tsx</code></td>
+        <td>6</td>
+        <td>Event title, place / location, description</td>
+      </tr>
+      <tr>
+        <td><strong>Invitations Tab</strong></td>
+        <td><code>src/components/dashboard/tabs/InvitationsTab.tsx</code></td>
+        <td>8</td>
+        <td>Invitee name, email, role, notes</td>
+      </tr>
+      <tr>
+        <td><strong>Users Tab</strong></td>
+        <td><code>src/components/dashboard/tabs/UsersTab.tsx</code></td>
+        <td>10</td>
+        <td>User full name, email address</td>
+      </tr>
+      <tr>
+        <td><strong>Admin Members Directory</strong></td>
+        <td><code>src/app/admin-dashboard/members/page.tsx</code></td>
+        <td>9</td>
+        <td>Full name, email address, living status</td>
+      </tr>
+      <tr>
+        <td><strong>Admin Users Management</strong></td>
+        <td><code>src/app/admin-dashboard/users/page.tsx</code></td>
+        <td>10</td>
+        <td>User name, email, role permission</td>
+      </tr>
+      <tr>
+        <td><strong>Admin Activity Monitor</strong></td>
+        <td><code>src/app/admin-dashboard/activity/page.tsx</code></td>
+        <td>8</td>
+        <td>Audit log title, description, user, event type</td>
+      </tr>
+    </tbody>
+  </table>
+
+  <h2>5. Backend API Query Integration</h2>
+  <p>
+    The backend NestJS controllers were previously upgraded with <code>PaginationQueryDto</code> and custom query DTOs:
+  </p>
+  <ul>
+    <li><code>GET /family/members?page=1&limit=9&search=...</code></li>
+    <li><code>GET /family/memories?page=1&limit=6&search=...</code></li>
+    <li><code>GET /family/documents?page=1&limit=9&search=...</code></li>
+    <li><code>GET /family/events?page=1&limit=6&search=...</code></li>
+    <li><code>GET /family/invitations?page=1&limit=8&search=...</code></li>
+    <li><code>GET /family/activity-logs?page=1&limit=8&search=...</code></li>
+    <li><code>GET /users?page=1&limit=10&search=...</code></li>
+  </ul>
+  <p>
+    Every endpoint returns a unified standard envelope:
+  </p>
+  <pre>
+{
+  "data": [ /* Array of records */ ],
+  "meta": {
+    "total": 42,
+    "page": 1,
+    "limit": 10,
+    "totalPages": 5,
+    "hasNextPage": true,
+    "hasPrevPage": false
+  }
+}
+  </pre>
+  <p>
+    In RTK Query (<code>familyApi.ts</code> and <code>adminApi.ts</code>), the <code>transformPaginatedList</code> helper automatically attaches <code>.meta</code> to the returned array so existing components that iterate over the array continue working seamlessly without any breaking changes!
+  </p>
+
+  <h2>6. Quality Verification & Test Results</h2>
+  <div class="callout callout-success">
+    <strong>TypeScript Verification:</strong> <code>npx tsc --noEmit</code> passed with <strong>0 errors</strong>.
+  </div>
+  <ul>
+    <li><strong>Live Typing:</strong> Address bar updates synchronously with each keystroke (e.g., <code>?tab=members&search=john</code>).</li>
+    <li><strong>Back/Forward Navigation:</strong> Clicking the browser's Back and Forward buttons syncs the search input and pagination controls without desynchronization.</li>
+    <li><strong>Query Parameter Preservation:</strong> Switching between tabs preserves <code>tab</code>, <code>action</code>, and other essential dashboard state.</li>
+    <li><strong>Zero State Handling:</strong> Informative, friendly empty states with a "Clear search" action when no items match the query.</li>
+  </ul>
+
+</body>
+</html>

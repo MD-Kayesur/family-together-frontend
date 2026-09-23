@@ -26,8 +26,11 @@ import {
   AlertCircle,
   CheckCircle2,
   Layers,
+  Search,
 } from "lucide-react";
 import PdfViewportModal from "@/components/modals/PdfViewportModal";
+import { usePaginationSearch } from "@/hooks/usePaginationSearch";
+import PaginationControls from "@/components/common/PaginationControls";
 
 interface SelectedFileItem {
   id: string;
@@ -38,12 +41,28 @@ interface SelectedFileItem {
 }
 
 export default function DocumentsTab() {
-  const { data: documents = [], isLoading, refetch } = useGetDocumentsQuery();
+  const {
+    searchTerm,
+    debouncedSearch,
+    page,
+    limit,
+    setLimit,
+    setSearchTerm,
+    setPage,
+    clearSearch,
+  } = usePaginationSearch({ defaultLimit: 9, searchParamKey: "search" });
+
+  const { data: documents = [], isLoading, refetch } = useGetDocumentsQuery({
+    page,
+    limit,
+    search: debouncedSearch,
+  });
   const [addDocument, { isLoading: isSubmitting }] = useAddDocumentMutation();
   const [deleteDocument] = useDeleteDocumentMutation();
   const [deleteAllDocuments] = useDeleteAllDocumentsMutation();
 
   const safeDocuments = Array.isArray(documents) ? documents : [];
+  const paginationMeta = (documents as any)?.meta;
 
   const [isUploading, setIsUploading] = useState(false);
   const [documentTitle, setDocumentTitle] = useState("");
@@ -258,7 +277,7 @@ export default function DocumentsTab() {
           </div>
           <div>
             <h3 className="font-extrabold text-white text-base">
-              {safeDocuments.length} Encrypted Vault Document{safeDocuments.length === 1 ? "" : "s"}
+              {paginationMeta ? `${paginationMeta.total} Total Documents` : `${safeDocuments.length} Documents`}
             </h3>
             <p className="text-xs text-slate-400 font-medium">
               256-bit AES Encrypted • Multi-file single documents & live file viewing supported
@@ -266,12 +285,34 @@ export default function DocumentsTab() {
           </div>
         </div>
 
-        <div className="flex items-center gap-2.5">
+        <div className="flex items-center gap-2.5 flex-wrap sm:flex-nowrap w-full sm:w-auto">
+          {/* Real-time Route Synced Search Input */}
+          <div className="relative w-full sm:w-64">
+            <Search className="h-4 w-4 absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
+            <input
+              type="text"
+              placeholder="Search documents by name, category..."
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              className="w-full pl-9 pr-8 py-2 bg-slate-950 border border-slate-800 rounded-xl text-xs text-white placeholder:text-slate-500 focus:outline-none focus:ring-2 focus:ring-indigo-500 font-medium"
+            />
+            {searchTerm && (
+              <button
+                type="button"
+                onClick={clearSearch}
+                className="absolute right-2.5 top-1/2 -translate-y-1/2 p-1 text-slate-400 hover:text-white rounded-md cursor-pointer"
+                title="Clear search"
+              >
+                <X className="h-3 w-3" />
+              </button>
+            )}
+          </div>
+
           {safeDocuments.length > 0 && (
             <button
               type="button"
               onClick={() => setIsDeleteAllConfirmOpen(true)}
-              className="px-3.5 py-2.5 rounded-xl bg-rose-950/60 hover:bg-rose-900/80 border border-rose-800/60 text-rose-300 font-bold text-xs shadow-sm flex items-center gap-1.5 cursor-pointer transition-all hover:scale-[1.02]"
+              className="px-3.5 py-2.5 rounded-xl bg-rose-950/60 hover:bg-rose-900/80 border border-rose-800/60 text-rose-300 font-bold text-xs shadow-sm flex items-center gap-1.5 cursor-pointer transition-all hover:scale-[1.02] shrink-0"
               title="Delete all documents from vault"
             >
               <Trash2 className="h-4 w-4 text-rose-400" />
@@ -286,7 +327,7 @@ export default function DocumentsTab() {
               setUploadError("");
               setUploadSuccess("");
             }}
-            className="px-4 py-2.5 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white font-bold text-xs shadow-md shadow-indigo-600/25 flex items-center gap-2 cursor-pointer transition-all hover:scale-[1.02]"
+            className="px-4 py-2.5 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white font-bold text-xs shadow-md shadow-indigo-600/25 flex items-center gap-2 cursor-pointer transition-all hover:scale-[1.02] shrink-0"
           >
             <Plus className="h-4 w-4" />
             <span>{isUploading ? "Close Upload" : "Upload Documents / PDFs"}</span>
@@ -486,7 +527,8 @@ export default function DocumentsTab() {
           </p>
         </div>
       ) : (
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+        <div className="space-y-6">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
           {safeDocuments.map((doc) => {
             const hasMultipleFiles =
               (doc.fileCount && doc.fileCount > 1) ||
@@ -593,6 +635,18 @@ export default function DocumentsTab() {
             );
           })}
         </div>
+
+        {/* Pagination Controls */}
+        <PaginationControls
+          meta={paginationMeta}
+          currentPage={page}
+          onPageChange={setPage}
+          limit={limit}
+          onLimitChange={setLimit}
+          isLoading={isLoading}
+          itemLabel="documents"
+        />
+      </div>
       )}
 
       {/* Single Document Delete Confirmation Modal */}
