@@ -3,10 +3,13 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
+    "predev": "node scripts/check-integrity.mjs",
+    "prebuild": "node scripts/check-integrity.mjs",
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "eslint"
+    "lint": "eslint",
+    "check:integrity": "node scripts/check-integrity.mjs"
   },
   "dependencies": {
     "@reduxjs/toolkit": "^2.12.0",
