@@ -103,6 +103,11 @@ export default function AddMemoryModal({ isOpen, onClose }: AddMemoryModalProps)
       return;
     }
 
+    if (!user?.id && !user?.email) {
+      setErrorMsg("You must be logged in to create a private memory.");
+      return;
+    }
+
     try {
 
       // Build media string from multiple selected files
@@ -131,7 +136,7 @@ export default function AddMemoryModal({ isOpen, onClose }: AddMemoryModalProps)
       }).unwrap();
 
       refetchMemories();
-      setSuccessMsg(`Memory saved with ${selectedFiles.length} media items!`);
+      setSuccessMsg(`Memory saved with ${selectedFiles.length} media items! Private to your account.`);
       setTimeout(() => {
         setTitle("");
         setDescription("");
@@ -179,13 +184,14 @@ export default function AddMemoryModal({ isOpen, onClose }: AddMemoryModalProps)
         </div>
 
         {/* Auto Uploader Indicator */}
-        <div className="px-3.5 py-2 rounded-xl bg-purple-950/40 border border-purple-900/50 flex items-center justify-between text-xs">
+        <div className="px-3.5 py-2.5 rounded-xl bg-purple-950/40 border border-purple-900/50 flex flex-wrap items-center justify-between gap-2 text-xs">
           <div className="flex items-center gap-2 text-purple-300 font-bold">
             <UserCheck className="h-4 w-4 text-purple-400" />
             <span>Adding as: {user?.fullName || "Sanctuary Member"} ({user?.role || "Authenticated User"})</span>
           </div>
-          <span className="text-[10px] bg-purple-900/60 text-purple-200 font-extrabold px-2 py-0.5 rounded-md">
-            Auto
+          <span className="text-[10px] bg-emerald-950/80 text-emerald-300 border border-emerald-500/40 font-extrabold px-2.5 py-1 rounded-md flex items-center gap-1">
+            <Lock className="h-2.5 w-2.5 text-emerald-400" />
+            <span>100% Private to You</span>
           </span>
         </div>
 
