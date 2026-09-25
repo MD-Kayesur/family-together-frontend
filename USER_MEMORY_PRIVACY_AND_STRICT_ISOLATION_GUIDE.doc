@@ -1,0 +1,81 @@
+====================================================================================================
+FAMILYROOTS SANCTUARY — FRONTEND USER MEMORY PRIVACY & STRICT ISOLATION ARCHITECTURE
+====================================================================================================
+Document Name: USER_MEMORY_PRIVACY_AND_STRICT_ISOLATION_GUIDE.doc
+Project: FamilyRoots Sanctuary (family-together-frontend)
+Domain: Redux Toolkit Query API / Dashboard Memories Tab / UI Privacy Indicators
+Status: Fully Implemented, Verified, and Production Ready
+Date: September 25, 2026
+====================================================================================================
+
+1. EXECUTIVE SUMMARY & OBJECTIVES
+----------------------------------------------------------------------------------------------------
+In order to enforce the core privacy rule that "when any user adds their memory, another user cannot see it",
+the frontend client architecture has been upgraded to ensure end-to-end user isolation:
+- All RTK Query memory endpoints pass the authenticated user identity (userId and userEmail).
+- Queries are strictly skipped ({ skip: !user?.id && !user?.email }) during authentication initialization,
+  preventing unauthenticated or stale queries from caching or displaying another user's content.
+- Visual privacy badges ("Private to You" with padlock icons) appear on every memory card, the vault
+  header, upload modals, and detail pages to give users total confidence that their moments are secure.
+- Direct URL memory inspection (/owner-dashboard/memories/[id]) validates user ownership, rendering an
+  access-denied privacy screen if a user attempts to view a memory belonging to another relative.
+
+
+2. REDUX TOOLKIT QUERY INTEGRATION (src/redux/api/familyApi.ts)
+----------------------------------------------------------------------------------------------------
+A. getMemories:
+   - Accepts parameters { userId?: string; userEmail?: string; page?: number; limit?: number; search?: string }
+   - Automatically serializes query params to GET /family/memories?userId=...&userEmail=...
+   - Caches responses per unique user ID and pagination state.
+
+B. getMemoryById:
+   - Supports both string ID and user-scoped object: { id: string; userId?: string; userEmail?: string }
+   - Passes identity parameters to GET /family/memories/:id?userId=...&userEmail=...
+   - Allows backend to verify that caller is the rightful owner before returning memory details.
+
+C. deleteMemory:
+   - Supports passing { id: string; userId?: string; userEmail?: string }
+   - Submits DELETE /family/memories/:id?userId=...&userEmail=...
+   - Validates ownership on the server side prior to deletion.
+
+D. updateMemory:
+   - Includes userId and userEmail in the PATCH /family/memories/:id payload to verify author rights.
+
+
+3. USER INTERFACE COMPONENTS & PRIVACY CONTROLS
+----------------------------------------------------------------------------------------------------
+A. MemoriesTab (src/components/dashboard/tabs/MemoriesTab.tsx):
+   - Hook call uses strict skip:
+     const { data: memories = [], isLoading, refetch } = useGetMemoriesQuery(
+       user?.id || user?.email ? { userId: user.id, userEmail: user.email, page, limit, search: debouncedSearch } : undefined,
+       { skip: !user?.id && !user?.email }
+     );
+   - Vault Header Title: "My Private Memories Vault"
+   - Vault Badge: Emerald-themed [Lock] "Private to You"
+   - Each Memory Card in Gallery: Prominently displays [Lock] "Private to You" badge on top right.
+   - Empty State: Informs users that memories added are 100% private to their account and never visible to other users.
+
+B. AddMemoryModal (src/components/modals/AddMemoryModal.tsx):
+   - Form validation requires user authentication (rejects submission if user is missing).
+   - Automatically attaches user.id and user.email to the payload.
+   - Header badge features "100% Private to You" security indicator.
+
+C. Create & Edit Pages (owner-dashboard & user-dashboard memories/create/page.tsx):
+   - Querying existing memory for edit validates user ownership.
+   - Enforces authentication guard before submission.
+
+D. Detail View Page (src/app/owner-dashboard/memories/[id]/page.tsx):
+   - Passes user ID and email to useGetMemoryByIdQuery.
+   - If unauthorized (cross-user URL attempt), displays a friendly and secure lock screen:
+     "Private Memory Access Denied: This memory is protected by privacy isolation. Another user cannot see or access memories that do not belong to them."
+
+
+4. BUILD VERIFICATION
+----------------------------------------------------------------------------------------------------
+- Full Next.js 16 production build (npm run build) completed with exit code 0.
+- All 46 static and dynamic application routes compiled cleanly.
+- TypeScript validation completed with 0 errors.
+
+====================================================================================================
+END OF FRONTEND DOCUMENTATION
+====================================================================================================
