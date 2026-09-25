@@ -80,11 +80,18 @@ export interface DocumentRecord {
 
 export interface InvitationRecord {
   id: string;
+  familyId?: string;
   name: string;
   email: string;
   role: string;
   status: string;
   note?: string;
+  createdAt?: string;
+  updatedAt?: string;
+  family?: {
+    id: string;
+    name: string;
+  };
 }
 
 export interface ActivityRecord {
@@ -464,6 +471,20 @@ export const familyApi = baseApi.injectEndpoints({
       }),
       invalidatesTags: ["Sanctuary", "Invitations", "Members"],
     }),
+    getInvitationById: builder.query<InvitationRecord, string>({
+      query: (id) => `/family/invitations/${id}`,
+      providesTags: (_res, _err, id) => [{ type: "Invitations", id }],
+    }),
+    deleteInvitation: builder.mutation<
+      { success: boolean; message: string; id: string },
+      string
+    >({
+      query: (id) => ({
+        url: `/family/invitations/${id}`,
+        method: "DELETE",
+      }),
+      invalidatesTags: ["Sanctuary", "Invitations"],
+    }),
     getActivityLogs: builder.query<
       PaginatedList<ActivityRecord>,
       { page?: number; limit?: number; search?: string; type?: string } | void
@@ -518,8 +539,10 @@ export const {
   useDeleteDocumentMutation,
   useDeleteAllDocumentsMutation,
   useGetInvitationsQuery,
+  useGetInvitationByIdQuery,
   useAddInvitationMutation,
   useUpdateInvitationStatusMutation,
+  useDeleteInvitationMutation,
   useGetActivityLogsQuery,
   useUpdateSanctuarySettingsMutation,
 } = familyApi;
