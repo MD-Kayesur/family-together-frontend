@@ -125,6 +125,21 @@ export default function AddEventModal({ isOpen, onClose }: AddEventModalProps) {
                 className="w-full px-3.5 py-2.5 rounded-xl border border-slate-800 bg-slate-950 text-white focus:ring-2 focus:ring-emerald-500 focus:outline-none font-medium"
                 required
               />
+              {date && (
+                <div className="mt-1.5 flex items-center gap-1.5">
+                  {new Date(date).setHours(0, 0, 0, 0) >= new Date().setHours(0, 0, 0, 0) ? (
+                    <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold bg-emerald-950/80 text-emerald-400 border border-emerald-800/60 shadow-sm">
+                      <span className="h-1.5 w-1.5 rounded-full bg-emerald-400 animate-pulse" />
+                      Status: Active (Upcoming)
+                    </span>
+                  ) : (
+                    <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold bg-slate-800/90 text-slate-400 border border-slate-700 shadow-sm">
+                      <span className="h-1.5 w-1.5 rounded-full bg-slate-500" />
+                      Status: Inactive (Expired / Past)
+                    </span>
+                  )}
+                </div>
+              )}
             </div>
 
             <div>

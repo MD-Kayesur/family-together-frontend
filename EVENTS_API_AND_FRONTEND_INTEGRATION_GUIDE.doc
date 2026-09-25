@@ -175,7 +175,33 @@
   <li><strong>Creation Modal (<code>AddEventModal.tsx</code>):</strong> Upgraded with responsive centered layout and full description/agenda support.</li>
 </ul>
 
-<h2>3. Verification Matrix</h2>
+<h2>3. Event Lifecycle &amp; Automatic Active/Inactive Status Logic</h2>
+<p>To provide immediate visual clarity on event timeliness, an automated lifecycle status calculation has been added across the full stack:</p>
+
+<div class="callout-info">
+  <strong>Status Determination Rule:</strong>
+  <ul>
+    <li><strong>ACTIVE (Upcoming / Scheduled):</strong> Evaluated when <code>eventDate &gt;= today</code> (at midnight boundary). Indicates an upcoming or ongoing celebration scheduled for today or any future date.</li>
+    <li><strong>INACTIVE (Expired / Past Event):</strong> Evaluated when <code>eventDate &lt; today</code>. Indicates that the celebration date has passed and the event is archived/expired.</li>
+  </ul>
+</div>
+
+<h3>Full Stack Implementation Features:</h3>
+<ul>
+  <li><strong>Server-Side Auto-Enrichment:</strong> <code>EventsService</code> automatically computes and attaches <code>status: 'ACTIVE' | 'INACTIVE'</code> to every event returned by <code>getEvents</code>, <code>getEventById</code>, <code>createEvent</code>, and <code>updateEvent</code>.</li>
+  <li><strong>Server-Side Status Filtering:</strong> <code>GET /family/events?status=ACTIVE</code> filters events on or after today, while <code>?status=INACTIVE</code> filters past events.</li>
+  <li><strong>Interactive Status Filter Pills:</strong> The top action bar provides quick tabs: <em>All Events</em>, <em>Active (Upcoming)</em>, and <em>Inactive (Expired)</em>.</li>
+  <li><strong>Visual Event Card Badges:</strong>
+    <ul>
+      <li><strong>Active Badge:</strong> Glowing emerald badge with pulsating green indicator (<code>&bull; Active</code>) and vibrant emerald calendar date badge.</li>
+      <li><strong>Inactive Badge:</strong> Clean slate/muted badge (<code>&bull; Inactive</code>) with muted calendar square, instantly distinguishing past celebrations.</li>
+    </ul>
+  </li>
+  <li><strong>Live Date Picker Preview:</strong> In both <code>AddEventModal</code> and <code>EditEventModal</code>, picking a date immediately renders a live preview indicator (<em>Status: Active (Upcoming)</em> or <em>Status: Inactive (Expired / Past)</em>) before submitting.</li>
+  <li><strong>Comprehensive Event Details Modal:</strong> Displays both the active/inactive badge and an explicit Lifecycle Status row in the metadata panel.</li>
+</ul>
+
+<h2>4. Verification Matrix</h2>
 
 <table>
   <thead>
@@ -187,14 +213,19 @@
   </thead>
   <tbody>
     <tr>
-      <td>Backend Build</td>
+      <td>Backend Build &amp; Prisma</td>
       <td><code>npm run build</code> in <code>family-together-backend</code></td>
       <td><strong>PASS</strong> (Exit Code 0)</td>
     </tr>
     <tr>
       <td>Backend Live Swagger OpenAPI</td>
-      <td><code>node dist/src/main.js</code> on port 8000 (Checked all 5 event routes and parameters)</td>
-      <td><strong>PASS</strong> (All 5 endpoints active with <code>page, limit, search</code>)</td>
+      <td><code>GET /api/docs-json</code> on port 8000</td>
+      <td><strong>PASS</strong> (Verified <code>status</code> parameter in <code>GET /family/events</code>)</td>
+    </tr>
+    <tr>
+      <td>Backend Live Lifecycle Status</td>
+      <td><code>GET /family/events</code> HTTP check</td>
+      <td><strong>PASS</strong> (Correctly returned <code>status: 'INACTIVE'</code> for past events and <code>status: 'ACTIVE'</code> for future events)</td>
     </tr>
     <tr>
       <td>Frontend Integrity Check</td>
@@ -204,12 +235,12 @@
     <tr>
       <td>Frontend Next.js Build</td>
       <td><code>npm run build</code> in <code>family-together-frontend</code></td>
-      <td><strong>PASS</strong> (Exit Code 0 &bull; 46/46 static pages generated in 1.7s)</td>
+      <td><strong>PASS</strong> (Exit Code 0)</td>
     </tr>
     <tr>
-      <td>Frontend Dev Server Response</td>
-      <td><code>curl.exe -I http://localhost:3000/owner-dashboard?tab=events</code></td>
-      <td><strong>PASS</strong> (HTTP/1.1 200 OK)</td>
+      <td>Frontend Events UI</td>
+      <td><code>http://localhost:3000/owner-dashboard?tab=events</code></td>
+      <td><strong>PASS</strong> (Status badges, filter tabs, live preview working)</td>
     </tr>
   </tbody>
 </table>

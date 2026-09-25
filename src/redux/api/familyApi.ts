@@ -47,6 +47,7 @@ export interface EventRecord {
   location?: string;
   description?: string;
   isVirtual?: boolean;
+  status?: "ACTIVE" | "INACTIVE" | string;
   createdAt?: string;
   updatedAt?: string;
   family?: {
@@ -325,7 +326,7 @@ export const familyApi = baseApi.injectEndpoints({
     }),
     getEvents: builder.query<
       PaginatedList<EventRecord>,
-      { page?: number; limit?: number; search?: string } | void
+      { page?: number; limit?: number; search?: string; status?: string } | void
     >({
       query: (params) => {
         if (!params) return "/family/events";
@@ -333,6 +334,7 @@ export const familyApi = baseApi.injectEndpoints({
         if (params.page) sp.set("page", String(params.page));
         if (params.limit) sp.set("limit", String(params.limit));
         if (params.search) sp.set("search", params.search);
+        if (params.status && params.status !== "ALL") sp.set("status", params.status);
         const qs = sp.toString();
         return qs ? `/family/events?${qs}` : "/family/events";
       },
