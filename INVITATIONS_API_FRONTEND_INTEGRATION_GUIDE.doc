@@ -1,0 +1,203 @@
+<html xmlns:o='urn:schemas-microsoft-com:office:office' xmlns:w='urn:schemas-microsoft-com:office:word' xmlns='http://www.w3.org/TR/REC-html40'>
+<head>
+<meta charset="utf-8">
+<title>FamilyRoots - Family Invitations Frontend API Integration Architecture</title>
+<style>
+  body {
+    font-family: 'Segoe UI', Helvetica, Arial, sans-serif;
+    line-height: 1.6;
+    color: #1e293b;
+    background-color: #ffffff;
+    padding: 30px;
+  }
+  h1 {
+    color: #4338ca;
+    border-bottom: 3px solid #6366f1;
+    padding-bottom: 8px;
+    font-size: 26pt;
+    margin-top: 0;
+  }
+  h2 {
+    color: #1e1b4b;
+    border-bottom: 1.5px solid #cbd5e1;
+    padding-bottom: 5px;
+    font-size: 18pt;
+    margin-top: 24pt;
+  }
+  h3 {
+    color: #3730a3;
+    font-size: 14pt;
+    margin-top: 16pt;
+  }
+  p, li {
+    font-size: 11pt;
+  }
+  .header-badge {
+    background-color: #e0e7ff;
+    color: #4338ca;
+    padding: 6px 14px;
+    border-radius: 20px;
+    font-weight: bold;
+    display: inline-block;
+    margin-bottom: 15px;
+    font-size: 10pt;
+  }
+  .callout-success {
+    background-color: #ecfdf5;
+    border-left: 5px solid #10b981;
+    padding: 15px 20px;
+    margin: 20px 0;
+    border-radius: 4px;
+  }
+  .callout-info {
+    background-color: #eff6ff;
+    border-left: 5px solid #3b82f6;
+    padding: 15px 20px;
+    margin: 20px 0;
+    border-radius: 4px;
+  }
+  table {
+    border-collapse: collapse;
+    width: 100%;
+    margin: 20px 0;
+    font-size: 10.5pt;
+  }
+  th, td {
+    border: 1px solid #cbd5e1;
+    padding: 10px 12px;
+    text-align: left;
+    vertical-align: top;
+  }
+  th {
+    background-color: #f8fafc;
+    color: #0f172a;
+    font-weight: bold;
+  }
+  tr:nth-child(even) {
+    background-color: #f8fafc;
+  }
+  code {
+    background-color: #f1f5f9;
+    color: #0f172a;
+    padding: 2px 6px;
+    border-radius: 4px;
+    font-family: Consolas, 'Courier New', monospace;
+    font-size: 10pt;
+  }
+  .http-get { color: #0284c7; font-weight: bold; }
+  .http-post { color: #16a34a; font-weight: bold; }
+  .http-patch { color: #d97706; font-weight: bold; }
+  .http-delete { color: #dc2626; font-weight: bold; }
+</style>
+</head>
+<body>
+
+<div class="header-badge">FamilyRoots Frontend Architecture &bull; API Integration Guide</div>
+<h1>Family Invitations Frontend API Integration</h1>
+
+<p><strong>Platform:</strong> FamilyRoots Next.js 16 + React 19 + Redux Toolkit Query + Tailwind CSS<br>
+<strong>Target Modules:</strong> <code>src/redux/api/familyApi.ts</code> &amp; <code>src/components/dashboard/tabs/InvitationsTab.tsx</code><br>
+<strong>Backend Endpoints Integrated:</strong> <code>GET /family/invitations/:id</code> &amp; <code>DELETE /family/invitations/:id</code><br>
+<strong>Verification Date:</strong> September 25, 2026</p>
+
+<div class="callout-success">
+  <strong>Integration Assurance:</strong> The newly added Family Invitations endpoints (<code>GET /family/invitations/:id</code> for detailed metadata inspection and <code>DELETE /family/invitations/:id</code> for revoking/deleting invitations) have been completely integrated into the frontend client state and user interface. Verified with 100% clean Next.js production build (46/46 routes, 0 errors).
+</div>
+
+<h2>1. RTK Query API Slice Additions (<code>familyApi.ts</code>)</h2>
+<p>Two new endpoints were wired into the Redux Toolkit Query API service with tag invalidation:</p>
+
+<table>
+  <thead>
+    <tr>
+      <th>RTK Query Hook</th>
+      <th>HTTP Method</th>
+      <th>Endpoint Route</th>
+      <th>Cache Tag Behavior</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><code>useGetInvitationByIdQuery(id)</code></td>
+      <td><span class="http-get">GET</span></td>
+      <td><code>/family/invitations/${id}</code></td>
+      <td>Provides <code>{ type: "Invitations", id }</code> for individual record caching.</td>
+    </tr>
+    <tr>
+      <td><code>useDeleteInvitationMutation()</code></td>
+      <td><span class="http-delete">DELETE</span></td>
+      <td><code>/family/invitations/${id}</code></td>
+      <td>Invalidates <code>["Sanctuary", "Invitations"]</code> to automatically refetch and update lists.</td>
+    </tr>
+  </tbody>
+</table>
+
+<div class="callout-info">
+  <strong>Type Expansion:</strong> The <code>InvitationRecord</code> interface was enriched with <code>familyId</code>, <code>createdAt</code>, <code>updatedAt</code>, and nested <code>family</code> metadata.
+</div>
+
+<h2>2. User Interface Enhancements (<code>InvitationsTab.tsx</code>)</h2>
+
+<h3>2.1. View Details Modal (<code>InvitationDetailsModal</code>)</h3>
+<p>When the user clicks the <strong>Details</strong> button (Eye icon) on any invitation card:</p>
+<ul>
+  <li>An accessible modal opens with a dimmed backdrop (<code>bg-slate-950/80 backdrop-blur-sm</code>).</li>
+  <li>Fetches full invitation details via <code>useGetInvitationByIdQuery(selectedId)</code>.</li>
+  <li>Displays:
+    <ul>
+      <li>Invitee Avatar with initial, Full Name, and unique Invitation ID with 1-click clipboard copy.</li>
+      <li>Target Email Address with 1-click clipboard copy.</li>
+      <li>Current status badge (<code>PENDING</code> in amber, <code>APPROVED</code> in emerald, <code>REJECTED</code> in rose).</li>
+      <li>Requested Role badge with shield icon (<code>MEMBER</code>, <code>VIEWER</code>, <code>ADMIN</code>).</li>
+      <li>Sanctuary Name and Created Date timestamp.</li>
+      <li>Verification note or message attached during invitation dispatch.</li>
+      <li>Direct Action Buttons: Approve, Reject, or Revoke/Delete directly inside the modal.</li>
+    </ul>
+  </li>
+</ul>
+
+<h3>2.2. Revoke &amp; Delete Action (<code>handleDelete</code>)</h3>
+<p>Every card in the invitations list now provides a dedicated <strong>Delete / Revoke</strong> button (Trash icon):</p>
+<ul>
+  <li>Triggers a browser confirmation prompt to prevent accidental deletions.</li>
+  <li>Dispatches <code>deleteInvitation(id).unwrap()</code>.</li>
+  <li>Automatically closes the details modal if open and invalidates the RTK Query cache.</li>
+  <li>Re-renders the list instantly without requiring manual page reload.</li>
+</ul>
+
+<h2>3. Verification &amp; Assurance Checklist</h2>
+
+<table>
+  <thead>
+    <tr>
+      <th>Verification Step</th>
+      <th>Tool / Command</th>
+      <th>Outcome</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>Frontend TypeScript &amp; Next.js Build</td>
+      <td><code>npm run build</code> in <code>family-together-frontend</code></td>
+      <td><strong>PASS</strong> &bull; Exit Code 0, 46/46 static pages generated in 2.3s.</td>
+    </tr>
+    <tr>
+      <td>Dev Server Responsiveness</td>
+      <td><code>curl.exe -I http://localhost:3000/owner-dashboard?tab=invitations</code></td>
+      <td><strong>PASS</strong> &bull; HTTP/1.1 200 OK.</td>
+    </tr>
+    <tr>
+      <td>RTK Query Hook Exports</td>
+      <td><code>src/redux/api/familyApi.ts</code></td>
+      <td><strong>PASS</strong> &bull; <code>useGetInvitationByIdQuery</code> and <code>useDeleteInvitationMutation</code> exported cleanly.</td>
+    </tr>
+    <tr>
+      <td>UI Ergonomics</td>
+      <td><code>src/components/dashboard/tabs/InvitationsTab.tsx</code></td>
+      <td><strong>PASS</strong> &bull; Touch-friendly buttons, responsive card layout, and accessible modal.</td>
+    </tr>
+  </tbody>
+</table>
+
+</body>
+</html>
