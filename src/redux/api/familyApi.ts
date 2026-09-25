@@ -288,9 +288,24 @@ export const familyApi = baseApi.injectEndpoints({
       }),
       invalidatesTags: ["Sanctuary", "Memories", "Activity"],
     }),
-    getMemoryById: builder.query<MemoryRecord, string>({
-      query: (id) => `/family/memories/${id}`,
-      providesTags: (_result, _error, id) => [{ type: "Memories", id }],
+    getMemoryById: builder.query<
+      MemoryRecord,
+      string | { id: string; userId?: string; userEmail?: string }
+    >({
+      query: (arg) => {
+        if (typeof arg === "string") {
+          return `/family/memories/${arg}`;
+        }
+        const sp = new URLSearchParams();
+        if (arg.userId) sp.set("userId", arg.userId);
+        if (arg.userEmail) sp.set("userEmail", arg.userEmail);
+        const qs = sp.toString();
+        return qs ? `/family/memories/${arg.id}?${qs}` : `/family/memories/${arg.id}`;
+      },
+      providesTags: (_result, _error, arg) => {
+        const id = typeof arg === "string" ? arg : arg.id;
+        return [{ type: "Memories", id }];
+      },
     }),
     updateMemory: builder.mutation<
       MemoryRecord,
@@ -317,11 +332,26 @@ export const familyApi = baseApi.injectEndpoints({
       }),
       invalidatesTags: ["Sanctuary", "Memories", "Activity"],
     }),
-    deleteMemory: builder.mutation<{ success: boolean; message: string }, string>({
-      query: (id) => ({
-        url: `/family/memories/${id}`,
-        method: "DELETE",
-      }),
+    deleteMemory: builder.mutation<
+      { success: boolean; message: string },
+      string | { id: string; userId?: string; userEmail?: string }
+    >({
+      query: (arg) => {
+        if (typeof arg === "string") {
+          return {
+            url: `/family/memories/${arg}`,
+            method: "DELETE",
+          };
+        }
+        const sp = new URLSearchParams();
+        if (arg.userId) sp.set("userId", arg.userId);
+        if (arg.userEmail) sp.set("userEmail", arg.userEmail);
+        const qs = sp.toString();
+        return {
+          url: qs ? `/family/memories/${arg.id}?${qs}` : `/family/memories/${arg.id}`,
+          method: "DELETE",
+        };
+      },
       invalidatesTags: ["Sanctuary", "Memories", "Activity"],
     }),
     getEvents: builder.query<

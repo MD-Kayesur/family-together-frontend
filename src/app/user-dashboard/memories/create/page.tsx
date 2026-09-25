@@ -42,10 +42,13 @@ function MemberMemoryFormContent() {
   // Queries & Mutations
   const { data: members = [] } = useGetMembersQuery();
   const { data: allMemories = [], refetch: refetchMemories } = useGetMemoriesQuery(
-    user ? { userId: user.id, userEmail: user.email } : undefined
+    user?.id || user?.email ? { userId: user.id, userEmail: user.email } : undefined,
+    { skip: !user?.id && !user?.email }
   );
   const { data: fetchedMemory, isLoading: isFetchingMemory } = useGetMemoryByIdQuery(
-    memoryId as string,
+    user?.id || user?.email
+      ? { id: memoryId as string, userId: user?.id, userEmail: user?.email }
+      : (memoryId as string),
     { skip: !memoryId }
   );
 
@@ -235,6 +238,11 @@ function MemberMemoryFormContent() {
 
     if (!title.trim()) {
       setErrorMsg("Memory title is required.");
+      return;
+    }
+
+    if (!user?.id && !user?.email) {
+      setErrorMsg("You must be logged in to create or edit a private memory.");
       return;
     }
 
