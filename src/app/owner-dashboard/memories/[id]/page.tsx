@@ -5,6 +5,7 @@ import { useParams, useRouter } from "next/navigation";
 import Link from "next/link";
 import SanctuaryDashboardWrapper from "@/components/dashboard/SanctuaryDashboardWrapper";
 import { useGetMemoryByIdQuery } from "@/redux/api/familyApi";
+import { useAppSelector } from "@/redux/store";
 import {
   ArrowLeft,
   Calendar,
@@ -26,9 +27,16 @@ export default function MemoryDetailPage() {
   const params = useParams();
   const memoryId = Array.isArray(params?.id) ? params.id[0] : (params?.id as string);
 
-  const { data: memory, isLoading, error } = useGetMemoryByIdQuery(memoryId, {
-    skip: !memoryId,
-  });
+  const { user } = useAppSelector((state) => state.auth);
+
+  const { data: memory, isLoading, error } = useGetMemoryByIdQuery(
+    user?.id || user?.email
+      ? { id: memoryId, userId: user?.id, userEmail: user?.email }
+      : memoryId,
+    {
+      skip: !memoryId,
+    }
+  );
 
   const [activeMediaIndex, setActiveMediaIndex] = useState(0);
 
@@ -55,19 +63,23 @@ export default function MemoryDetailPage() {
   if (error || !memory) {
     return (
       <SanctuaryDashboardWrapper
-        title="Memory Not Found"
-        subtitle="The requested memory could not be located in your sanctuary vault."
+        title="Private Memory Access Denied"
+        subtitle="This memory is private to its author or does not exist."
       >
-        <div className="p-12 text-center bg-slate-900 rounded-3xl border border-slate-800 space-y-4">
-          <p className="text-sm font-semibold text-slate-300">
-            This memory may have been removed or does not exist.
+        <div className="p-12 text-center bg-slate-900 rounded-3xl border border-slate-800 space-y-4 max-w-lg mx-auto my-8">
+          <div className="h-14 w-14 rounded-2xl bg-amber-950/60 border border-amber-800/60 text-amber-400 flex items-center justify-center mx-auto shadow-lg">
+            <Lock className="h-7 w-7" />
+          </div>
+          <h3 className="font-extrabold text-white text-base">Private Memory</h3>
+          <p className="text-xs font-semibold text-slate-400 leading-relaxed">
+            This memory is protected by privacy isolation. Another user cannot see or access memories that do not belong to them.
           </p>
           <Link
             href="/owner-dashboard?tab=memories"
-            className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-purple-600 text-white font-bold text-xs hover:bg-purple-700 transition-colors"
+            className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-purple-600 text-white font-bold text-xs hover:bg-purple-700 transition-colors shadow-md shadow-purple-600/25"
           >
             <ArrowLeft className="h-4 w-4" />
-            <span>Return to Memories Vault</span>
+            <span>Return to My Memories</span>
           </Link>
         </div>
       </SanctuaryDashboardWrapper>
@@ -142,6 +154,10 @@ export default function MemoryDetailPage() {
                 <h2 className="font-extrabold text-white text-lg sm:text-xl leading-tight">
                   {memory.title}
                 </h2>
+                <span className="px-2.5 py-0.5 rounded-full text-[10px] font-extrabold bg-emerald-950/80 text-emerald-300 border border-emerald-500/40 flex items-center gap-1 shadow-xs">
+                  <Lock className="h-2.5 w-2.5 text-emerald-400" />
+                  <span>Private to You</span>
+                </span>
                 <span className="px-2.5 py-0.5 rounded-full text-[10px] font-extrabold uppercase tracking-wide bg-purple-950/60 text-purple-300 border border-purple-800/60">
                   {mediaList.length} Media File{mediaList.length > 1 ? "s" : ""}
                 </span>

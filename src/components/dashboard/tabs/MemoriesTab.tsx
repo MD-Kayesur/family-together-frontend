@@ -4,7 +4,7 @@ import React, { useState } from "react";
 import Link from "next/link";
 import { useGetMemoriesQuery, useDeleteMemoryMutation } from "@/redux/api/familyApi";
 import { useAppSelector } from "@/redux/store";
-import { Image as ImageIcon, Plus, Heart, Sparkles, Loader2, SlidersHorizontal, Pencil, Trash2, Search, X } from "lucide-react";
+import { Image as ImageIcon, Plus, Heart, Sparkles, Loader2, SlidersHorizontal, Pencil, Trash2, Search, X, Lock } from "lucide-react";
 import MediaSliderCarousel from "@/components/memories/MediaSliderCarousel";
 import MediaLightboxModal from "@/components/modals/MediaLightboxModal";
 import { usePaginationSearch } from "@/hooks/usePaginationSearch";
@@ -29,7 +29,7 @@ export default function MemoriesTab({ role }: MemoriesTabProps = {}) {
   } = usePaginationSearch({ defaultLimit: 6, searchParamKey: "search" });
 
   const { data: memories = [], isLoading, refetch } = useGetMemoriesQuery(
-    user
+    user?.id || user?.email
       ? {
           userId: user.id,
           userEmail: user.email,
@@ -37,7 +37,8 @@ export default function MemoriesTab({ role }: MemoriesTabProps = {}) {
           limit,
           search: debouncedSearch,
         }
-      : undefined
+      : undefined,
+    { skip: !user?.id && !user?.email }
   );
   const [deleteMemory] = useDeleteMemoryMutation();
   const [isLightboxOpen, setIsLightboxOpen] = useState(false);
@@ -61,7 +62,7 @@ export default function MemoriesTab({ role }: MemoriesTabProps = {}) {
     e.stopPropagation();
     if (window.confirm(`Are you sure you want to delete "${title}"?`)) {
       try {
-        await deleteMemory(id).unwrap();
+        await deleteMemory({ id, userId: user?.id, userEmail: user?.email }).unwrap();
         refetch();
       } catch (err) {
         console.error("Failed to delete memory:", err);
@@ -78,11 +79,17 @@ export default function MemoriesTab({ role }: MemoriesTabProps = {}) {
             <ImageIcon className="h-5 w-5" />
           </div>
           <div>
-            <h3 className="font-extrabold text-white text-sm">
-              {role === "MEMBER" ? "Family Memories Vault" : "Owner Media Vault"}
-            </h3>
+            <div className="flex items-center gap-2">
+              <h3 className="font-extrabold text-white text-sm">
+                {role === "MEMBER" ? "My Private Memories Vault" : "My Private Media Vault"}
+              </h3>
+              <span className="bg-emerald-950/80 text-emerald-400 border border-emerald-500/30 px-2 py-0.5 rounded-full text-[10px] font-bold flex items-center gap-1 shadow-xs">
+                <Lock className="h-2.5 w-2.5" />
+                <span>Private to You</span>
+              </span>
+            </div>
             <p className="text-xs text-slate-400 font-medium">
-              {paginationMeta ? `${paginationMeta.total} Total Memories` : `${memories.length} Memories`} Preserved
+              {paginationMeta ? `${paginationMeta.total} Total Memories` : `${memories.length} Memories`} • Only you can view these memories
             </p>
           </div>
         </div>
@@ -147,9 +154,9 @@ export default function MemoriesTab({ role }: MemoriesTabProps = {}) {
         ) : memories.length === 0 ? (
           <div className="p-12 text-center bg-slate-900 rounded-3xl border border-slate-800 space-y-3">
             <ImageIcon className="h-10 w-10 text-slate-600 mx-auto" />
-            <h3 className="font-bold text-base text-white">No memories uploaded yet</h3>
+            <h3 className="font-bold text-base text-white">No private memories uploaded yet</h3>
             <p className="text-xs text-slate-400 max-w-sm mx-auto">
-              Preserve your first family photo or story in your private sanctuary archive.
+              Any memory you add is kept 100% private to your account. No other user can see your photos or stories. Preserve your first memory now!
             </p>
             <Link
               href={role === "MEMBER" ? "/user-dashboard/memories/create" : "/owner-dashboard/memories/create"}
@@ -195,10 +202,14 @@ export default function MemoriesTab({ role }: MemoriesTabProps = {}) {
                         </span>
                       </div>
 
-                      {/* Top Right Click to View */}
-                      <div className="absolute top-3 right-3 flex items-center gap-2">
-                        <span className="bg-slate-950/85 backdrop-blur-md px-2.5 py-1 rounded-full text-[10px] font-bold text-slate-200 border border-white/20 shadow-sm">
-                          Click to View
+                      {/* Top Right Privacy & View Badges */}
+                      <div className="absolute top-3 right-3 flex items-center gap-1.5">
+                        <span className="bg-emerald-950/90 backdrop-blur-md px-2 py-0.5 rounded-full text-[10px] font-bold text-emerald-300 border border-emerald-500/40 shadow-sm flex items-center gap-1">
+                          <Lock className="h-2.5 w-2.5 text-emerald-400" />
+                          <span>Private to You</span>
+                        </span>
+                        <span className="bg-slate-950/85 backdrop-blur-md px-2 py-0.5 rounded-full text-[10px] font-bold text-slate-200 border border-white/20 shadow-sm">
+                          View
                         </span>
                       </div>
                     </div>
