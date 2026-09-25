@@ -45,7 +45,8 @@ export default function FamilyTab() {
   const { data: members = [], isLoading: isLoadingMembers, refetch: refetchMembers } = useGetMembersQuery();
   const { data: relationships = [], refetch: refetchRelationships } = useGetRelationshipsQuery();
   const { data: memories = [], refetch: refetchMemories } = useGetMemoriesQuery(
-    user ? { userId: user.id, userEmail: user.email } : undefined
+    user?.id || user?.email ? { userId: user.id, userEmail: user.email } : undefined,
+    { skip: !user?.id && !user?.email }
   );
   const [updateFamilyDetails, { isLoading: isUpdating }] = useUpdateFamilyDetailsMutation();
 

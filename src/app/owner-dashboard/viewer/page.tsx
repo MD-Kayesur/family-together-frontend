@@ -43,7 +43,8 @@ export default function ViewerDashboardPage() {
   const [logout] = useLogoutMutation();
 
   const { data: memories = [] } = useGetMemoriesQuery(
-    user ? { userId: user.id, userEmail: user.email } : undefined
+    user?.id || user?.email ? { userId: user.id, userEmail: user.email } : undefined,
+    { skip: !user?.id && !user?.email }
   );
   const { data: events = [] } = useGetEventsQuery();
   const { data: members = [] } = useGetMembersQuery();
