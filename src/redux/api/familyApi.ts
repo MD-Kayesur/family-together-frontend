@@ -41,10 +41,18 @@ export interface MemoryRecord {
 
 export interface EventRecord {
   id: string;
+  familyId?: string;
   title: string;
   date: string;
   location?: string;
+  description?: string;
   isVirtual?: boolean;
+  createdAt?: string;
+  updatedAt?: string;
+  family?: {
+    id: string;
+    name: string;
+  };
 }
 
 export interface RelationshipRecord {
@@ -333,12 +341,37 @@ export const familyApi = baseApi.injectEndpoints({
     }),
     addEvent: builder.mutation<
       EventRecord,
-      { title: string; date: string; location?: string; isVirtual?: boolean }
+      { title: string; date: string; location?: string; description?: string; isVirtual?: boolean }
     >({
       query: (body) => ({
         url: "/family/events",
         method: "POST",
         body,
+      }),
+      invalidatesTags: ["Sanctuary", "Events"],
+    }),
+    getEventById: builder.query<EventRecord, string>({
+      query: (id) => `/family/events/${id}`,
+      providesTags: (_res, _err, id) => [{ type: "Events", id }],
+    }),
+    updateEvent: builder.mutation<
+      EventRecord,
+      { id: string; body: { title?: string; date?: string; location?: string; description?: string; isVirtual?: boolean } }
+    >({
+      query: ({ id, body }) => ({
+        url: `/family/events/${id}`,
+        method: "PATCH",
+        body,
+      }),
+      invalidatesTags: ["Sanctuary", "Events"],
+    }),
+    deleteEvent: builder.mutation<
+      { success: boolean; message: string; id: string },
+      string
+    >({
+      query: (id) => ({
+        url: `/family/events/${id}`,
+        method: "DELETE",
       }),
       invalidatesTags: ["Sanctuary", "Events"],
     }),
@@ -530,7 +563,10 @@ export const {
   useUpdateMemoryMutation,
   useDeleteMemoryMutation,
   useGetEventsQuery,
+  useGetEventByIdQuery,
   useAddEventMutation,
+  useUpdateEventMutation,
+  useDeleteEventMutation,
   useGetRelationshipsQuery,
   useAddRelationshipMutation,
   useGetDocumentsQuery,

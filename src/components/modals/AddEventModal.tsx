@@ -14,6 +14,7 @@ export default function AddEventModal({ isOpen, onClose }: AddEventModalProps) {
   const [title, setTitle] = useState("");
   const [date, setDate] = useState("");
   const [location, setLocation] = useState("");
+  const [description, setDescription] = useState("");
   const [isVirtual, setIsVirtual] = useState(false);
   const [errorMsg, setErrorMsg] = useState("");
   const [successMsg, setSuccessMsg] = useState("");
@@ -37,6 +38,7 @@ export default function AddEventModal({ isOpen, onClose }: AddEventModalProps) {
         title: title.trim(),
         date,
         location: location.trim() || "Virtual Link",
+        description: description.trim(),
         isVirtual,
       }).unwrap();
 
@@ -46,6 +48,7 @@ export default function AddEventModal({ isOpen, onClose }: AddEventModalProps) {
         setTitle("");
         setDate("");
         setLocation("");
+        setDescription("");
         setIsVirtual(false);
         setSuccessMsg("");
         onClose();
@@ -56,9 +59,9 @@ export default function AddEventModal({ isOpen, onClose }: AddEventModalProps) {
   };
 
   return (
-    <div className="fixed inset-0 top-16 md:left-64 z-40 flex items-center justify-center p-4 bg-slate-950/70 backdrop-blur-sm animate-fadeIn overflow-y-auto">
-      <div className="bg-slate-900 border border-slate-800 rounded-3xl w-full max-w-2xl shadow-2xl p-6 sm:p-8 space-y-6 relative overflow-hidden">
-        <div className="flex items-center justify-between border-b border-slate-800 pb-4">
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/80 backdrop-blur-sm animate-in fade-in duration-200 overflow-y-auto">
+      <div className="bg-slate-900 border border-slate-800 rounded-3xl w-full max-w-xl shadow-2xl p-6 sm:p-8 space-y-6 relative overflow-hidden my-auto max-h-[90vh] flex flex-col">
+        <div className="flex items-center justify-between border-b border-slate-800 pb-4 shrink-0">
           <div className="flex items-center gap-2.5">
             <div className="h-10 w-10 rounded-xl bg-emerald-600 text-white flex items-center justify-center shadow-md">
               <Calendar className="h-5 w-5" />
@@ -68,7 +71,7 @@ export default function AddEventModal({ isOpen, onClose }: AddEventModalProps) {
                 Create Family Event
               </h2>
               <p className="text-xs text-slate-400 font-medium">
-                Schedule a reunion, birthday, or milestone in PostgreSQL.
+                Schedule a reunion, birthday, or milestone for your family tree.
               </p>
             </div>
           </div>
@@ -95,7 +98,7 @@ export default function AddEventModal({ isOpen, onClose }: AddEventModalProps) {
           </div>
         )}
 
-        <form onSubmit={handleSubmit} className="space-y-4 text-xs">
+        <form onSubmit={handleSubmit} className="space-y-4 text-xs overflow-y-auto pr-1">
           <div>
             <label className="block font-bold text-slate-200 mb-1">
               Event Title *
@@ -106,10 +109,11 @@ export default function AddEventModal({ isOpen, onClose }: AddEventModalProps) {
               value={title}
               onChange={(e) => setTitle(e.target.value)}
               className="w-full px-3.5 py-2.5 rounded-xl border border-slate-800 bg-slate-950 text-white placeholder:text-slate-500 focus:ring-2 focus:ring-emerald-500 focus:outline-none font-medium"
+              required
             />
           </div>
 
-          <div className="grid grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div>
               <label className="block font-bold text-slate-200 mb-1">
                 Event Date *
@@ -119,16 +123,17 @@ export default function AddEventModal({ isOpen, onClose }: AddEventModalProps) {
                 value={date}
                 onChange={(e) => setDate(e.target.value)}
                 className="w-full px-3.5 py-2.5 rounded-xl border border-slate-800 bg-slate-950 text-white focus:ring-2 focus:ring-emerald-500 focus:outline-none font-medium"
+                required
               />
             </div>
 
             <div>
               <label className="block font-bold text-slate-200 mb-1">
-                Location
+                Location or Link
               </label>
               <input
                 type="text"
-                placeholder="e.g. Dhaka, Bangladesh"
+                placeholder="e.g. Community Center or Zoom URL"
                 value={location}
                 onChange={(e) => setLocation(e.target.value)}
                 className="w-full px-3.5 py-2.5 rounded-xl border border-slate-800 bg-slate-950 text-white placeholder:text-slate-500 focus:ring-2 focus:ring-emerald-500 focus:outline-none font-medium"
@@ -136,20 +141,33 @@ export default function AddEventModal({ isOpen, onClose }: AddEventModalProps) {
             </div>
           </div>
 
-          <div className="flex items-center gap-2 pt-2">
+          <div>
+            <label className="block font-bold text-slate-200 mb-1">
+              Description & Agenda
+            </label>
+            <textarea
+              rows={3}
+              placeholder="e.g. Gathering with all cousins, dinner, photo presentation, and fun activities..."
+              value={description}
+              onChange={(e) => setDescription(e.target.value)}
+              className="w-full px-3.5 py-2.5 rounded-xl border border-slate-800 bg-slate-950 text-white placeholder:text-slate-500 focus:ring-2 focus:ring-emerald-500 focus:outline-none font-medium"
+            />
+          </div>
+
+          <div className="flex items-center gap-2 pt-1">
             <input
               type="checkbox"
               id="isVirtual"
               checked={isVirtual}
               onChange={(e) => setIsVirtual(e.target.checked)}
-              className="h-4 w-4 rounded text-emerald-600 focus:ring-emerald-500 border-slate-700 bg-slate-950"
+              className="h-4 w-4 rounded text-emerald-600 focus:ring-emerald-500 border-slate-700 bg-slate-950 cursor-pointer"
             />
-            <label htmlFor="isVirtual" className="font-semibold text-slate-300">
+            <label htmlFor="isVirtual" className="font-semibold text-slate-300 cursor-pointer">
               Virtual / Online Event
             </label>
           </div>
 
-          <div className="flex items-center justify-end gap-3 pt-4 border-t border-slate-800">
+          <div className="flex items-center justify-end gap-3 pt-4 border-t border-slate-800 shrink-0">
             <button
               type="button"
               onClick={onClose}
