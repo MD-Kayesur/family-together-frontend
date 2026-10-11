@@ -5,6 +5,8 @@ import { useAppSelector } from "@/redux/store";
 import {
   useUpdateProfileMutation,
   useChangePasswordMutation,
+  useGetSessionsQuery,
+  useLogoutAllMutation,
 } from "@/redux/api/authApi";
 import {
   useGetSanctuaryQuery,
@@ -35,6 +37,10 @@ import {
   Calendar,
   AlertCircle,
   Upload,
+  Laptop,
+  Globe,
+  LogOut,
+  RefreshCw,
 } from "lucide-react";
 
 export default function SettingsTab() {
@@ -96,6 +102,30 @@ export default function SettingsTab() {
   // API Mutations
   const [updateProfile, { isLoading: isUpdatingProfile }] = useUpdateProfileMutation();
   const [changePassword, { isLoading: isChangingPassword }] = useChangePasswordMutation();
+
+  // Active Sessions & Multi-Device Logout (Backend APIs)
+  const {
+    data: sessions = [],
+    isLoading: isSessionsLoading,
+    refetch: refetchSessions,
+  } = useGetSessionsQuery();
+  const [logoutAll, { isLoading: isLoggingOutAll }] = useLogoutAllMutation();
+  const [sessionsMessage, setSessionsMessage] = useState("");
+  const [sessionsError, setSessionsError] = useState("");
+
+  const handleLogoutAllDevices = async () => {
+    if (confirm("Are you sure you want to log out from all devices? This will terminate all active sessions across all browsers and devices.")) {
+      try {
+        setSessionsError("");
+        const res = await logoutAll().unwrap();
+        setSessionsMessage(res?.message || "All active device sessions revoked successfully.");
+        refetchSessions();
+        setTimeout(() => setSessionsMessage(""), 5000);
+      } catch (err: any) {
+        setSessionsError(err?.data?.message || err?.message || "Failed to revoke all sessions.");
+      }
+    }
+  };
 
   // Populate user data
   useEffect(() => {
@@ -875,6 +905,118 @@ export default function SettingsTab() {
                 )}
               </div>
             </div>
+          </div>
+
+          {/* Active Device & Browser Sessions (Backend GET /auth/sessions & POST /auth/logout-all) */}
+          <div className="p-6 rounded-3xl bg-slate-900 border border-slate-800 shadow-xl space-y-5">
+            <div className="flex flex-wrap items-center justify-between gap-3 border-b border-slate-800 pb-4">
+              <div className="flex items-center gap-3">
+                <div className="h-10 w-10 rounded-2xl bg-indigo-950/80 border border-indigo-800/60 text-indigo-400 flex items-center justify-center">
+                  <Laptop className="h-5 w-5" />
+                </div>
+                <div>
+                  <h3 className="font-extrabold text-white text-base">
+                    Active Sessions & Device Management
+                  </h3>
+                  <p className="text-xs text-slate-400 font-medium">
+                    Monitor browsers currently authenticated into your account. Backed by PostgreSQL session tokens and Redis invalidation.
+                  </p>
+                </div>
+              </div>
+
+              <div className="flex items-center gap-2">
+                <button
+                  type="button"
+                  onClick={() => refetchSessions()}
+                  className="p-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 hover:text-white transition-colors cursor-pointer"
+                  title="Refresh active sessions"
+                >
+                  <RefreshCw className="h-4 w-4" />
+                </button>
+                <button
+                  type="button"
+                  disabled={isLoggingOutAll}
+                  onClick={handleLogoutAllDevices}
+                  className="px-4 py-2 rounded-xl bg-rose-950/60 hover:bg-rose-900 border border-rose-800/60 text-rose-300 font-bold text-xs flex items-center gap-2 cursor-pointer transition-colors disabled:opacity-50"
+                >
+                  {isLoggingOutAll ? (
+                    <Loader2 className="h-4 w-4 animate-spin" />
+                  ) : (
+                    <LogOut className="h-4 w-4" />
+                  )}
+                  <span>Log Out All Other Devices</span>
+                </button>
+              </div>
+            </div>
+
+            {sessionsMessage && (
+              <div className="p-3.5 rounded-2xl bg-emerald-950/60 border border-emerald-800 text-emerald-300 text-xs font-bold flex items-center gap-2 animate-fadeIn">
+                <Check className="h-4 w-4 text-emerald-400" />
+                <span>{sessionsMessage}</span>
+              </div>
+            )}
+
+            {sessionsError && (
+              <div className="p-3.5 rounded-2xl bg-rose-950/60 border border-rose-800 text-rose-300 text-xs font-bold flex items-center gap-2 animate-fadeIn">
+                <AlertCircle className="h-4 w-4 text-rose-400" />
+                <span>{sessionsError}</span>
+              </div>
+            )}
+
+            {isSessionsLoading ? (
+              <div className="py-8 flex flex-col items-center justify-center space-y-2 text-slate-400 text-xs">
+                <Loader2 className="h-6 w-6 animate-spin text-indigo-400" />
+                <span>Loading active sessions...</span>
+              </div>
+            ) : sessions.length === 0 ? (
+              <div className="p-6 rounded-2xl bg-slate-950 border border-slate-800 text-center text-xs text-slate-400">
+                <ShieldCheck className="h-8 w-8 text-emerald-400 mx-auto mb-2" />
+                <p className="font-semibold text-slate-300">Your current session is active and secure.</p>
+                <p className="text-[11px] text-slate-500 mt-1">No additional remote device sessions detected.</p>
+              </div>
+            ) : (
+              <div className="space-y-3">
+                {sessions.map((sess, idx) => (
+                  <div
+                    key={sess.id || idx}
+                    className="p-4 rounded-2xl bg-slate-950 border border-slate-800/80 flex flex-col sm:flex-row sm:items-center justify-between gap-3"
+                  >
+                    <div className="flex items-center gap-3">
+                      <div className="h-9 w-9 rounded-xl bg-slate-900 border border-slate-800 text-indigo-400 flex items-center justify-center shrink-0">
+                        {sess.userAgent?.toLowerCase().includes("mobile") ? (
+                          <Smartphone className="h-4 w-4" />
+                        ) : (
+                          <Laptop className="h-4 w-4" />
+                        )}
+                      </div>
+                      <div className="space-y-0.5">
+                        <div className="text-xs font-bold text-white flex items-center gap-2">
+                          <span>{sess.userAgent || "Web Browser Session"}</span>
+                          {idx === 0 && (
+                            <span className="px-2 py-0.5 rounded-full bg-emerald-950 text-emerald-400 border border-emerald-800/60 text-[10px] font-extrabold">
+                              Current Session
+                            </span>
+                          )}
+                        </div>
+                        <div className="text-[11px] text-slate-400 flex items-center gap-3">
+                          <span className="flex items-center gap-1 font-mono">
+                            <Globe className="h-3 w-3 text-slate-500" />
+                            {sess.ipAddress || "127.0.0.1"}
+                          </span>
+                          <span>•</span>
+                          <span>
+                            Last active: {sess.lastUsedAt ? new Date(sess.lastUsedAt).toLocaleString() : "Just now"}
+                          </span>
+                        </div>
+                      </div>
+                    </div>
+                    <span className="text-[10px] font-bold text-slate-500 bg-slate-900 px-2.5 py-1 rounded-lg border border-slate-800 self-start sm:self-center">
+                      Expires: {sess.expiresAt ? new Date(sess.expiresAt).toLocaleDateString() : "30 days"}
+                    </span>
+                  </div>
+                ))}
+              </div>
+            )}
           </div>
         </div>
       )}
