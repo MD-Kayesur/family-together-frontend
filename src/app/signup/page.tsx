@@ -11,6 +11,7 @@ import {
 import { useAppSelector } from "@/redux/store";
 import { getDashboardRouteByRole } from "@/lib/utils/roleUtils";
 import { Eye, EyeOff } from "lucide-react";
+import ThemeToggle from "@/components/theme/ThemeToggle";
 
 function SignUpContent() {
   const router = useRouter();
@@ -183,7 +184,12 @@ function SignUpContent() {
   };
 
   return (
-    <main className="min-h-screen flex w-full bg-background font-body-md text-on-background selection:bg-primary-container selection:text-on-primary antialiased">
+    <main className="min-h-screen flex w-full bg-background font-body-md text-on-background selection:bg-primary-container selection:text-on-primary antialiased relative">
+      {/* Top Floating Theme Toggle (Sun & Moon) */}
+      <div className="absolute top-4 right-4 sm:top-6 sm:right-6 z-50 flex items-center gap-2">
+        <ThemeToggle className="hover:scale-105" />
+      </div>
+
       {/* Left Side: Image / Brand Illustration */}
       <div className="hidden lg:flex lg:w-1/2 relative bg-surface-container-high overflow-hidden">
         <div

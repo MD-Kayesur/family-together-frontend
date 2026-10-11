@@ -14,6 +14,7 @@ import {
   ShieldCheck,
   TreePine,
 } from "lucide-react";
+import ThemeToggle from "@/components/theme/ThemeToggle";
 import { useResetPasswordMutation } from "@/redux/api/authApi";
 
 function ResetPasswordContent() {
@@ -60,7 +61,12 @@ function ResetPasswordContent() {
   };
 
   return (
-    <div className="min-h-screen bg-slate-950 text-slate-100 flex flex-col justify-center items-center p-4 relative overflow-hidden">
+    <div className="min-h-screen bg-slate-50 dark:bg-slate-950 text-slate-900 dark:text-slate-100 flex flex-col justify-center items-center p-4 relative overflow-hidden transition-colors">
+      {/* Top Floating Theme Toggle (Sun & Moon) */}
+      <div className="absolute top-4 right-4 sm:top-6 sm:right-6 z-50 flex items-center gap-2">
+        <ThemeToggle className="hover:scale-105" />
+      </div>
+
       {/* Decorative background glows */}
       <div className="absolute top-1/4 left-1/4 w-96 h-96 bg-indigo-600/10 rounded-full blur-3xl pointer-events-none" />
       <div className="absolute bottom-1/4 right-1/4 w-96 h-96 bg-purple-600/10 rounded-full blur-3xl pointer-events-none" />
@@ -71,23 +77,23 @@ function ResetPasswordContent() {
           <div className="h-11 w-11 rounded-2xl bg-indigo-600 flex items-center justify-center text-white shadow-lg shadow-indigo-600/30 group-hover:scale-105 transition-transform">
             <TreePine className="h-6 w-6" />
           </div>
-          <span className="font-extrabold text-2xl tracking-tight text-white">
-            Family<span className="text-indigo-400">Roots</span>
+          <span className="font-extrabold text-2xl tracking-tight text-slate-900 dark:text-white">
+            Family<span className="text-indigo-600 dark:text-indigo-400">Roots</span>
           </span>
         </Link>
-        <p className="text-xs text-slate-400 font-medium">Privacy-First Multi-Generational Sanctuary</p>
+        <p className="text-xs text-slate-500 dark:text-slate-400 font-medium">Privacy-First Multi-Generational Sanctuary</p>
       </div>
 
       {/* Main Card */}
-      <div className="w-full max-w-md bg-slate-900 border border-slate-800 rounded-3xl p-7 sm:p-8 shadow-2xl relative z-10">
+      <div className="w-full max-w-md bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-3xl p-7 sm:p-8 shadow-2xl relative z-10 transition-colors">
         {isSuccess ? (
           <div className="text-center space-y-5 animate-fadeIn">
-            <div className="h-16 w-16 bg-emerald-950 border border-emerald-800/80 rounded-2xl mx-auto flex items-center justify-center text-emerald-400 shadow-inner">
+            <div className="h-16 w-16 bg-emerald-50 dark:bg-emerald-950 border border-emerald-200 dark:border-emerald-800/80 rounded-2xl mx-auto flex items-center justify-center text-emerald-600 dark:text-emerald-400 shadow-inner">
               <CheckCircle2 className="h-9 w-9" />
             </div>
             <div className="space-y-1.5">
-              <h2 className="text-xl font-extrabold text-white">Password Reset Complete!</h2>
-              <p className="text-xs text-slate-400 font-medium leading-relaxed">
+              <h2 className="text-xl font-extrabold text-slate-900 dark:text-white">Password Reset Complete!</h2>
+              <p className="text-xs text-slate-500 dark:text-slate-400 font-medium leading-relaxed">
                 Your password has been successfully updated in PostgreSQL, and all prior active sessions have been safely revoked.
               </p>
             </div>
@@ -103,36 +109,36 @@ function ResetPasswordContent() {
         ) : (
           <div className="space-y-6">
             <div className="space-y-1">
-              <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-indigo-950/80 border border-indigo-800/60 text-indigo-300 text-[11px] font-bold mb-1">
+              <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-indigo-50 dark:bg-indigo-950/80 border border-indigo-200 dark:border-indigo-800/60 text-indigo-700 dark:text-indigo-300 text-[11px] font-bold mb-1">
                 <ShieldCheck className="h-3.5 w-3.5" />
                 <span>Account Recovery</span>
               </div>
-              <h2 className="text-2xl font-extrabold text-white tracking-tight">
+              <h2 className="text-2xl font-extrabold text-slate-900 dark:text-white tracking-tight">
                 Reset Your Password
               </h2>
-              <p className="text-xs text-slate-400 font-normal">
+              <p className="text-xs text-slate-500 dark:text-slate-400 font-normal">
                 Choose a new secure password for your family sanctuary profile.
               </p>
             </div>
 
             {errorMsg && (
-              <div className="p-3.5 rounded-2xl bg-rose-950/60 border border-rose-800 text-rose-300 text-xs font-semibold flex items-center gap-2.5 animate-fadeIn">
-                <AlertCircle className="h-4 w-4 shrink-0 text-rose-400" />
+              <div className="p-3.5 rounded-2xl bg-rose-50 dark:bg-rose-950/60 border border-rose-200 dark:border-rose-800 text-rose-700 dark:text-rose-300 text-xs font-semibold flex items-center gap-2.5 animate-fadeIn">
+                <AlertCircle className="h-4 w-4 shrink-0 text-rose-500 dark:text-rose-400" />
                 <span>{errorMsg}</span>
               </div>
             )}
 
             {!token && (
-              <div className="p-3.5 rounded-2xl bg-amber-950/60 border border-amber-800 text-amber-300 text-xs font-medium flex items-center gap-2.5">
-                <AlertCircle className="h-4 w-4 shrink-0 text-amber-400" />
+              <div className="p-3.5 rounded-2xl bg-amber-50 dark:bg-amber-950/60 border border-amber-200 dark:border-amber-800 text-amber-700 dark:text-amber-300 text-xs font-medium flex items-center gap-2.5">
+                <AlertCircle className="h-4 w-4 shrink-0 text-amber-500 dark:text-amber-400" />
                 <span>No recovery token found in URL. Please check your reset link email.</span>
               </div>
             )}
 
             <form onSubmit={handleSubmit} className="space-y-4 text-xs font-medium">
               <div>
-                <label className="block text-slate-300 font-bold mb-1.5">
-                  New Password <span className="text-rose-400">*</span>
+                <label className="block text-slate-700 dark:text-slate-300 font-bold mb-1.5">
+                  New Password <span className="text-rose-500">*</span>
                 </label>
                 <div className="relative">
                   <input
@@ -140,13 +146,13 @@ function ResetPasswordContent() {
                     value={newPassword}
                     onChange={(e) => setNewPassword(e.target.value)}
                     placeholder="Minimum 8 characters"
-                    className="w-full pl-3.5 pr-10 py-3 bg-slate-950 border border-slate-800 rounded-xl text-white placeholder:text-slate-500 focus:outline-none focus:ring-2 focus:ring-indigo-500 text-xs font-medium"
+                    className="w-full pl-3.5 pr-10 py-3 bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-xl text-slate-900 dark:text-white placeholder:text-slate-400 dark:placeholder:text-slate-500 focus:outline-none focus:ring-2 focus:ring-indigo-500 text-xs font-medium"
                     required
                   />
                   <button
                     type="button"
                     onClick={() => setShowPassword(!showPassword)}
-                    className="absolute right-3 top-3 text-slate-400 hover:text-white cursor-pointer"
+                    className="absolute right-3 top-3 text-slate-400 hover:text-slate-600 dark:hover:text-white cursor-pointer"
                   >
                     {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
                   </button>
@@ -154,8 +160,8 @@ function ResetPasswordContent() {
               </div>
 
               <div>
-                <label className="block text-slate-300 font-bold mb-1.5">
-                  Confirm New Password <span className="text-rose-400">*</span>
+                <label className="block text-slate-700 dark:text-slate-300 font-bold mb-1.5">
+                  Confirm New Password <span className="text-rose-500">*</span>
                 </label>
                 <div className="relative">
                   <input
@@ -163,13 +169,13 @@ function ResetPasswordContent() {
                     value={confirmPassword}
                     onChange={(e) => setConfirmPassword(e.target.value)}
                     placeholder="Re-enter password"
-                    className="w-full pl-3.5 pr-10 py-3 bg-slate-950 border border-slate-800 rounded-xl text-white placeholder:text-slate-500 focus:outline-none focus:ring-2 focus:ring-indigo-500 text-xs font-medium"
+                    className="w-full pl-3.5 pr-10 py-3 bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-xl text-slate-900 dark:text-white placeholder:text-slate-400 dark:placeholder:text-slate-500 focus:outline-none focus:ring-2 focus:ring-indigo-500 text-xs font-medium"
                     required
                   />
                   <button
                     type="button"
                     onClick={() => setShowConfirmPassword(!showConfirmPassword)}
-                    className="absolute right-3 top-3 text-slate-400 hover:text-white cursor-pointer"
+                    className="absolute right-3 top-3 text-slate-400 hover:text-slate-600 dark:hover:text-white cursor-pointer"
                   >
                     {showConfirmPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
                   </button>
