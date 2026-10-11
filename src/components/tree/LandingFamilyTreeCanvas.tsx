@@ -26,6 +26,11 @@ import {
   useDeleteMemberMutation,
   useAddRelationshipMutation,
 } from "@/redux/api/familyApi";
+import {
+  ALL_FAMILY_RELATIONSHIPS,
+  RELATIONSHIP_BY_VALUE,
+  getRelationshipMeta,
+} from "@/lib/familyRelationships";
 
 export interface DemoMember {
   id: string;
@@ -172,16 +177,36 @@ export default function LandingFamilyTreeCanvas({
   // Add Relative Modal State
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
   const [newRelativeName, setNewRelativeName] = useState("");
-  const [newRelativeRole, setNewRelativeRole] = useState("Mother");
-  const [newRelativeEmoji, setNewRelativeEmoji] = useState("👩");
+  const [newRelativeRole, setNewRelativeRole] = useState("Grandmother");
+  const [customRelativeRole, setCustomRelativeRole] = useState("");
+  const [newRelativeEmoji, setNewRelativeEmoji] = useState("👵");
   const [newRelativeGender, setNewRelativeGender] = useState<"MALE" | "FEMALE">("FEMALE");
 
   // Edit Relative Modal State
   const [editingMember, setEditingMember] = useState<DemoMember | null>(null);
   const [editName, setEditName] = useState("");
-  const [editRole, setEditRole] = useState("");
+  const [editRole, setEditRole] = useState("Grandmother");
+  const [editCustomRole, setEditCustomRole] = useState("");
   const [editGender, setEditGender] = useState<"MALE" | "FEMALE">("FEMALE");
-  const [editEmoji, setEditEmoji] = useState("👩");
+  const [editEmoji, setEditEmoji] = useState("👵");
+
+  const handleRoleChange = (roleValue: string) => {
+    setNewRelativeRole(roleValue);
+    if (roleValue !== "Custom / Other") {
+      const meta = getRelationshipMeta(roleValue);
+      setNewRelativeGender(meta.gender);
+      setNewRelativeEmoji(meta.emoji);
+    }
+  };
+
+  const handleEditRoleChange = (roleValue: string) => {
+    setEditRole(roleValue);
+    if (roleValue !== "Custom / Other") {
+      const meta = getRelationshipMeta(roleValue);
+      setEditGender(meta.gender);
+      setEditEmoji(meta.emoji);
+    }
+  };
 
   // Calculate centered positions around (cx, cy)
   const calculateCenteredPositions = useCallback((width: number, height: number) => {
@@ -604,11 +629,16 @@ export default function LandingFamilyTreeCanvas({
     e.preventDefault();
     if (readOnly || !newRelativeName.trim()) return;
 
+    const effectiveRole =
+      newRelativeRole === "Custom / Other"
+        ? customRelativeRole.trim() || "Relative"
+        : newRelativeRole;
+
     const newId = `rel_${Date.now()}`;
     const newMember: DemoMember = {
       id: newId,
       name: newRelativeName.trim(),
-      role: newRelativeRole,
+      role: effectiveRole,
       emoji: newRelativeEmoji,
       gender: newRelativeGender,
     };
@@ -634,7 +664,7 @@ export default function LandingFamilyTreeCanvas({
         id: `conn_${Date.now()}`,
         fromId: selectedMemberId,
         toId: newId,
-        type: `${newRelativeRole}`,
+        type: `${effectiveRole}`,
       };
       updatedConnections = [...connections, autoConn];
       setConnections(updatedConnections);
@@ -642,6 +672,7 @@ export default function LandingFamilyTreeCanvas({
 
     persistTree(updatedMembers, updatedConnections, updatedPositions);
     setNewRelativeName("");
+    setCustomRelativeRole("");
     setIsAddModalOpen(false);
 
     if (useDatabaseData) {
@@ -654,7 +685,7 @@ export default function LandingFamilyTreeCanvas({
           lastName,
           gender: newRelativeGender,
           relativeToPersonId: selectedMemberId || undefined,
-          relationshipType: newRelativeRole,
+          relationshipType: effectiveRole,
         }).unwrap();
         refetchMembers();
         refetchRelationships();
@@ -669,7 +700,14 @@ export default function LandingFamilyTreeCanvas({
     if (readOnly) return;
     setEditingMember(m);
     setEditName(m.name);
-    setEditRole(m.role);
+    const isKnown = RELATIONSHIP_BY_VALUE.has(m.role);
+    if (isKnown) {
+      setEditRole(m.role);
+      setEditCustomRole("");
+    } else {
+      setEditRole("Custom / Other");
+      setEditCustomRole(m.role);
+    }
     setEditGender(m.gender);
     setEditEmoji(m.emoji);
   };
@@ -679,12 +717,17 @@ export default function LandingFamilyTreeCanvas({
     e.preventDefault();
     if (readOnly || !editingMember || !editName.trim()) return;
 
+    const effectiveRole =
+      editRole === "Custom / Other"
+        ? editCustomRole.trim() || "Relative"
+        : editRole.trim();
+
     const updated = members.map((m) =>
       m.id === editingMember.id
         ? {
             ...m,
             name: editName.trim(),
-            role: editRole.trim(),
+            role: effectiveRole,
             gender: editGender,
             emoji: editEmoji,
           }
@@ -1307,12 +1350,17 @@ export default function LandingFamilyTreeCanvas({
               onChange={(e) => setLinkType(e.target.value)}
               className="w-full px-3.5 py-2.5 rounded-xl border border-slate-800 bg-slate-950 text-xs font-bold text-white focus:ring-2 focus:ring-indigo-500 focus:outline-none"
             >
-              <option value="Parent ➔ Child">Parent ➔ Child</option>
-              <option value="Spouse / Married">Spouse / Married</option>
-              <option value="Sibling">Sibling</option>
-              <option value="Grandparent ➔ Grandchild">Grandparent ➔ Grandchild</option>
-              <option value="Uncle / Aunt ➔ Niece / Nephew">Uncle / Aunt ➔ Niece / Nephew</option>
-              <option value="Cousin">Cousin</option>
+              <option value="Parent ➔ Child">Parent ➔ Child (পিতা-মাতা ➔ সন্তান)</option>
+              <option value="Spouse / Married">Spouse / Married (স্বামী-স্ত্রী / বৈবাহিক)</option>
+              <option value="Sibling">Sibling (ভাই-বোন)</option>
+              <option value="Grandparent ➔ Grandchild">Grandparent ➔ Grandchild (দাদা-দাদী/নানা-নানী ➔ নাতি-নাতনী)</option>
+              <option value="Great-Grandparent ➔ Great-Grandchild">Great-Grandparent ➔ Great-Grandchild (পড়দাদা-পড়নানী ➔ পুতি-পুতনী)</option>
+              <option value="Uncle / Aunt ➔ Niece / Nephew">Uncle / Aunt ➔ Niece / Nephew (চাচা/মামা/খালা/ফুফু ➔ ভাগ্নে/ভাতিজা)</option>
+              <option value="Cousin">Cousin (কাজিন / ভাই-বোন)</option>
+              <option value="In-Law Relationship">In-Law (শ্বশুরবাড়ি / বৈবাহিক আত্মীয়)</option>
+              <option value="Step / Adoptive">Step / Adoptive (সৎ / দত্তক সম্পর্ক)</option>
+              <option value="Guardian / Elder">Guardian / Elder (অভিভাবক / মুরব্বি)</option>
+              <option value="Extended Relative">Extended Relative (অন্যান্য আত্মীয়)</option>
             </select>
 
             <button
@@ -1362,25 +1410,28 @@ export default function LandingFamilyTreeCanvas({
                 />
               </div>
 
-              <div className="grid grid-cols-2 gap-3">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 <div>
                   <label className="text-xs font-bold text-slate-300 block mb-1">
                     Relationship / Role
                   </label>
                   <select
                     value={newRelativeRole}
-                    onChange={(e) => setNewRelativeRole(e.target.value)}
+                    onChange={(e) => handleRoleChange(e.target.value)}
                     className="w-full px-3.5 py-2.5 rounded-xl border border-slate-800 bg-slate-950 text-xs font-bold text-white focus:ring-2 focus:ring-indigo-500 focus:outline-none"
                   >
-                    <option value="Mother">Mother</option>
-                    <option value="Father">Father</option>
-                    <option value="Uncle">Uncle</option>
-                    <option value="Aunt">Aunt</option>
-                    <option value="Cousin">Cousin</option>
-                    <option value="Son">Son</option>
-                    <option value="Daughter">Daughter</option>
-                    <option value="Grandchild">Grandchild</option>
-                    <option value="Relative">Relative</option>
+                    {ALL_FAMILY_RELATIONSHIPS.map((group) => (
+                      <optgroup key={group.groupName} label={`${group.icon} ${group.groupName}`}>
+                        {group.options.map((opt) => (
+                          <option key={opt.value} value={opt.value}>
+                            {opt.label}
+                          </option>
+                        ))}
+                      </optgroup>
+                    ))}
+                    <optgroup label="✨ Custom / Other (কাস্টম বা অন্যান্য)">
+                      <option value="Custom / Other">✨ Custom / Other (অন্যান্য বা কাস্টম রোল লিখুন...)</option>
+                    </optgroup>
                   </select>
                 </div>
 
@@ -1393,18 +1444,37 @@ export default function LandingFamilyTreeCanvas({
                     onChange={(e) => setNewRelativeGender(e.target.value as "MALE" | "FEMALE")}
                     className="w-full px-3.5 py-2.5 rounded-xl border border-slate-800 bg-slate-950 text-xs font-bold text-white focus:ring-2 focus:ring-indigo-500 focus:outline-none"
                   >
-                    <option value="FEMALE">Female</option>
-                    <option value="MALE">Male</option>
+                    <option value="FEMALE">Female (নারী)</option>
+                    <option value="MALE">Male (পুরুষ)</option>
                   </select>
                 </div>
               </div>
+
+              {newRelativeRole === "Custom / Other" && (
+                <div className="p-3 rounded-2xl bg-indigo-950/40 border border-indigo-700/60 space-y-1.5 animate-in fade-in duration-200">
+                  <label className="text-xs font-bold text-indigo-300 block">
+                    Write Custom Relationship / Role
+                  </label>
+                  <input
+                    type="text"
+                    required
+                    placeholder="e.g. Great-Grandmother, Godmother, Family Elder, মেজো খালা..."
+                    value={customRelativeRole}
+                    onChange={(e) => setCustomRelativeRole(e.target.value)}
+                    className="w-full px-3.5 py-2.5 rounded-xl border border-indigo-500/50 bg-slate-950 text-xs text-white placeholder:text-slate-500 focus:ring-2 focus:ring-indigo-500 focus:outline-none font-semibold"
+                  />
+                  <p className="text-[10px] text-slate-400">
+                    Type any specific maternal, paternal, tribal, or unique cultural family title.
+                  </p>
+                </div>
+              )}
 
               <div>
                 <label className="text-xs font-bold text-slate-300 block mb-1.5">
                   Choose Avatar Emoji
                 </label>
                 <div className="flex flex-wrap gap-2">
-                  {["👩", "👨", "👵", "👴", "👧", "👦", "👶", "🧑", "🧔", "🧕"].map((emoji) => (
+                  {["👵", "👴", "👩", "👨", "👧", "👦", "👶", "🧑", "🧓", "🧔", "🧕", "💍"].map((emoji) => (
                     <button
                       key={emoji}
                       type="button"
@@ -1477,19 +1547,29 @@ export default function LandingFamilyTreeCanvas({
                 />
               </div>
 
-              <div className="grid grid-cols-2 gap-3">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 <div>
                   <label className="text-xs font-bold text-slate-300 block mb-1">
                     Relationship / Role
                   </label>
-                  <input
-                    type="text"
-                    required
+                  <select
                     value={editRole}
-                    onChange={(e) => setEditRole(e.target.value)}
-                    placeholder="e.g. Father, Mother, Sibling"
+                    onChange={(e) => handleEditRoleChange(e.target.value)}
                     className="w-full px-3.5 py-2.5 rounded-xl border border-slate-800 bg-slate-950 text-xs font-bold text-white focus:ring-2 focus:ring-indigo-500 focus:outline-none"
-                  />
+                  >
+                    {ALL_FAMILY_RELATIONSHIPS.map((group) => (
+                      <optgroup key={group.groupName} label={`${group.icon} ${group.groupName}`}>
+                        {group.options.map((opt) => (
+                          <option key={opt.value} value={opt.value}>
+                            {opt.label}
+                          </option>
+                        ))}
+                      </optgroup>
+                    ))}
+                    <optgroup label="✨ Custom / Other (কাস্টম বা অন্যান্য)">
+                      <option value="Custom / Other">✨ Custom / Other (অন্যান্য বা কাস্টম রোল লিখুন...)</option>
+                    </optgroup>
+                  </select>
                 </div>
 
                 <div>
@@ -1501,18 +1581,37 @@ export default function LandingFamilyTreeCanvas({
                     onChange={(e) => setEditGender(e.target.value as "MALE" | "FEMALE")}
                     className="w-full px-3.5 py-2.5 rounded-xl border border-slate-800 bg-slate-950 text-xs font-bold text-white focus:ring-2 focus:ring-indigo-500 focus:outline-none"
                   >
-                    <option value="FEMALE">Female</option>
-                    <option value="MALE">Male</option>
+                    <option value="FEMALE">Female (নারী)</option>
+                    <option value="MALE">Male (পুরুষ)</option>
                   </select>
                 </div>
               </div>
+
+              {editRole === "Custom / Other" && (
+                <div className="p-3 rounded-2xl bg-indigo-950/40 border border-indigo-700/60 space-y-1.5 animate-in fade-in duration-200">
+                  <label className="text-xs font-bold text-indigo-300 block">
+                    Write Custom Relationship / Role
+                  </label>
+                  <input
+                    type="text"
+                    required
+                    placeholder="e.g. Great-Grandmother, Godmother, মেজো খালা..."
+                    value={editCustomRole}
+                    onChange={(e) => setEditCustomRole(e.target.value)}
+                    className="w-full px-3.5 py-2.5 rounded-xl border border-indigo-500/50 bg-slate-950 text-xs text-white placeholder:text-slate-500 focus:ring-2 focus:ring-indigo-500 focus:outline-none font-semibold"
+                  />
+                  <p className="text-[10px] text-slate-400">
+                    Type any specific maternal, paternal, tribal, or unique cultural family title.
+                  </p>
+                </div>
+              )}
 
               <div>
                 <label className="text-xs font-bold text-slate-300 block mb-1.5">
                   Choose Avatar Emoji
                 </label>
                 <div className="flex flex-wrap gap-2">
-                  {["👩", "👨", "👵", "👴", "👧", "👦", "👶", "🧑", "🧔", "🧕"].map((emoji) => (
+                  {["👵", "👴", "👩", "👨", "👧", "👦", "👶", "🧑", "🧓", "🧔", "🧕", "💍"].map((emoji) => (
                     <button
                       key={emoji}
                       type="button"

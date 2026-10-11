@@ -679,11 +679,17 @@ export default function InteractiveFamilyTreeCanvas({
               onChange={(e) => setRelType(e.target.value)}
               className="w-full px-3.5 py-2.5 rounded-xl border border-slate-800 bg-slate-950 text-xs font-bold text-white focus:ring-2 focus:ring-indigo-500 focus:outline-none"
             >
-              <option value="Parent ➔ Child">Parent ➔ Child</option>
-              <option value="Spouse / Married">Spouse / Married</option>
-              <option value="Brother ➔ Sister">Brother ➔ Sister</option>
-              <option value="Uncle ➔ Niece/Nephew">Uncle ➔ Niece/Nephew</option>
-              <option value="Cousin">Cousin</option>
+              <option value="Parent ➔ Child">Parent ➔ Child (পিতা-মাতা ➔ সন্তান)</option>
+              <option value="Spouse / Married">Spouse / Married (স্বামী-স্ত্রী / বৈবাহিক)</option>
+              <option value="Sibling">Sibling (ভাই-বোন)</option>
+              <option value="Grandparent ➔ Grandchild">Grandparent ➔ Grandchild (দাদা-দাদী/নানা-নানী ➔ নাতি-নাতনী)</option>
+              <option value="Great-Grandparent ➔ Great-Grandchild">Great-Grandparent ➔ Great-Grandchild (পড়দাদা-পড়নানী ➔ পুতি-পুতনী)</option>
+              <option value="Uncle / Aunt ➔ Niece / Nephew">Uncle / Aunt ➔ Niece / Nephew (চাচা/মামা/খালা/ফুফু ➔ ভাগ্নে/ভাতিজা)</option>
+              <option value="Cousin">Cousin (কাজিন / ভাই-বোন)</option>
+              <option value="In-Law Relationship">In-Law (শ্বশুরবাড়ি / বৈবাহিক আত্মীয়)</option>
+              <option value="Step / Adoptive">Step / Adoptive (সৎ / দত্তক সম্পর্ক)</option>
+              <option value="Guardian / Elder">Guardian / Elder (অভিভাবক / মুরব্বি)</option>
+              <option value="Extended Relative">Extended Relative (অন্যান্য আত্মীয়)</option>
             </select>
 
             <button

@@ -33,6 +33,7 @@ import {
   useGetRelationshipsQuery,
   FamilyMemberRecord,
 } from "@/redux/api/familyApi";
+import { ALL_FAMILY_RELATIONSHIPS, getRelationshipMeta } from "@/lib/familyRelationships";
 import { useAppSelector } from "@/redux/store";
 
 interface CreateMemberFormProps {
@@ -320,22 +321,23 @@ export default function CreateMemberForm({ role }: CreateMemberFormProps) {
                 onChange={(e) => {
                   const val = e.target.value;
                   setRelationshipType(val);
-                  if (val === "FATHER" || val === "SON" || val === "BROTHER") {
-                    setGender("MALE");
-                  } else if (val === "MOTHER" || val === "DAUGHTER" || val === "SISTER") {
-                    setGender("FEMALE");
-                  }
+                  const meta = getRelationshipMeta(val);
+                  setGender(meta.gender);
                 }}
                 className="w-full px-3.5 py-2.5 rounded-xl border border-purple-700/60 bg-slate-950 text-white font-medium focus:ring-2 focus:ring-purple-500 focus:outline-none cursor-pointer"
               >
-                <option value="FATHER">Father (Parent)</option>
-                <option value="MOTHER">Mother (Parent)</option>
-                <option value="SPOUSE">Spouse / Partner</option>
-                <option value="SON">Son (Child)</option>
-                <option value="DAUGHTER">Daughter (Child)</option>
-                <option value="BROTHER">Brother (Sibling)</option>
-                <option value="SISTER">Sister (Sibling)</option>
-                <option value="PARENT_CHILD">Other Relative</option>
+                {ALL_FAMILY_RELATIONSHIPS.map((group) => (
+                  <optgroup key={group.groupName} label={`${group.icon} ${group.groupName}`}>
+                    {group.options.map((opt) => (
+                      <option key={opt.value} value={opt.value.toUpperCase()}>
+                        {opt.label}
+                      </option>
+                    ))}
+                  </optgroup>
+                ))}
+                <optgroup label="✨ Custom / Other (অন্যান্য)">
+                  <option value="RELATIVE">Other Relative (সাধারণ আত্মীয়)</option>
+                </optgroup>
               </select>
             </div>
           )}
