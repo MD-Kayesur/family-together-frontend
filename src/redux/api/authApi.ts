@@ -36,6 +36,25 @@ export interface ChangePasswordRequest {
   newPassword: string;
 }
 
+export interface ResetPasswordRequest {
+  token: string;
+  newPassword: string;
+}
+
+export interface RefreshTokenRequest {
+  refreshToken: string;
+}
+
+export interface UserSessionRecord {
+  id: string;
+  userId: string;
+  userAgent?: string;
+  ipAddress?: string;
+  expiresAt: string;
+  createdAt: string;
+  lastUsedAt: string;
+}
+
 export interface SignUpResponse {
   message: string;
   userId?: string;
@@ -167,6 +186,48 @@ export const authApi = baseApi.injectEndpoints({
         body,
       }),
     }),
+
+    resetPassword: builder.mutation<
+      { message: string },
+      ResetPasswordRequest
+    >({
+      query: (body) => ({
+        url: "/auth/reset-password",
+        method: "POST",
+        body,
+      }),
+    }),
+
+    refreshToken: builder.mutation<
+      AuthResponse,
+      RefreshTokenRequest
+    >({
+      query: (body) => ({
+        url: "/auth/refresh",
+        method: "POST",
+        body,
+      }),
+    }),
+
+    getSessions: builder.query<UserSessionRecord[], void>({
+      query: () => "/auth/sessions",
+      providesTags: ["Sessions"],
+    }),
+
+    logoutAll: builder.mutation<{ message: string }, void>({
+      query: () => ({
+        url: "/auth/logout-all",
+        method: "POST",
+      }),
+      async onQueryStarted(_, { dispatch, queryFulfilled }) {
+        try {
+          await queryFulfilled;
+        } finally {
+          dispatch(logout());
+        }
+      },
+      invalidatesTags: ["User", "Auth", "Sessions"],
+    }),
   }),
 });
 
@@ -180,4 +241,8 @@ export const {
   useLogoutMutation,
   useUpdateProfileMutation,
   useChangePasswordMutation,
+  useResetPasswordMutation,
+  useRefreshTokenMutation,
+  useGetSessionsQuery,
+  useLogoutAllMutation,
 } = authApi;

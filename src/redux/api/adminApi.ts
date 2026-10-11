@@ -24,11 +24,20 @@ export interface AdminStatsResponse {
   }[];
 }
 
+export interface SystemHealthResponse {
+  status: string;
+  timestamp: string;
+  service: string;
+}
+
 export const adminApi = baseApi.injectEndpoints({
   endpoints: (builder) => ({
     getAdminStats: builder.query<AdminStatsResponse, void>({
       query: () => "/family/admin/stats",
       providesTags: ["AdminStats"],
+    }),
+    getSystemHealth: builder.query<SystemHealthResponse, void>({
+      query: () => "/health",
     }),
     getUsersList: builder.query<
       PaginatedList<AdminUserRecord>,
@@ -47,6 +56,10 @@ export const adminApi = baseApi.injectEndpoints({
       },
       transformResponse: (res) => transformPaginatedList<AdminUserRecord>(res),
       providesTags: ["UsersList"],
+    }),
+    getUserById: builder.query<AdminUserRecord, string>({
+      query: (id) => `/users/${id}`,
+      providesTags: (_res, _err, id) => [{ type: "UsersList", id }],
     }),
     updateUserRole: builder.mutation<
       AdminUserRecord,
@@ -82,7 +95,9 @@ export const adminApi = baseApi.injectEndpoints({
 
 export const {
   useGetAdminStatsQuery,
+  useGetSystemHealthQuery,
   useGetUsersListQuery,
+  useGetUserByIdQuery,
   useCreateUserMutation,
   useUpdateUserRoleMutation,
   useDeleteUserMutation,
