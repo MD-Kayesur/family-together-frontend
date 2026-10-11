@@ -28,7 +28,6 @@ function SignUpContent() {
 
   // OTP states
   const [otpDigits, setOtpDigits] = useState<string[]>(["", "", "", "", "", ""]);
-  const [devCode, setDevCode] = useState("");
   const [resendCooldown, setResendCooldown] = useState(0);
   const otpInputRefs = useRef<(HTMLInputElement | null)[]>([]);
 
@@ -88,10 +87,6 @@ function SignUpContent() {
         password,
       }).unwrap();
 
-      if (response.verificationCode) {
-        setDevCode(response.verificationCode);
-      }
-
       setSuccessMsg(
         response.message || "Account created! Please enter the 6-digit code sent to your email."
       );
@@ -143,16 +138,6 @@ function SignUpContent() {
     }
   };
 
-  const handleFillDevCode = () => {
-    if (!devCode) return;
-    const chars = devCode.slice(0, 6).split("");
-    const newDigits = [...otpDigits];
-    chars.forEach((char, idx) => {
-      newDigits[idx] = char;
-    });
-    setOtpDigits(newDigits);
-    otpInputRefs.current[5]?.focus();
-  };
 
   const handleVerifyOtp = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -189,9 +174,6 @@ function SignUpContent() {
 
     try {
       const result = await resendVerification({ email: email.trim() }).unwrap();
-      if (result.verificationCode) {
-        setDevCode(result.verificationCode);
-      }
       setSuccessMsg(result.message || "A new 6-digit code has been sent to your email.");
       setResendCooldown(60);
     } catch (err: any) {
@@ -405,25 +387,6 @@ function SignUpContent() {
                 <span className="font-semibold text-on-surface">{email}</span>. Enter it below to
                 activate your account.
               </p>
-
-              {/* Dev Helper Box (displays code for testing) */}
-              {devCode && (
-                <div className="mb-6 p-3 rounded-xl bg-amber-500/10 border border-amber-500/30 text-amber-700 dark:text-amber-300 text-xs font-medium flex items-center justify-between gap-2">
-                  <div className="flex items-center gap-2">
-                    <span className="material-symbols-outlined text-[18px]">key</span>
-                    <span>
-                      Dev Code: <strong className="font-mono text-sm tracking-wider">{devCode}</strong>
-                    </span>
-                  </div>
-                  <button
-                    type="button"
-                    onClick={handleFillDevCode}
-                    className="text-xs text-primary font-semibold hover:underline cursor-pointer"
-                  >
-                    Auto-Fill
-                  </button>
-                </div>
-              )}
 
               <form onSubmit={handleVerifyOtp} className="space-y-6">
                 {/* 6 Digit Input Group */}
