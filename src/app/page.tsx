@@ -36,10 +36,12 @@ import { getDashboardRouteByRole, getDashboardLabelByRole } from "@/lib/utils/ro
 import LandingFamilyTreeCanvas from "@/components/tree/LandingFamilyTreeCanvas";
 import PublicNavbar from "@/components/layout/PublicNavbar";
 import PublicFooter from "@/components/layout/PublicFooter";
+import { useTranslation } from "@/lib/i18n/LanguageContext";
 
 export default function Home() {
   const { user, isAuthenticated } = useAppSelector((state) => state.auth);
   const [openFaqIndex, setOpenFaqIndex] = useState<number | null>(0);
+  const { t } = useTranslation();
 
   const dashboardHref = getDashboardRouteByRole(user?.role);
   const dashboardLabel = getDashboardLabelByRole(user?.role);
@@ -56,15 +58,18 @@ export default function Home() {
           <div className="max-w-7xl mx-auto text-center flex flex-col items-center">
             <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-indigo-50 dark:bg-indigo-950/60 border border-indigo-200 dark:border-indigo-800/80 text-indigo-700 dark:text-indigo-300 text-xs font-bold uppercase tracking-wider mb-6">
               <Sparkles className="h-4 w-4 text-indigo-600 dark:text-indigo-400" />
-              <span>Next-Gen Family Sanctuary</span>
+              <span>{t("home.badge")}</span>
             </div>
 
             <h1 className="text-4xl sm:text-6xl lg:text-[64px] font-extrabold text-slate-950 dark:text-white leading-[1.1] tracking-tight mb-6 max-w-4xl">
-              Your family, <span className="bg-gradient-to-r from-indigo-600 via-purple-600 to-emerald-600 bg-clip-text text-transparent">connected.</span>
+              {t("home.title")}{" "}
+              <span className="bg-gradient-to-r from-indigo-600 via-purple-600 to-emerald-600 bg-clip-text text-transparent">
+                {t("home.titleHighlight")}
+              </span>
             </h1>
 
             <p className="text-base sm:text-xl text-slate-600 dark:text-slate-300 max-w-2xl mb-10 font-normal leading-relaxed">
-              Build your private family network, preserve memories, and understand every relationship across generations in a beautiful, modern space.
+              {t("home.subtitle")}
             </p>
 
             <div className="flex flex-col sm:flex-row gap-4 mb-16">
@@ -83,13 +88,13 @@ export default function Home() {
                     href="/signup"
                     className="bg-indigo-600 text-white px-8 py-4 rounded-xl font-bold text-sm hover:bg-indigo-700 transition-all shadow-lg shadow-indigo-600/25 flex items-center justify-center gap-2 hover:scale-[1.02]"
                   >
-                    <span>Create Your Family</span>
+                    <span>{t("home.createFamily")}</span>
                   </Link>
                   <Link
                     href="/signin"
                     className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 text-slate-700 dark:text-slate-200 px-8 py-4 rounded-xl font-bold text-sm hover:bg-slate-50 dark:hover:bg-slate-800 transition-all flex items-center justify-center gap-2 shadow-sm"
                   >
-                    <span>Explore Demo</span>
+                    <span>{t("home.exploreDemo")}</span>
                     <ArrowRight className="h-4 w-4 text-slate-400" />
                   </Link>
                 </>

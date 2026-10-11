@@ -10,21 +10,24 @@ import { getDashboardRouteByRole, getDashboardLabelByRole } from "@/lib/utils/ro
 import UserNavbarAvatarMenu from "@/components/dashboard/UserNavbarAvatarMenu";
 import NavbarNotificationMenu from "@/components/dashboard/NavbarNotificationMenu";
 import ThemeToggle from "@/components/theme/ThemeToggle";
+import LanguageSwitcher from "@/components/common/LanguageSwitcher";
+import { useTranslation } from "@/lib/i18n/LanguageContext";
 
 export default function PublicNavbar() {
   const pathname = usePathname();
   const { user, isAuthenticated } = useAppSelector((state) => state.auth);
   const [logout] = useLogoutMutation();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const { t } = useTranslation();
 
   const dashboardHref = getDashboardRouteByRole(user?.role);
   const dashboardLabel = getDashboardLabelByRole(user?.role);
 
   const navLinks = [
-    { name: "About", href: "/about" },
-    { name: "Features", href: "/features" },
-    { name: "Pricing", href: "/pricing" },
-    { name: "FAQ", href: "/faq" },
+    { name: t("nav.about"), href: "/about" },
+    { name: t("nav.features"), href: "/features" },
+    { name: t("nav.pricing"), href: "/pricing" },
+    { name: t("nav.faq"), href: "/faq" },
   ];
 
   return (
@@ -40,7 +43,7 @@ export default function PublicNavbar() {
           </span>
         </Link>
 
-        {/* Desktop Links (Professional clean routes, no hashes, active state awareness) */}
+        {/* Desktop Links (Clean dedicated routes, active state awareness) */}
         <div className="hidden md:flex items-center gap-8">
           {navLinks.map((link) => {
             const isActive = pathname === link.href;
@@ -59,12 +62,16 @@ export default function PublicNavbar() {
             );
           })}
 
-          {/* Theme Toggle & Auth Cluster */}
-          <div className="flex items-center gap-3 pl-3 border-l border-slate-200 dark:border-slate-800">
+          {/* Language Switcher, Theme Toggle & Auth Cluster */}
+          <div className="flex items-center gap-2.5 pl-3 border-l border-slate-200 dark:border-slate-800">
+            {/* IP Geolocation Language Switcher */}
+            <LanguageSwitcher />
+
+            {/* Dark/Light Theme Toggle */}
             <ThemeToggle />
 
             {isAuthenticated && user ? (
-              <div className="flex items-center gap-3">
+              <div className="flex items-center gap-3 pl-1 border-l border-slate-200 dark:border-slate-800">
                 <NavbarNotificationMenu />
                 <Link
                   href={dashboardHref}
@@ -73,32 +80,33 @@ export default function PublicNavbar() {
                   <LayoutDashboard className="h-3.5 w-3.5" />
                   <span>{dashboardLabel}</span>
                 </Link>
-                <div className="pl-2 border-l border-slate-200 dark:border-slate-800">
+                <div className="pl-1 border-l border-slate-200 dark:border-slate-800">
                   <UserNavbarAvatarMenu />
                 </div>
               </div>
             ) : (
-              <div className="flex items-center gap-3">
+              <div className="flex items-center gap-2 pl-1 border-l border-slate-200 dark:border-slate-800">
                 <Link
                   href="/signin"
                   className="text-sm font-semibold text-slate-700 dark:text-slate-300 hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors px-3 py-2"
                 >
-                  Sign In
+                  {t("nav.signin")}
                 </Link>
 
                 <Link
                   href="/signup"
                   className="bg-indigo-600 text-white px-4 py-2 rounded-xl text-xs font-bold hover:bg-indigo-700 transition-all shadow-md shadow-indigo-600/20"
                 >
-                  Get Started
+                  {t("nav.getStarted")}
                 </Link>
               </div>
             )}
           </div>
         </div>
 
-        {/* Mobile Toggle & Theme */}
-        <div className="flex items-center gap-2 md:hidden">
+        {/* Mobile Toggle, Language & Theme */}
+        <div className="flex items-center gap-1.5 md:hidden">
+          <LanguageSwitcher />
           <ThemeToggle />
           <button
             type="button"
@@ -168,7 +176,7 @@ export default function PublicNavbar() {
                 className="flex items-center justify-center gap-2 w-full py-2.5 rounded-xl border border-rose-200 dark:border-rose-900/50 text-rose-600 dark:text-rose-400 font-bold text-xs cursor-pointer hover:bg-rose-50 dark:hover:bg-rose-950/30"
               >
                 <LogOut className="h-4 w-4" />
-                <span>Logout</span>
+                <span>{t("nav.logout")}</span>
               </button>
             </div>
           ) : (
@@ -178,14 +186,14 @@ export default function PublicNavbar() {
                 onClick={() => setMobileMenuOpen(false)}
                 className="block text-center w-full py-2.5 rounded-xl border border-slate-200 dark:border-slate-800 text-slate-700 dark:text-slate-300 font-semibold text-xs hover:bg-slate-50 dark:hover:bg-slate-800"
               >
-                Sign In
+                {t("nav.signin")}
               </Link>
               <Link
                 href="/signup"
                 onClick={() => setMobileMenuOpen(false)}
                 className="block text-center w-full py-2.5 rounded-xl bg-indigo-600 text-white font-bold text-xs shadow-md"
               >
-                Get Started
+                {t("nav.getStarted")}
               </Link>
             </div>
           )}

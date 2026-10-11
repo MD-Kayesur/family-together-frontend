@@ -25,10 +25,12 @@ import { useAppSelector } from "@/redux/store";
 import { getDashboardRouteByRole, getDashboardLabelByRole } from "@/lib/utils/roleUtils";
 import PublicNavbar from "@/components/layout/PublicNavbar";
 import PublicFooter from "@/components/layout/PublicFooter";
+import { useTranslation } from "@/lib/i18n/LanguageContext";
 
 export default function AboutPage() {
   const { user, isAuthenticated } = useAppSelector((state) => state.auth);
   const [openFaqIndex, setOpenFaqIndex] = useState<number | null>(0);
+  const { t } = useTranslation();
 
   const dashboardHref = getDashboardRouteByRole(user?.role);
   const dashboardLabel = getDashboardLabelByRole(user?.role);
@@ -110,20 +112,20 @@ export default function AboutPage() {
             {/* Pill Badge */}
             <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-indigo-50 dark:bg-indigo-950/60 border border-indigo-200 dark:border-indigo-800/80 text-indigo-700 dark:text-indigo-300 text-xs font-bold uppercase tracking-wider mb-6">
               <Sparkles className="h-4 w-4 text-indigo-600 dark:text-indigo-400" />
-              <span>Dedicated Family Sanctuary</span>
+              <span>{t("about.badge")}</span>
             </div>
 
             {/* Headline matching Home */}
             <h1 className="text-4xl sm:text-6xl lg:text-[60px] font-extrabold text-slate-950 dark:text-white leading-[1.12] tracking-tight mb-6 max-w-4xl">
-              Preserving your heritage,{" "}
+              {t("about.title")}{" "}
               <span className="bg-gradient-to-r from-indigo-600 via-purple-600 to-emerald-600 bg-clip-text text-transparent">
-                connected forever.
+                {t("about.titleHighlight")}
               </span>
             </h1>
 
             {/* Subtitle */}
             <p className="text-base sm:text-xl text-slate-600 dark:text-slate-300 max-w-3xl mb-10 font-normal leading-relaxed">
-              FamilyRoots is an invite-only private digital sanctuary for multi-generational families. We replace scattered messaging chats and public social feeds with an interactive 2D family tree, encrypted photo and document vaults, and generational preservation.
+              {t("about.subtitle")}
             </p>
 
             {/* Call to Actions matching Home Page */}
