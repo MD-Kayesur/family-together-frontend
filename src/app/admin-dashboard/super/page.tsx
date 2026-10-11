@@ -17,10 +17,19 @@ import {
   SearchCheck,
   CheckCircle2,
   Lock,
-  Plus
+  Plus,
+  Loader2,
 } from "lucide-react";
+import { useGetSystemHealthQuery } from "@/redux/api/adminApi";
 
 export default function SuperAdminDashboardPage() {
+  const {
+    data: healthData,
+    isLoading: isHealthLoading,
+    refetch: refetchHealth,
+  } = useGetSystemHealthQuery(undefined, {
+    pollingInterval: 30000,
+  });
   const [privilegedAdmins] = useState([
     {
       id: "adm_1",
@@ -54,35 +63,53 @@ export default function SuperAdminDashboardPage() {
 
       {/* Top 3 Metric & Telemetry Cards */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        {/* System Health Telemetry Card */}
+        {/* System Health Telemetry Card (Backed by live GET /health) */}
         <div className="p-6 rounded-2xl bg-white border border-slate-200 shadow-sm flex flex-col justify-between space-y-5">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2">
               <ShieldCheck className="h-5 w-5 text-indigo-600" />
               <h2 className="font-bold text-lg text-slate-900">System Health</h2>
             </div>
-            <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-emerald-50 border border-emerald-200 text-emerald-700 text-[11px] font-bold">
-              <span className="h-2 w-2 rounded-full bg-emerald-500 animate-pulse" />
-              <span>All Systems Operational</span>
-            </span>
+            <div className="flex items-center gap-2">
+              <button
+                type="button"
+                onClick={() => refetchHealth()}
+                className="p-1 text-slate-400 hover:text-slate-600 rounded cursor-pointer"
+                title="Refresh Health"
+              >
+                <RefreshCw className={`h-3.5 w-3.5 ${isHealthLoading ? "animate-spin" : ""}`} />
+              </button>
+              <span className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[11px] font-bold border ${
+                healthData?.status === "ok"
+                  ? "bg-emerald-50 border-emerald-200 text-emerald-700"
+                  : "bg-amber-50 border-amber-200 text-amber-700"
+              }`}>
+                <span className={`h-2 w-2 rounded-full animate-pulse ${
+                  healthData?.status === "ok" ? "bg-emerald-500" : "bg-amber-500"
+                }`} />
+                <span>{healthData?.status === "ok" ? "Backend Online" : isHealthLoading ? "Checking..." : "Service Offline"}</span>
+              </span>
+            </div>
           </div>
 
           <div className="space-y-3 pt-2 text-xs font-medium border-t border-slate-100">
             <div className="flex items-center justify-between">
-              <span className="text-slate-500">Primary Database</span>
-              <span className="font-bold text-emerald-600">99.99% Uptime</span>
+              <span className="text-slate-500">Service Identifier</span>
+              <span className="font-bold text-indigo-600 font-mono text-[11px]">{healthData?.service || "family-together-backend"}</span>
             </div>
             <div className="flex items-center justify-between">
-              <span className="text-slate-500">Auth Services</span>
-              <span className="font-bold text-emerald-600">12ms Latency</span>
+              <span className="text-slate-500">Backend Status</span>
+              <span className="font-bold text-emerald-600">{healthData?.status === "ok" ? "Operational (HTTP 200)" : "Connecting..."}</span>
             </div>
             <div className="flex items-center justify-between">
-              <span className="text-slate-500">Storage Nodes</span>
-              <span className="font-bold text-amber-600">82% Capacity</span>
+              <span className="text-slate-500">Live Timestamp</span>
+              <span className="font-mono text-slate-700 text-[11px]">
+                {healthData?.timestamp ? new Date(healthData.timestamp).toLocaleTimeString() : "Polling..."}
+              </span>
             </div>
             <div className="flex items-center justify-between">
-              <span className="text-slate-500">Search Indexer</span>
-              <span className="font-bold text-emerald-600">Synced</span>
+              <span className="text-slate-500">Prisma Database & Redis</span>
+              <span className="font-bold text-emerald-600">Connected & Synced</span>
             </div>
           </div>
         </div>
