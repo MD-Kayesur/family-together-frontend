@@ -37,6 +37,7 @@ import { getDashboardRouteByRole, getDashboardLabelByRole } from "@/lib/utils/ro
 import LandingFamilyTreeCanvas from "@/components/tree/LandingFamilyTreeCanvas";
 import UserNavbarAvatarMenu from "@/components/dashboard/UserNavbarAvatarMenu";
 import NavbarNotificationMenu from "@/components/dashboard/NavbarNotificationMenu";
+import ThemeToggle from "@/components/theme/ThemeToggle";
 
 export default function Home() {
   const { user, isAuthenticated } = useAppSelector((state) => state.auth);
@@ -48,107 +49,115 @@ export default function Home() {
   const dashboardLabel = getDashboardLabelByRole(user?.role);
 
   return (
-    <div className="min-h-screen flex flex-col bg-[#f9f9ff] text-[#141b2b] font-sans antialiased selection:bg-indigo-500 selection:text-white">
+    <div className="min-h-screen flex flex-col bg-[#f9f9ff] dark:bg-slate-950 text-[#141b2b] dark:text-slate-100 font-sans antialiased selection:bg-indigo-500 selection:text-white transition-colors duration-200">
       {/* Navbar */}
-      <nav className="fixed top-0 w-full z-50 bg-[#f9f9ff]/85 backdrop-blur-md border-b border-[#c7c4d8]/50 px-6 lg:px-12 h-16 flex items-center justify-between">
+      <nav className="fixed top-0 w-full z-50 bg-[#f9f9ff]/85 dark:bg-slate-950/85 backdrop-blur-md border-b border-[#c7c4d8]/50 dark:border-slate-800/80 px-6 lg:px-12 h-16 flex items-center justify-between transition-colors">
         <Link href="/" className="flex items-center gap-2.5 group">
           <div className="h-9 w-9 rounded-xl bg-indigo-600 flex items-center justify-center text-white shadow-md shadow-indigo-600/30 group-hover:scale-105 transition-all">
             <TreePine className="h-5 w-5 stroke-[2.5]" />
           </div>
-          <span className="font-extrabold text-xl tracking-tight text-indigo-950">
+          <span className="font-extrabold text-xl tracking-tight text-indigo-950 dark:text-white">
             FamilyRoots
           </span>
         </Link>
 
         {/* Desktop Links */}
         <div className="hidden md:flex items-center gap-8">
-          <Link href="/about" className="text-sm font-semibold text-slate-600 hover:text-indigo-600 transition-colors">
+          <Link href="/about" className="text-sm font-semibold text-slate-600 dark:text-slate-300 hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors">
             About
           </Link>
-          <a href="#features" className="text-sm font-semibold text-slate-600 hover:text-indigo-600 transition-colors">
+          <a href="#features" className="text-sm font-semibold text-slate-600 dark:text-slate-300 hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors">
             Features
           </a>
-          <a href="#pricing" className="text-sm font-semibold text-slate-600 hover:text-indigo-600 transition-colors">
+          <a href="#pricing" className="text-sm font-semibold text-slate-600 dark:text-slate-300 hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors">
             Pricing
           </a>
-          <a href="#faq" className="text-sm font-semibold text-slate-600 hover:text-indigo-600 transition-colors">
+          <a href="#faq" className="text-sm font-semibold text-slate-600 dark:text-slate-300 hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors">
             FAQ
           </a>
 
-          {isAuthenticated && user ? (
-            <div className="flex items-center gap-3">
-              <NavbarNotificationMenu />
-              <div className="pl-2 border-l border-slate-200">
-                <UserNavbarAvatarMenu />
-              </div>
-            </div>
-          ) : (
-            <div className="flex items-center gap-3">
-              <Link
-                href="/signin"
-                className="text-sm font-semibold text-slate-700 hover:text-indigo-600 transition-colors px-3 py-2"
-              >
-                Sign In
-              </Link>
+          {/* Theme Toggle & Auth Cluster */}
+          <div className="flex items-center gap-3 pl-3 border-l border-slate-200 dark:border-slate-800">
+            <ThemeToggle />
 
-              <Link
-                href="/signup"
-                className="bg-indigo-600 text-white px-4 py-2 rounded-xl text-xs font-bold hover:bg-indigo-700 transition-all shadow-md shadow-indigo-600/20"
-              >
-                Get Started
-              </Link>
-            </div>
-          )}
+            {isAuthenticated && user ? (
+              <div className="flex items-center gap-3">
+                <NavbarNotificationMenu />
+                <div className="pl-2 border-l border-slate-200 dark:border-slate-800">
+                  <UserNavbarAvatarMenu />
+                </div>
+              </div>
+            ) : (
+              <div className="flex items-center gap-3">
+                <Link
+                  href="/signin"
+                  className="text-sm font-semibold text-slate-700 dark:text-slate-300 hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors px-3 py-2"
+                >
+                  Sign In
+                </Link>
+
+                <Link
+                  href="/signup"
+                  className="bg-indigo-600 text-white px-4 py-2 rounded-xl text-xs font-bold hover:bg-indigo-700 transition-all shadow-md shadow-indigo-600/20"
+                >
+                  Get Started
+                </Link>
+              </div>
+            )}
+          </div>
         </div>
 
-        {/* Mobile Toggle */}
-        <button
-          type="button"
-          onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-          className="md:hidden p-2 text-slate-700 hover:text-indigo-600"
-          aria-label="Toggle Navigation Menu"
-        >
-          {mobileMenuOpen ? <X className="h-6 w-6" /> : <Menu className="h-6 w-6" />}
-        </button>
+        {/* Mobile Toggle & Theme */}
+        <div className="flex items-center gap-2 md:hidden">
+          <ThemeToggle />
+          <button
+            type="button"
+            onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+            className="p-2 text-slate-700 dark:text-slate-300 hover:text-indigo-600 dark:hover:text-white transition-colors"
+            aria-label="Toggle Navigation Menu"
+          >
+            {mobileMenuOpen ? <X className="h-6 w-6" /> : <Menu className="h-6 w-6" />}
+          </button>
+        </div>
       </nav>
 
       {/* Mobile Menu Dropdown */}
       {mobileMenuOpen && (
-        <div className="md:hidden fixed inset-x-0 top-16 z-40 bg-white border-b border-slate-200 p-6 space-y-4 shadow-xl">
+        <div className="md:hidden fixed inset-x-0 top-16 z-40 bg-white/95 dark:bg-slate-900/95 backdrop-blur-xl border-b border-slate-200 dark:border-slate-800 p-6 space-y-4 shadow-xl">
           <Link
             href="/about"
             onClick={() => setMobileMenuOpen(false)}
-            className="block text-sm font-semibold text-slate-700 hover:text-indigo-600"
+            className="block text-sm font-semibold text-slate-700 dark:text-slate-300 hover:text-indigo-600 dark:hover:text-indigo-400"
           >
             About
           </Link>
           <a
             href="#features"
             onClick={() => setMobileMenuOpen(false)}
-            className="block text-sm font-semibold text-slate-700"
+            className="block text-sm font-semibold text-slate-700 dark:text-slate-300 hover:text-indigo-600 dark:hover:text-indigo-400"
           >
             Features
           </a>
           <a
             href="#pricing"
             onClick={() => setMobileMenuOpen(false)}
-            className="block text-sm font-semibold text-slate-700"
+            className="block text-sm font-semibold text-slate-700 dark:text-slate-300 hover:text-indigo-600 dark:hover:text-indigo-400"
           >
             Pricing
           </a>
           <a
             href="#faq"
             onClick={() => setMobileMenuOpen(false)}
-            className="block text-sm font-semibold text-slate-700"
+            className="block text-sm font-semibold text-slate-700 dark:text-slate-300 hover:text-indigo-600 dark:hover:text-indigo-400"
           >
             FAQ
           </a>
 
           {isAuthenticated && user ? (
-            <div className="pt-3 border-t border-slate-200 space-y-3">
+            <div className="pt-3 border-t border-slate-200 dark:border-slate-800 space-y-3">
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-3">
-                  <div className="h-10 w-10 rounded-full bg-indigo-600 text-white font-bold text-sm flex items-center justify-center overflow-hidden border border-slate-200 shrink-0">
+                  <div className="h-10 w-10 rounded-full bg-indigo-600 text-white font-bold text-sm flex items-center justify-center overflow-hidden border border-slate-200 dark:border-slate-700 shrink-0">
                     {user.avatarUrl ? (
                       <img src={user.avatarUrl} alt={user.fullName} className="h-full w-full object-cover" />
                     ) : (
@@ -156,7 +165,7 @@ export default function Home() {
                     )}
                   </div>
                   <div className="min-w-0">
-                    <p className="text-xs font-extrabold text-slate-900 truncate">{user.fullName}</p>
+                    <p className="text-xs font-extrabold text-slate-900 dark:text-white truncate">{user.fullName}</p>
                     <p className="text-[11px] text-slate-400 truncate">{user.email}</p>
                   </div>
                 </div>
@@ -177,7 +186,7 @@ export default function Home() {
                   logout();
                   setMobileMenuOpen(false);
                 }}
-                className="flex items-center justify-center gap-2 w-full py-2.5 rounded-xl border border-rose-200 text-rose-600 font-bold text-xs cursor-pointer hover:bg-rose-50"
+                className="flex items-center justify-center gap-2 w-full py-2.5 rounded-xl border border-rose-200 dark:border-rose-900/50 text-rose-600 dark:text-rose-400 font-bold text-xs cursor-pointer hover:bg-rose-50 dark:hover:bg-rose-950/30"
               >
                 <LogOut className="h-4 w-4" />
                 <span>Logout</span>
@@ -188,7 +197,7 @@ export default function Home() {
               <Link
                 href="/signin"
                 onClick={() => setMobileMenuOpen(false)}
-                className="block text-center w-full py-2.5 rounded-xl border border-slate-200 text-slate-700 font-semibold text-xs"
+                className="block text-center w-full py-2.5 rounded-xl border border-slate-200 dark:border-slate-800 text-slate-700 dark:text-slate-300 font-semibold text-xs hover:bg-slate-50 dark:hover:bg-slate-800"
               >
                 Sign In
               </Link>
@@ -207,18 +216,18 @@ export default function Home() {
       {/* Main Content */}
       <main className="pt-16 flex-1">
         {/* Hero Section */}
-        <section className="relative bg-gradient-to-b from-[#f9f9ff] via-[#e2dfff]/30 to-[#f9f9ff] pt-20 pb-28 px-6 lg:px-12 overflow-hidden">
+        <section className="relative bg-gradient-to-b from-[#f9f9ff] dark:from-slate-950 via-[#e2dfff]/30 dark:via-indigo-950/20 to-[#f9f9ff] dark:to-slate-950 pt-20 pb-28 px-6 lg:px-12 overflow-hidden transition-colors">
           <div className="max-w-7xl mx-auto text-center flex flex-col items-center">
-            <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-indigo-50 border border-indigo-200 text-indigo-700 text-xs font-bold uppercase tracking-wider mb-6">
-              <Sparkles className="h-4 w-4 text-indigo-600" />
+            <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-indigo-50 dark:bg-indigo-950/60 border border-indigo-200 dark:border-indigo-800/80 text-indigo-700 dark:text-indigo-300 text-xs font-bold uppercase tracking-wider mb-6">
+              <Sparkles className="h-4 w-4 text-indigo-600 dark:text-indigo-400" />
               <span>Next-Gen Family Sanctuary</span>
             </div>
 
-            <h1 className="text-4xl sm:text-6xl lg:text-[64px] font-extrabold text-slate-950 leading-[1.1] tracking-tight mb-6 max-w-4xl">
+            <h1 className="text-4xl sm:text-6xl lg:text-[64px] font-extrabold text-slate-950 dark:text-white leading-[1.1] tracking-tight mb-6 max-w-4xl">
               Your family, <span className="bg-gradient-to-r from-indigo-600 via-purple-600 to-emerald-600 bg-clip-text text-transparent">connected.</span>
             </h1>
 
-            <p className="text-base sm:text-xl text-slate-600 max-w-2xl mb-10 font-normal leading-relaxed">
+            <p className="text-base sm:text-xl text-slate-600 dark:text-slate-300 max-w-2xl mb-10 font-normal leading-relaxed">
               Build your private family network, preserve memories, and understand every relationship across generations in a beautiful, modern space.
             </p>
 
@@ -242,7 +251,7 @@ export default function Home() {
                   </Link>
                   <Link
                     href="/signin"
-                    className="bg-white border border-slate-200 text-slate-700 px-8 py-4 rounded-xl font-bold text-sm hover:bg-slate-50 transition-all flex items-center justify-center gap-2 shadow-sm"
+                    className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 text-slate-700 dark:text-slate-200 px-8 py-4 rounded-xl font-bold text-sm hover:bg-slate-50 dark:hover:bg-slate-800 transition-all flex items-center justify-center gap-2 shadow-sm"
                   >
                     <span>Explore Demo</span>
                     <ArrowRight className="h-4 w-4 text-slate-400" />
@@ -259,34 +268,34 @@ export default function Home() {
         </section>
 
         {/* The Signature Tree Section */}
-        <section id="features" className="py-24 px-6 lg:px-12 bg-white border-t border-slate-100">
+        <section id="features" className="py-24 px-6 lg:px-12 bg-white dark:bg-slate-950 border-t border-slate-100 dark:border-slate-800/80 transition-colors">
           <div className="max-w-7xl mx-auto grid grid-cols-1 lg:grid-cols-2 gap-16 items-center">
             <div className="space-y-6">
-              <h2 className="text-3xl sm:text-4xl font-extrabold text-slate-950 tracking-tight">
+              <h2 className="text-3xl sm:text-4xl font-extrabold text-slate-950 dark:text-white tracking-tight">
                 The Signature Tree
               </h2>
-              <p className="text-base sm:text-lg text-slate-600 leading-relaxed">
+              <p className="text-base sm:text-lg text-slate-600 dark:text-slate-300 leading-relaxed">
                 Experience a revolutionary way to visualize your lineage. Our interactive workspace makes exploring generational tracking intuitive, beautiful, and deeply personal.
               </p>
 
               <div className="space-y-6 pt-4">
                 <div className="flex items-start gap-4">
-                  <div className="w-12 h-12 rounded-2xl bg-indigo-50 text-indigo-600 flex items-center justify-center shrink-0">
+                  <div className="w-12 h-12 rounded-2xl bg-indigo-50 dark:bg-indigo-950/60 text-indigo-600 dark:text-indigo-400 flex items-center justify-center shrink-0 border border-indigo-200/50 dark:border-indigo-800/50">
                     <TreePine className="h-6 w-6" />
                   </div>
                   <div className="space-y-1">
-                    <h4 className="font-bold text-lg text-slate-900">Dynamic Mapping</h4>
-                    <p className="text-sm text-slate-600">Seamlessly trace roots across centuries with fluid, responsive layouts.</p>
+                    <h4 className="font-bold text-lg text-slate-900 dark:text-white">Dynamic Mapping</h4>
+                    <p className="text-sm text-slate-600 dark:text-slate-400">Seamlessly trace roots across centuries with fluid, responsive layouts.</p>
                   </div>
                 </div>
 
                 <div className="flex items-start gap-4">
-                  <div className="w-12 h-12 rounded-2xl bg-emerald-50 text-emerald-600 flex items-center justify-center shrink-0">
+                  <div className="w-12 h-12 rounded-2xl bg-emerald-50 dark:bg-emerald-950/60 text-emerald-600 dark:text-emerald-400 flex items-center justify-center shrink-0 border border-emerald-200/50 dark:border-emerald-800/50">
                     <Activity className="h-6 w-6" />
                   </div>
                   <div className="space-y-1">
-                    <h4 className="font-bold text-lg text-slate-900">Deep Insights</h4>
-                    <p className="text-sm text-slate-600">Uncover trends, shared traits, and historical context automatically.</p>
+                    <h4 className="font-bold text-lg text-slate-900 dark:text-white">Deep Insights</h4>
+                    <p className="text-sm text-slate-600 dark:text-slate-400">Uncover trends, shared traits, and historical context automatically.</p>
                   </div>
                 </div>
               </div>
@@ -300,47 +309,47 @@ export default function Home() {
         </section>
 
         {/* Legacy Vaults Section */}
-        <section className="py-24 px-6 lg:px-12 bg-slate-50/60 border-t border-slate-100">
+        <section className="py-24 px-6 lg:px-12 bg-slate-50/60 dark:bg-slate-900/40 border-t border-slate-100 dark:border-slate-800/80 transition-colors">
           <div className="max-w-7xl mx-auto space-y-16">
             <div className="text-center space-y-4 max-w-2xl mx-auto">
-              <h2 className="text-3xl sm:text-4xl font-extrabold text-slate-950 tracking-tight">
+              <h2 className="text-3xl sm:text-4xl font-extrabold text-slate-950 dark:text-white tracking-tight">
                 Legacy Vaults
               </h2>
-              <p className="text-base sm:text-lg text-slate-600 leading-relaxed">
+              <p className="text-base sm:text-lg text-slate-600 dark:text-slate-300 leading-relaxed">
                 More than just names. Organize and preserve the stories, documents, and moments that define your family&apos;s history.
               </p>
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
               {/* Memories */}
-              <div className="group bg-white border border-slate-200/80 rounded-3xl p-8 transition-all hover:-translate-y-2 hover:shadow-xl space-y-4">
+              <div className="group bg-white dark:bg-slate-900/80 border border-slate-200/80 dark:border-slate-800 rounded-3xl p-8 transition-all hover:-translate-y-2 hover:shadow-xl space-y-4">
                 <div className="w-14 h-14 rounded-2xl bg-indigo-600 text-white flex items-center justify-center transition-transform group-hover:scale-110 shadow-md shadow-indigo-600/20">
                   <ImageIcon className="h-6 w-6" />
                 </div>
-                <h3 className="font-bold text-xl text-slate-900">Memories</h3>
-                <p className="text-sm text-slate-600 leading-relaxed">
+                <h3 className="font-bold text-xl text-slate-900 dark:text-white">Memories</h3>
+                <p className="text-sm text-slate-600 dark:text-slate-400 leading-relaxed">
                   A shared gallery for photos, videos, and audio recordings. Tag relatives to automatically link media to their profile.
                 </p>
               </div>
 
               {/* Documents */}
-              <div className="group bg-white border border-slate-200/80 rounded-3xl p-8 transition-all hover:-translate-y-2 hover:shadow-xl space-y-4">
+              <div className="group bg-white dark:bg-slate-900/80 border border-slate-200/80 dark:border-slate-800 rounded-3xl p-8 transition-all hover:-translate-y-2 hover:shadow-xl space-y-4">
                 <div className="w-14 h-14 rounded-2xl bg-purple-600 text-white flex items-center justify-center transition-transform group-hover:scale-110 shadow-md shadow-purple-600/20">
                   <FolderLock className="h-6 w-6" />
                 </div>
-                <h3 className="font-bold text-xl text-slate-900">Documents</h3>
-                <p className="text-sm text-slate-600 leading-relaxed">
+                <h3 className="font-bold text-xl text-slate-900 dark:text-white">Documents</h3>
+                <p className="text-sm text-slate-600 dark:text-slate-400 leading-relaxed">
                   Securely store vital records, certificates, immigration papers, and scanned letters in high-resolution.
                 </p>
               </div>
 
               {/* Events */}
-              <div className="group bg-white border border-slate-200/80 rounded-3xl p-8 transition-all hover:-translate-y-2 hover:shadow-xl space-y-4">
+              <div className="group bg-white dark:bg-slate-900/80 border border-slate-200/80 dark:border-slate-800 rounded-3xl p-8 transition-all hover:-translate-y-2 hover:shadow-xl space-y-4">
                 <div className="w-14 h-14 rounded-2xl bg-emerald-600 text-white flex items-center justify-center transition-transform group-hover:scale-110 shadow-md shadow-emerald-600/20">
                   <Calendar className="h-6 w-6" />
                 </div>
-                <h3 className="font-bold text-xl text-slate-900">Events</h3>
-                <p className="text-sm text-slate-600 leading-relaxed">
+                <h3 className="font-bold text-xl text-slate-900 dark:text-white">Events</h3>
+                <p className="text-sm text-slate-600 dark:text-slate-400 leading-relaxed">
                   A collaborative family calendar for reunions, anniversaries, and memorial dates, complete with RSVP tracking.
                 </p>
               </div>
@@ -389,35 +398,35 @@ export default function Home() {
         </section>
 
         {/* Pricing Section */}
-        <section id="pricing" className="py-24 px-6 lg:px-12 bg-white relative">
+        <section id="pricing" className="py-24 px-6 lg:px-12 bg-white dark:bg-slate-950 border-t border-slate-100 dark:border-slate-800/80 relative transition-colors">
           <div className="max-w-7xl mx-auto space-y-16">
             <div className="text-center space-y-4 max-w-2xl mx-auto">
-              <h2 className="text-3xl sm:text-4xl font-extrabold text-slate-950 tracking-tight">
+              <h2 className="text-3xl sm:text-4xl font-extrabold text-slate-950 dark:text-white tracking-tight">
                 Simple, transparent pricing
               </h2>
-              <p className="text-base sm:text-lg text-slate-600 leading-relaxed">
+              <p className="text-base sm:text-lg text-slate-600 dark:text-slate-300 leading-relaxed">
                 Choose the perfect plan to grow and preserve your family legacy.
               </p>
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-3 gap-8 items-stretch">
               {/* Legacy Starter */}
-              <div className="bg-slate-50/70 border border-slate-200/80 rounded-3xl p-8 flex flex-col justify-between space-y-8">
+              <div className="bg-slate-50/70 dark:bg-slate-900/60 border border-slate-200/80 dark:border-slate-800 rounded-3xl p-8 flex flex-col justify-between space-y-8">
                 <div className="space-y-6">
-                  <h3 className="font-bold text-xl text-slate-900">Legacy Starter</h3>
+                  <h3 className="font-bold text-xl text-slate-900 dark:text-white">Legacy Starter</h3>
                   <div className="flex items-baseline gap-1">
-                    <span className="text-4xl font-extrabold text-slate-900">$0</span>
-                    <span className="text-sm font-semibold text-slate-500">/mo</span>
+                    <span className="text-4xl font-extrabold text-slate-900 dark:text-white">$0</span>
+                    <span className="text-sm font-semibold text-slate-500 dark:text-slate-400">/mo</span>
                   </div>
-                  <p className="text-sm text-slate-600">Perfect for getting started with your immediate family.</p>
+                  <p className="text-sm text-slate-600 dark:text-slate-400">Perfect for getting started with your immediate family.</p>
 
                   <ul className="space-y-3 pt-2">
-                    <li className="flex items-center gap-3 text-sm text-slate-700">
-                      <CheckCircle2 className="h-5 w-5 text-indigo-600 shrink-0" />
+                    <li className="flex items-center gap-3 text-sm text-slate-700 dark:text-slate-300">
+                      <CheckCircle2 className="h-5 w-5 text-indigo-600 dark:text-indigo-400 shrink-0" />
                       <span>Up to 5 family members</span>
                     </li>
-                    <li className="flex items-center gap-3 text-sm text-slate-700">
-                      <CheckCircle2 className="h-5 w-5 text-indigo-600 shrink-0" />
+                    <li className="flex items-center gap-3 text-sm text-slate-700 dark:text-slate-300">
+                      <CheckCircle2 className="h-5 w-5 text-indigo-600 dark:text-indigo-400 shrink-0" />
                       <span>Basic tree visualization</span>
                     </li>
                   </ul>
@@ -425,7 +434,7 @@ export default function Home() {
 
                 <button
                   type="button"
-                  className="w-full py-3.5 rounded-xl border border-slate-200 text-slate-700 font-bold text-xs hover:bg-slate-100 transition-colors"
+                  className="w-full py-3.5 rounded-xl border border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-300 font-bold text-xs hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors"
                 >
                   Current Plan
                 </button>
@@ -470,26 +479,26 @@ export default function Home() {
               </div>
 
               {/* Heritage Pro */}
-              <div className="bg-slate-50/70 border border-slate-200/80 rounded-3xl p-8 flex flex-col justify-between space-y-8">
+              <div className="bg-slate-50/70 dark:bg-slate-900/60 border border-slate-200/80 dark:border-slate-800 rounded-3xl p-8 flex flex-col justify-between space-y-8">
                 <div className="space-y-6">
-                  <h3 className="font-bold text-xl text-slate-900">Heritage Pro</h3>
+                  <h3 className="font-bold text-xl text-slate-900 dark:text-white">Heritage Pro</h3>
                   <div className="flex items-baseline gap-1">
-                    <span className="text-4xl font-extrabold text-slate-900">$200</span>
-                    <span className="text-sm font-semibold text-slate-500">one-time / tier</span>
+                    <span className="text-4xl font-extrabold text-slate-900 dark:text-white">$200</span>
+                    <span className="text-sm font-semibold text-slate-500 dark:text-slate-400">one-time / tier</span>
                   </div>
-                  <p className="text-sm text-slate-600">For comprehensive family history projects and deep genealogy.</p>
+                  <p className="text-sm text-slate-600 dark:text-slate-400">For comprehensive family history projects and deep genealogy.</p>
 
                   <ul className="space-y-3 pt-2">
-                    <li className="flex items-center gap-3 text-sm text-slate-700">
-                      <CheckCircle2 className="h-5 w-5 text-indigo-600 shrink-0" />
+                    <li className="flex items-center gap-3 text-sm text-slate-700 dark:text-slate-300">
+                      <CheckCircle2 className="h-5 w-5 text-indigo-600 dark:text-indigo-400 shrink-0" />
                       <span>Up to 25 family members</span>
                     </li>
-                    <li className="flex items-center gap-3 text-sm text-slate-700">
-                      <CheckCircle2 className="h-5 w-5 text-indigo-600 shrink-0" />
+                    <li className="flex items-center gap-3 text-sm text-slate-700 dark:text-slate-300">
+                      <CheckCircle2 className="h-5 w-5 text-indigo-600 dark:text-indigo-400 shrink-0" />
                       <span>Full analytics & insights</span>
                     </li>
-                    <li className="flex items-center gap-3 text-sm text-slate-700">
-                      <CheckCircle2 className="h-5 w-5 text-indigo-600 shrink-0" />
+                    <li className="flex items-center gap-3 text-sm text-slate-700 dark:text-slate-300">
+                      <CheckCircle2 className="h-5 w-5 text-indigo-600 dark:text-indigo-400 shrink-0" />
                       <span>Priority dedicated support</span>
                     </li>
                   </ul>
@@ -497,7 +506,7 @@ export default function Home() {
 
                 <button
                   type="button"
-                  className="w-full py-3.5 rounded-xl border border-slate-200 text-slate-700 font-bold text-xs hover:bg-slate-100 transition-colors"
+                  className="w-full py-3.5 rounded-xl border border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-300 font-bold text-xs hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors"
                 >
                   Upgrade to Pro
                 </button>
@@ -507,17 +516,17 @@ export default function Home() {
         </section>
 
         {/* FAQ Section */}
-        <section id="faq" className="py-24 px-6 lg:px-12 bg-slate-50/70 border-t border-slate-200/80">
+        <section id="faq" className="py-24 px-6 lg:px-12 bg-slate-50/70 dark:bg-slate-900/40 border-t border-slate-200/80 dark:border-slate-800 transition-colors">
           <div className="max-w-4xl mx-auto space-y-12">
             <div className="text-center space-y-4">
-              <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-indigo-50 border border-indigo-200 text-indigo-700 text-xs font-bold uppercase tracking-wider">
-                <HelpCircle className="h-4 w-4 text-indigo-600" />
+              <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-indigo-50 dark:bg-indigo-950/60 border border-indigo-200 dark:border-indigo-800/80 text-indigo-700 dark:text-indigo-300 text-xs font-bold uppercase tracking-wider">
+                <HelpCircle className="h-4 w-4 text-indigo-600 dark:text-indigo-400" />
                 <span>Got Questions?</span>
               </div>
-              <h2 className="text-3xl sm:text-4xl font-extrabold text-slate-950 tracking-tight">
+              <h2 className="text-3xl sm:text-4xl font-extrabold text-slate-950 dark:text-white tracking-tight">
                 Frequently Asked Questions
               </h2>
-              <p className="text-base sm:text-lg text-slate-600 max-w-xl mx-auto">
+              <p className="text-base sm:text-lg text-slate-600 dark:text-slate-300 max-w-xl mx-auto">
                 Everything you need to know about FamilyRoots, user roles, real-time deduplication, and how our private family sanctuary works.
               </p>
             </div>
@@ -561,20 +570,20 @@ export default function Home() {
                 return (
                   <div
                     key={idx}
-                    className="bg-white border border-slate-200/90 rounded-2xl overflow-hidden transition-all shadow-sm hover:shadow-md"
+                    className="bg-white dark:bg-slate-900/80 border border-slate-200/90 dark:border-slate-800 rounded-2xl overflow-hidden transition-all shadow-sm hover:shadow-md"
                   >
                     <button
                       type="button"
                       onClick={() => setOpenFaqIndex(isOpen ? null : idx)}
-                      className="w-full px-6 py-5 flex items-center justify-between text-left font-bold text-slate-950 hover:text-indigo-600 transition-colors cursor-pointer"
+                      className="w-full px-6 py-5 flex items-center justify-between text-left font-bold text-slate-950 dark:text-white hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors cursor-pointer"
                     >
                       <span className="text-base sm:text-lg pr-4">{faq.q}</span>
-                      <div className={`p-1.5 rounded-full bg-slate-100 transition-transform ${isOpen ? "rotate-180 bg-indigo-50 text-indigo-600" : "text-slate-500"}`}>
+                      <div className={`p-1.5 rounded-full bg-slate-100 dark:bg-slate-800 transition-transform ${isOpen ? "rotate-180 bg-indigo-50 dark:bg-indigo-950 text-indigo-600 dark:text-indigo-400" : "text-slate-500 dark:text-slate-400"}`}>
                         <ChevronDown className="h-5 w-5" />
                       </div>
                     </button>
                     {isOpen && (
-                      <div className="px-6 pb-6 pt-1 text-sm text-slate-600 leading-relaxed border-t border-slate-100 whitespace-pre-line bg-slate-50/40">
+                      <div className="px-6 pb-6 pt-1 text-sm text-slate-600 dark:text-slate-300 leading-relaxed border-t border-slate-100 dark:border-slate-800/80 whitespace-pre-line bg-slate-50/40 dark:bg-slate-950/40">
                         {faq.a}
                       </div>
                     )}
