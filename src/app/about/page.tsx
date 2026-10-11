@@ -146,7 +146,7 @@ export default function AboutPage() {
                     <span>Create Your Family</span>
                   </Link>
                   <Link
-                    href="/#features"
+                    href="/features"
                     className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 text-slate-700 dark:text-slate-200 px-8 py-4 rounded-xl font-bold text-sm hover:bg-slate-50 dark:hover:bg-slate-800 transition-all flex items-center justify-center gap-2 shadow-sm"
                   >
                     <span>Explore Features</span>

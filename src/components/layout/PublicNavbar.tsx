@@ -20,6 +20,13 @@ export default function PublicNavbar() {
   const dashboardHref = getDashboardRouteByRole(user?.role);
   const dashboardLabel = getDashboardLabelByRole(user?.role);
 
+  const navLinks = [
+    { name: "About", href: "/about" },
+    { name: "Features", href: "/features" },
+    { name: "Pricing", href: "/pricing" },
+    { name: "FAQ", href: "/faq" },
+  ];
+
   return (
     <>
       <nav className="fixed top-0 w-full z-50 bg-[#f9f9ff]/85 dark:bg-slate-950/85 backdrop-blur-md border-b border-[#c7c4d8]/50 dark:border-slate-800/80 px-6 lg:px-12 h-16 flex items-center justify-between transition-colors">
@@ -33,36 +40,24 @@ export default function PublicNavbar() {
           </span>
         </Link>
 
-        {/* Desktop Links (No Home route in navbar as requested) */}
+        {/* Desktop Links (Professional clean routes, no hashes, active state awareness) */}
         <div className="hidden md:flex items-center gap-8">
-          <Link
-            href="/about"
-            className={`text-sm font-semibold transition-colors ${
-              pathname === "/about"
-                ? "text-indigo-600 dark:text-indigo-400 font-bold"
-                : "text-slate-600 dark:text-slate-300 hover:text-indigo-600 dark:hover:text-indigo-400"
-            }`}
-          >
-            About
-          </Link>
-          <Link
-            href="/#features"
-            className="text-sm font-semibold text-slate-600 dark:text-slate-300 hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors"
-          >
-            Features
-          </Link>
-          <Link
-            href="/#pricing"
-            className="text-sm font-semibold text-slate-600 dark:text-slate-300 hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors"
-          >
-            Pricing
-          </Link>
-          <Link
-            href="/#faq"
-            className="text-sm font-semibold text-slate-600 dark:text-slate-300 hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors"
-          >
-            FAQ
-          </Link>
+          {navLinks.map((link) => {
+            const isActive = pathname === link.href;
+            return (
+              <Link
+                key={link.href}
+                href={link.href}
+                className={`text-sm transition-colors ${
+                  isActive
+                    ? "text-indigo-600 dark:text-indigo-400 font-bold"
+                    : "text-slate-600 dark:text-slate-300 hover:text-indigo-600 dark:hover:text-indigo-400 font-semibold"
+                }`}
+              >
+                {link.name}
+              </Link>
+            );
+          })}
 
           {/* Theme Toggle & Auth Cluster */}
           <div className="flex items-center gap-3 pl-3 border-l border-slate-200 dark:border-slate-800">
@@ -119,38 +114,23 @@ export default function PublicNavbar() {
       {/* Mobile Menu Dropdown */}
       {mobileMenuOpen && (
         <div className="md:hidden fixed inset-x-0 top-16 z-40 bg-white/95 dark:bg-slate-900/95 backdrop-blur-xl border-b border-slate-200 dark:border-slate-800 p-6 space-y-4 shadow-xl">
-          <Link
-            href="/about"
-            onClick={() => setMobileMenuOpen(false)}
-            className={`block text-sm font-semibold ${
-              pathname === "/about"
-                ? "text-indigo-600 dark:text-indigo-400 font-bold"
-                : "text-slate-700 dark:text-slate-300 hover:text-indigo-600 dark:hover:text-indigo-400"
-            }`}
-          >
-            About
-          </Link>
-          <Link
-            href="/#features"
-            onClick={() => setMobileMenuOpen(false)}
-            className="block text-sm font-semibold text-slate-700 dark:text-slate-300 hover:text-indigo-600 dark:hover:text-indigo-400"
-          >
-            Features
-          </Link>
-          <Link
-            href="/#pricing"
-            onClick={() => setMobileMenuOpen(false)}
-            className="block text-sm font-semibold text-slate-700 dark:text-slate-300 hover:text-indigo-600 dark:hover:text-indigo-400"
-          >
-            Pricing
-          </Link>
-          <Link
-            href="/#faq"
-            onClick={() => setMobileMenuOpen(false)}
-            className="block text-sm font-semibold text-slate-700 dark:text-slate-300 hover:text-indigo-600 dark:hover:text-indigo-400"
-          >
-            FAQ
-          </Link>
+          {navLinks.map((link) => {
+            const isActive = pathname === link.href;
+            return (
+              <Link
+                key={link.href}
+                href={link.href}
+                onClick={() => setMobileMenuOpen(false)}
+                className={`block text-sm ${
+                  isActive
+                    ? "text-indigo-600 dark:text-indigo-400 font-bold"
+                    : "text-slate-700 dark:text-slate-300 hover:text-indigo-600 dark:hover:text-indigo-400 font-semibold"
+                }`}
+              >
+                {link.name}
+              </Link>
+            );
+          })}
 
           {isAuthenticated && user ? (
             <div className="pt-3 border-t border-slate-200 dark:border-slate-800 space-y-3">

@@ -24,9 +24,9 @@ export default function PublicFooter() {
           <div className="space-y-3 text-xs">
             <h4 className="font-bold text-white uppercase tracking-wider">Product</h4>
             <ul className="space-y-2 text-slate-400">
-              <li><Link href="/#features" className="hover:text-white transition-colors">Features</Link></li>
-              <li><Link href="/#pricing" className="hover:text-white transition-colors">Pricing</Link></li>
-              <li><Link href="/#faq" className="hover:text-white transition-colors">FAQ</Link></li>
+              <li><Link href="/features" className="hover:text-white transition-colors">Features</Link></li>
+              <li><Link href="/pricing" className="hover:text-white transition-colors">Pricing</Link></li>
+              <li><Link href="/faq" className="hover:text-white transition-colors">FAQ</Link></li>
             </ul>
           </div>
 
