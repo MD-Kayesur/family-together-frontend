@@ -19,6 +19,7 @@ import {
   MessageSquare,
   Menu,
   X,
+  CreditCard,
 } from "lucide-react";
 import { useAppSelector } from "@/redux/store";
 import NavbarNotificationMenu from "@/components/dashboard/NavbarNotificationMenu";
@@ -41,6 +42,7 @@ export function normalizeDashboardTab(rawTab?: string | null): string {
   if (cleaned === "invitations" || cleaned === "invites" || cleaned === "invite") return "invitations";
   if (cleaned === "messages" || cleaned === "message" || cleaned === "chat" || cleaned === "inbox") return "messages";
   if (cleaned === "settings" || cleaned === "setting") return "settings";
+  if (cleaned === "billing" || cleaned === "subscription" || cleaned === "plans" || cleaned === "upgrade") return "billing";
   if (cleaned === "profile" || cleaned === "myprofile") return "profile";
   return cleaned;
 }
@@ -68,6 +70,7 @@ function SidebarNavLinks({ isOwnerOrAdmin, pathname, onNavigate }: SidebarNavLin
         { name: "Events", href: "/owner-dashboard?tab=events", tabKey: "events", icon: Calendar, badge: null },
         { name: "Documents", href: "/owner-dashboard?tab=documents", tabKey: "documents", icon: FolderLock, badge: null },
         { name: "Invitations", href: "/owner-dashboard?tab=invitations", tabKey: "invitations", icon: Mail, badge: "2" },
+        { name: "Billing & Plans", href: "/owner-dashboard?tab=billing", tabKey: "billing", icon: CreditCard, badge: "PRO" },
         { name: "Settings", href: "/owner-dashboard?tab=settings", tabKey: "settings", icon: Settings, badge: null },
       ]
     : [
