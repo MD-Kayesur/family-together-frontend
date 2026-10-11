@@ -62,6 +62,9 @@ export default function Home() {
 
         {/* Desktop Links */}
         <div className="hidden md:flex items-center gap-8">
+          <Link href="/about" className="text-sm font-semibold text-slate-600 hover:text-indigo-600 transition-colors">
+            About
+          </Link>
           <a href="#features" className="text-sm font-semibold text-slate-600 hover:text-indigo-600 transition-colors">
             Features
           </a>
@@ -112,6 +115,13 @@ export default function Home() {
       {/* Mobile Menu Dropdown */}
       {mobileMenuOpen && (
         <div className="md:hidden fixed inset-x-0 top-16 z-40 bg-white border-b border-slate-200 p-6 space-y-4 shadow-xl">
+          <Link
+            href="/about"
+            onClick={() => setMobileMenuOpen(false)}
+            className="block text-sm font-semibold text-slate-700 hover:text-indigo-600"
+          >
+            About
+          </Link>
           <a
             href="#features"
             onClick={() => setMobileMenuOpen(false)}
@@ -621,9 +631,9 @@ export default function Home() {
             <div className="space-y-3 text-xs">
               <h4 className="font-bold text-white uppercase tracking-wider">Company</h4>
               <ul className="space-y-2 text-slate-400">
-                <li><a href="#" className="hover:text-white transition-colors">About Us</a></li>
-                <li><a href="#" className="hover:text-white transition-colors">Privacy Policy</a></li>
-                <li><a href="#" className="hover:text-white transition-colors">Terms of Service</a></li>
+                <li><Link href="/about" className="hover:text-white transition-colors">About Us</Link></li>
+                <li><Link href="/support" className="hover:text-white transition-colors">Support Center</Link></li>
+                <li><Link href="/signin" className="hover:text-white transition-colors">Member Sign In</Link></li>
               </ul>
             </div>
 
