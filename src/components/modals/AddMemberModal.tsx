@@ -305,8 +305,8 @@ export default function AddMemberModal({
                     ))}
                   </optgroup>
                 ))}
-                <optgroup label="✨ Custom / Other (অন্যান্য)">
-                  <option value="RELATIVE">Other Relative (সাধারণ আত্মীয়)</option>
+                <optgroup label="✨ Custom / Other">
+                  <option value="RELATIVE">Other Relative</option>
                 </optgroup>
               </select>
             </div>

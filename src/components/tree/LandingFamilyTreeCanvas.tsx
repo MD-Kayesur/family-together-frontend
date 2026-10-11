@@ -1350,17 +1350,17 @@ export default function LandingFamilyTreeCanvas({
               onChange={(e) => setLinkType(e.target.value)}
               className="w-full px-3.5 py-2.5 rounded-xl border border-slate-800 bg-slate-950 text-xs font-bold text-white focus:ring-2 focus:ring-indigo-500 focus:outline-none"
             >
-              <option value="Parent ➔ Child">Parent ➔ Child (পিতা-মাতা ➔ সন্তান)</option>
-              <option value="Spouse / Married">Spouse / Married (স্বামী-স্ত্রী / বৈবাহিক)</option>
-              <option value="Sibling">Sibling (ভাই-বোন)</option>
-              <option value="Grandparent ➔ Grandchild">Grandparent ➔ Grandchild (দাদা-দাদী/নানা-নানী ➔ নাতি-নাতনী)</option>
-              <option value="Great-Grandparent ➔ Great-Grandchild">Great-Grandparent ➔ Great-Grandchild (পড়দাদা-পড়নানী ➔ পুতি-পুতনী)</option>
-              <option value="Uncle / Aunt ➔ Niece / Nephew">Uncle / Aunt ➔ Niece / Nephew (চাচা/মামা/খালা/ফুফু ➔ ভাগ্নে/ভাতিজা)</option>
-              <option value="Cousin">Cousin (কাজিন / ভাই-বোন)</option>
-              <option value="In-Law Relationship">In-Law (শ্বশুরবাড়ি / বৈবাহিক আত্মীয়)</option>
-              <option value="Step / Adoptive">Step / Adoptive (সৎ / দত্তক সম্পর্ক)</option>
-              <option value="Guardian / Elder">Guardian / Elder (অভিভাবক / মুরব্বি)</option>
-              <option value="Extended Relative">Extended Relative (অন্যান্য আত্মীয়)</option>
+              <option value="Parent ➔ Child">Parent ➔ Child</option>
+              <option value="Spouse / Married">Spouse / Married</option>
+              <option value="Sibling">Sibling</option>
+              <option value="Grandparent ➔ Grandchild">Grandparent ➔ Grandchild</option>
+              <option value="Great-Grandparent ➔ Great-Grandchild">Great-Grandparent ➔ Great-Grandchild</option>
+              <option value="Uncle / Aunt ➔ Niece / Nephew">Uncle / Aunt ➔ Niece / Nephew</option>
+              <option value="Cousin">Cousin</option>
+              <option value="In-Law Relationship">In-Law Relationship</option>
+              <option value="Step / Adoptive">Step / Adoptive Relationship</option>
+              <option value="Guardian / Elder">Guardian / Family Elder</option>
+              <option value="Extended Relative">Extended Relative</option>
             </select>
 
             <button
@@ -1429,8 +1429,8 @@ export default function LandingFamilyTreeCanvas({
                         ))}
                       </optgroup>
                     ))}
-                    <optgroup label="✨ Custom / Other (কাস্টম বা অন্যান্য)">
-                      <option value="Custom / Other">✨ Custom / Other (অন্যান্য বা কাস্টম রোল লিখুন...)</option>
+                    <optgroup label="✨ Custom / Other">
+                      <option value="Custom / Other">✨ Custom / Other (Type your own role...)</option>
                     </optgroup>
                   </select>
                 </div>
@@ -1444,8 +1444,8 @@ export default function LandingFamilyTreeCanvas({
                     onChange={(e) => setNewRelativeGender(e.target.value as "MALE" | "FEMALE")}
                     className="w-full px-3.5 py-2.5 rounded-xl border border-slate-800 bg-slate-950 text-xs font-bold text-white focus:ring-2 focus:ring-indigo-500 focus:outline-none"
                   >
-                    <option value="FEMALE">Female (নারী)</option>
-                    <option value="MALE">Male (পুরুষ)</option>
+                    <option value="FEMALE">Female</option>
+                    <option value="MALE">Male</option>
                   </select>
                 </div>
               </div>
@@ -1458,7 +1458,7 @@ export default function LandingFamilyTreeCanvas({
                   <input
                     type="text"
                     required
-                    placeholder="e.g. Great-Grandmother, Godmother, Family Elder, মেজো খালা..."
+                    placeholder="e.g. Great-Grandmother, Godmother, Family Elder, Clan Patriarch..."
                     value={customRelativeRole}
                     onChange={(e) => setCustomRelativeRole(e.target.value)}
                     className="w-full px-3.5 py-2.5 rounded-xl border border-indigo-500/50 bg-slate-950 text-xs text-white placeholder:text-slate-500 focus:ring-2 focus:ring-indigo-500 focus:outline-none font-semibold"
@@ -1566,8 +1566,8 @@ export default function LandingFamilyTreeCanvas({
                         ))}
                       </optgroup>
                     ))}
-                    <optgroup label="✨ Custom / Other (কাস্টম বা অন্যান্য)">
-                      <option value="Custom / Other">✨ Custom / Other (অন্যান্য বা কাস্টম রোল লিখুন...)</option>
+                    <optgroup label="✨ Custom / Other">
+                      <option value="Custom / Other">✨ Custom / Other (Type your own role...)</option>
                     </optgroup>
                   </select>
                 </div>
@@ -1581,8 +1581,8 @@ export default function LandingFamilyTreeCanvas({
                     onChange={(e) => setEditGender(e.target.value as "MALE" | "FEMALE")}
                     className="w-full px-3.5 py-2.5 rounded-xl border border-slate-800 bg-slate-950 text-xs font-bold text-white focus:ring-2 focus:ring-indigo-500 focus:outline-none"
                   >
-                    <option value="FEMALE">Female (নারী)</option>
-                    <option value="MALE">Male (পুরুষ)</option>
+                    <option value="FEMALE">Female</option>
+                    <option value="MALE">Male</option>
                   </select>
                 </div>
               </div>
@@ -1595,7 +1595,7 @@ export default function LandingFamilyTreeCanvas({
                   <input
                     type="text"
                     required
-                    placeholder="e.g. Great-Grandmother, Godmother, মেজো খালা..."
+                    placeholder="e.g. Great-Grandmother, Godmother, Family Elder, Clan Patriarch..."
                     value={editCustomRole}
                     onChange={(e) => setEditCustomRole(e.target.value)}
                     className="w-full px-3.5 py-2.5 rounded-xl border border-indigo-500/50 bg-slate-950 text-xs text-white placeholder:text-slate-500 focus:ring-2 focus:ring-indigo-500 focus:outline-none font-semibold"
