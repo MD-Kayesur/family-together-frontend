@@ -32,17 +32,13 @@ import {
   HelpCircle
 } from "lucide-react";
 import { useAppSelector } from "@/redux/store";
-import { useLogoutMutation } from "@/redux/api/authApi";
 import { getDashboardRouteByRole, getDashboardLabelByRole } from "@/lib/utils/roleUtils";
 import LandingFamilyTreeCanvas from "@/components/tree/LandingFamilyTreeCanvas";
-import UserNavbarAvatarMenu from "@/components/dashboard/UserNavbarAvatarMenu";
-import NavbarNotificationMenu from "@/components/dashboard/NavbarNotificationMenu";
-import ThemeToggle from "@/components/theme/ThemeToggle";
+import PublicNavbar from "@/components/layout/PublicNavbar";
+import PublicFooter from "@/components/layout/PublicFooter";
 
 export default function Home() {
   const { user, isAuthenticated } = useAppSelector((state) => state.auth);
-  const [logout] = useLogoutMutation();
-  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [openFaqIndex, setOpenFaqIndex] = useState<number | null>(0);
 
   const dashboardHref = getDashboardRouteByRole(user?.role);
@@ -50,168 +46,8 @@ export default function Home() {
 
   return (
     <div className="min-h-screen flex flex-col bg-[#f9f9ff] dark:bg-slate-950 text-[#141b2b] dark:text-slate-100 font-sans antialiased selection:bg-indigo-500 selection:text-white transition-colors duration-200">
-      {/* Navbar */}
-      <nav className="fixed top-0 w-full z-50 bg-[#f9f9ff]/85 dark:bg-slate-950/85 backdrop-blur-md border-b border-[#c7c4d8]/50 dark:border-slate-800/80 px-6 lg:px-12 h-16 flex items-center justify-between transition-colors">
-        <Link href="/" className="flex items-center gap-2.5 group">
-          <div className="h-9 w-9 rounded-xl bg-indigo-600 flex items-center justify-center text-white shadow-md shadow-indigo-600/30 group-hover:scale-105 transition-all">
-            <TreePine className="h-5 w-5 stroke-[2.5]" />
-          </div>
-          <span className="font-extrabold text-xl tracking-tight text-indigo-950 dark:text-white">
-            FamilyRoots
-          </span>
-        </Link>
-
-        {/* Desktop Links */}
-        <div className="hidden md:flex items-center gap-8">
-          <Link href="/about" className="text-sm font-semibold text-slate-600 dark:text-slate-300 hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors">
-            About
-          </Link>
-          <a href="#features" className="text-sm font-semibold text-slate-600 dark:text-slate-300 hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors">
-            Features
-          </a>
-          <a href="#pricing" className="text-sm font-semibold text-slate-600 dark:text-slate-300 hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors">
-            Pricing
-          </a>
-          <a href="#faq" className="text-sm font-semibold text-slate-600 dark:text-slate-300 hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors">
-            FAQ
-          </a>
-
-          {/* Theme Toggle & Auth Cluster */}
-          <div className="flex items-center gap-3 pl-3 border-l border-slate-200 dark:border-slate-800">
-            <ThemeToggle />
-
-            {isAuthenticated && user ? (
-              <div className="flex items-center gap-3">
-                <NavbarNotificationMenu />
-                <div className="pl-2 border-l border-slate-200 dark:border-slate-800">
-                  <UserNavbarAvatarMenu />
-                </div>
-              </div>
-            ) : (
-              <div className="flex items-center gap-3">
-                <Link
-                  href="/signin"
-                  className="text-sm font-semibold text-slate-700 dark:text-slate-300 hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors px-3 py-2"
-                >
-                  Sign In
-                </Link>
-
-                <Link
-                  href="/signup"
-                  className="bg-indigo-600 text-white px-4 py-2 rounded-xl text-xs font-bold hover:bg-indigo-700 transition-all shadow-md shadow-indigo-600/20"
-                >
-                  Get Started
-                </Link>
-              </div>
-            )}
-          </div>
-        </div>
-
-        {/* Mobile Toggle & Theme */}
-        <div className="flex items-center gap-2 md:hidden">
-          <ThemeToggle />
-          <button
-            type="button"
-            onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-            className="p-2 text-slate-700 dark:text-slate-300 hover:text-indigo-600 dark:hover:text-white transition-colors"
-            aria-label="Toggle Navigation Menu"
-          >
-            {mobileMenuOpen ? <X className="h-6 w-6" /> : <Menu className="h-6 w-6" />}
-          </button>
-        </div>
-      </nav>
-
-      {/* Mobile Menu Dropdown */}
-      {mobileMenuOpen && (
-        <div className="md:hidden fixed inset-x-0 top-16 z-40 bg-white/95 dark:bg-slate-900/95 backdrop-blur-xl border-b border-slate-200 dark:border-slate-800 p-6 space-y-4 shadow-xl">
-          <Link
-            href="/about"
-            onClick={() => setMobileMenuOpen(false)}
-            className="block text-sm font-semibold text-slate-700 dark:text-slate-300 hover:text-indigo-600 dark:hover:text-indigo-400"
-          >
-            About
-          </Link>
-          <a
-            href="#features"
-            onClick={() => setMobileMenuOpen(false)}
-            className="block text-sm font-semibold text-slate-700 dark:text-slate-300 hover:text-indigo-600 dark:hover:text-indigo-400"
-          >
-            Features
-          </a>
-          <a
-            href="#pricing"
-            onClick={() => setMobileMenuOpen(false)}
-            className="block text-sm font-semibold text-slate-700 dark:text-slate-300 hover:text-indigo-600 dark:hover:text-indigo-400"
-          >
-            Pricing
-          </a>
-          <a
-            href="#faq"
-            onClick={() => setMobileMenuOpen(false)}
-            className="block text-sm font-semibold text-slate-700 dark:text-slate-300 hover:text-indigo-600 dark:hover:text-indigo-400"
-          >
-            FAQ
-          </a>
-
-          {isAuthenticated && user ? (
-            <div className="pt-3 border-t border-slate-200 dark:border-slate-800 space-y-3">
-              <div className="flex items-center justify-between">
-                <div className="flex items-center gap-3">
-                  <div className="h-10 w-10 rounded-full bg-indigo-600 text-white font-bold text-sm flex items-center justify-center overflow-hidden border border-slate-200 dark:border-slate-700 shrink-0">
-                    {user.avatarUrl ? (
-                      <img src={user.avatarUrl} alt={user.fullName} className="h-full w-full object-cover" />
-                    ) : (
-                      <span>{user.fullName ? user.fullName.charAt(0).toUpperCase() : "U"}</span>
-                    )}
-                  </div>
-                  <div className="min-w-0">
-                    <p className="text-xs font-extrabold text-slate-900 dark:text-white truncate">{user.fullName}</p>
-                    <p className="text-[11px] text-slate-400 truncate">{user.email}</p>
-                  </div>
-                </div>
-                <NavbarNotificationMenu />
-              </div>
-
-              <Link
-                href={dashboardHref}
-                onClick={() => setMobileMenuOpen(false)}
-                className="flex items-center justify-center gap-2 w-full py-2.5 rounded-xl bg-indigo-600 text-white font-bold text-xs shadow-md"
-              >
-                <LayoutDashboard className="h-4 w-4" />
-                <span>{dashboardLabel}</span>
-              </Link>
-              <button
-                type="button"
-                onClick={() => {
-                  logout();
-                  setMobileMenuOpen(false);
-                }}
-                className="flex items-center justify-center gap-2 w-full py-2.5 rounded-xl border border-rose-200 dark:border-rose-900/50 text-rose-600 dark:text-rose-400 font-bold text-xs cursor-pointer hover:bg-rose-50 dark:hover:bg-rose-950/30"
-              >
-                <LogOut className="h-4 w-4" />
-                <span>Logout</span>
-              </button>
-            </div>
-          ) : (
-            <div className="pt-2 space-y-3">
-              <Link
-                href="/signin"
-                onClick={() => setMobileMenuOpen(false)}
-                className="block text-center w-full py-2.5 rounded-xl border border-slate-200 dark:border-slate-800 text-slate-700 dark:text-slate-300 font-semibold text-xs hover:bg-slate-50 dark:hover:bg-slate-800"
-              >
-                Sign In
-              </Link>
-              <Link
-                href="/signup"
-                onClick={() => setMobileMenuOpen(false)}
-                className="block text-center w-full py-2.5 rounded-xl bg-indigo-600 text-white font-bold text-xs shadow-md"
-              >
-                Get Started
-              </Link>
-            </div>
-          )}
-        </div>
-      )}
+      {/* Global Unified Navbar */}
+      <PublicNavbar />
 
       {/* Main Content */}
       <main className="pt-16 flex-1">
@@ -612,58 +448,8 @@ export default function Home() {
         </section>
       </main>
 
-      {/* Footer */}
-      <footer className="bg-slate-900 border-t border-slate-800 text-white pt-16 pb-8 px-6 lg:px-12">
-        <div className="max-w-7xl mx-auto space-y-12">
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-12">
-            <div className="space-y-4">
-              <div className="flex items-center gap-2.5">
-                <div className="h-8 w-8 rounded-lg bg-indigo-600 flex items-center justify-center text-white font-bold">
-                  <TreePine className="h-4 w-4" />
-                </div>
-                <span className="font-extrabold text-lg text-white">FamilyRoots</span>
-              </div>
-              <p className="text-xs text-slate-400 leading-relaxed">
-                Your private sanctuary for preserving family history and connecting generations in a secure, modern space.
-              </p>
-            </div>
-
-            <div className="space-y-3 text-xs">
-              <h4 className="font-bold text-white uppercase tracking-wider">Product</h4>
-              <ul className="space-y-2 text-slate-400">
-                <li><a href="#features" className="hover:text-white transition-colors">Features</a></li>
-                <li><a href="#pricing" className="hover:text-white transition-colors">Pricing</a></li>
-                <li><a href="#" className="hover:text-white transition-colors">Tree Workspace</a></li>
-              </ul>
-            </div>
-
-            <div className="space-y-3 text-xs">
-              <h4 className="font-bold text-white uppercase tracking-wider">Company</h4>
-              <ul className="space-y-2 text-slate-400">
-                <li><Link href="/about" className="hover:text-white transition-colors">About Us</Link></li>
-                <li><Link href="/support" className="hover:text-white transition-colors">Support Center</Link></li>
-                <li><Link href="/signin" className="hover:text-white transition-colors">Member Sign In</Link></li>
-              </ul>
-            </div>
-
-            <div className="space-y-3 text-xs">
-              <h4 className="font-bold text-white uppercase tracking-wider">Support</h4>
-              <ul className="space-y-2 text-slate-400">
-                <li><a href="#" className="hover:text-white transition-colors">Help Center</a></li>
-                <li><a href="#" className="hover:text-white transition-colors">Contact Us</a></li>
-              </ul>
-            </div>
-          </div>
-
-          <div className="pt-8 border-t border-slate-800 flex flex-col sm:flex-row items-center justify-between gap-4 text-xs text-slate-500">
-            <p>© {new Date().getFullYear()} FamilyRoots. All rights reserved.</p>
-            <div className="flex items-center gap-2 bg-slate-800/80 px-3 py-1.5 rounded-full border border-slate-700">
-              <ShieldCheck className="h-4 w-4 text-emerald-400" />
-              <span className="text-slate-300 font-semibold">Secure & Private</span>
-            </div>
-          </div>
-        </div>
-      </footer>
+      {/* Global Unified Footer */}
+      <PublicFooter />
     </div>
   );
 }
