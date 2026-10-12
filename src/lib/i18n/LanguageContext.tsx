@@ -20,6 +20,8 @@ interface GeoCacheData {
 interface LanguageContextType {
   currentLanguage: Language;
   setLanguage: (lang: Language) => void;
+  resetToGeoLocation: () => Promise<void>;
+  isManualOverride: boolean;
   countryCode: string | null;
   countryName: string | null;
   cityName: string | null;
@@ -32,72 +34,88 @@ interface LanguageContextType {
 const LanguageContext = createContext<LanguageContextType | undefined>(undefined);
 
 const STORAGE_LANG_KEY = "family_roots_lang";
+const STORAGE_MANUAL_KEY = "family_roots_lang_manual";
 const STORAGE_GEO_KEY = "family_roots_geo_cache";
 const GEO_CACHE_TTL_MS = 24 * 60 * 60 * 1000; // 24 hours
 
 export function LanguageProvider({ children }: { children: React.ReactNode }) {
   const [currentLanguage, setCurrentLanguageState] = useState<Language>("en");
+  const [isManualOverride, setIsManualOverride] = useState<boolean>(false);
   const [countryCode, setCountryCode] = useState<string | null>(null);
   const [countryName, setCountryName] = useState<string | null>(null);
   const [cityName, setCityName] = useState<string | null>(null);
   const [isDetectingGeo, setIsDetectingGeo] = useState<boolean>(true);
   const [hasAutoSwitched, setHasAutoSwitched] = useState<boolean>(false);
 
-  // Initialize and perform Geolocation Detection
-  useEffect(() => {
-    let isMounted = true;
+  // Apply lang and direction to <html> document element
+  const applyHtmlAttributes = (lang: Language) => {
+    if (typeof document !== "undefined") {
+      document.documentElement.lang = lang;
+      document.documentElement.dir = (lang === "ar" || lang === "ur" || lang === "fa") ? "rtl" : "ltr";
+    }
+  };
 
-    async function initializeLanguage() {
-      try {
-        // 1. Check if user already has an explicit preference in localStorage
-        const savedLang = localStorage.getItem(STORAGE_LANG_KEY) as Language | null;
-        if (savedLang === "en" || savedLang === "bn") {
-          if (isMounted) {
-            setCurrentLanguageState(savedLang);
-            setIsDetectingGeo(false);
-          }
-          return;
-        }
+  // Perform Geolocation Detection and Language Resolution
+  const initializeLanguage = async (forceRefreshGeo = false) => {
+    try {
+      setIsDetectingGeo(true);
 
-        // 2. Check if we have a valid 24h cached geolocation result
+      // 1. Check if user has an explicit manual override in localStorage
+      const manualFlag = typeof window !== "undefined" && localStorage.getItem(STORAGE_MANUAL_KEY) === "true";
+      const savedLang = typeof window !== "undefined" ? (localStorage.getItem(STORAGE_LANG_KEY) as Language | null) : null;
+      const isSupported = SUPPORTED_LANGUAGES.some((l) => l.code === savedLang);
+
+      if (!forceRefreshGeo && manualFlag && savedLang && isSupported) {
+        setIsManualOverride(true);
+        setCurrentLanguageState(savedLang);
+        applyHtmlAttributes(savedLang);
+        setIsDetectingGeo(false);
+        return;
+      }
+
+      // 2. Check 24-hour cached geolocation result if not force refreshed
+      if (!forceRefreshGeo && typeof window !== "undefined") {
         const cachedGeoJson = localStorage.getItem(STORAGE_GEO_KEY);
         if (cachedGeoJson) {
           try {
             const cached: GeoCacheData = JSON.parse(cachedGeoJson);
             const now = Date.now();
             if (now - cached.timestamp < GEO_CACHE_TTL_MS) {
-              if (isMounted) {
-                setCountryCode(cached.countryCode);
-                setCountryName(cached.countryName);
-                setCityName(cached.cityName);
-                setCurrentLanguageState(cached.suggestedLanguage);
-                setHasAutoSwitched(cached.suggestedLanguage !== "en");
-                setIsDetectingGeo(false);
-              }
+              setCountryCode(cached.countryCode);
+              setCountryName(cached.countryName);
+              setCityName(cached.cityName);
+              setCurrentLanguageState(cached.suggestedLanguage);
+              applyHtmlAttributes(cached.suggestedLanguage);
+              setHasAutoSwitched(cached.suggestedLanguage !== "en");
+              setIsDetectingGeo(false);
               return;
             }
           } catch {
             localStorage.removeItem(STORAGE_GEO_KEY);
           }
         }
+      }
 
-        // 3. Fetch Geolocation from /api/geo
-        const res = await fetch("/api/geo", { cache: "no-store" });
-        if (res.ok) {
-          const data = await res.json();
-          if (isMounted && data.success) {
-            const suggested: Language = data.suggestedLanguage || "en";
-            setCountryCode(data.countryCode || null);
-            setCountryName(data.countryName || null);
-            setCityName(data.cityName || null);
+      // 3. Fetch real-time Geolocation from /api/geo
+      const res = await fetch("/api/geo", { cache: "no-store" });
+      if (res.ok) {
+        const data = await res.json();
+        if (data.success) {
+          // If the location is English (US, UK, CA, AU, NZ) or unmapped, default to 'en'
+          const suggested: Language = data.suggestedLanguage || "en";
 
-            // Apply suggested language if user hasn't explicitly overridden it
-            setCurrentLanguageState(suggested);
-            if (suggested !== "en") {
-              setHasAutoSwitched(true);
-            }
+          setCountryCode(data.countryCode || null);
+          setCountryName(data.countryName || null);
+          setCityName(data.cityName || null);
+          setCurrentLanguageState(suggested);
+          applyHtmlAttributes(suggested);
 
-            // Cache geolocation details
+          if (suggested !== "en") {
+            setHasAutoSwitched(true);
+          }
+
+          // Cache geolocation details
+          if (typeof window !== "undefined") {
             const cachePayload: GeoCacheData = {
               countryCode: data.countryCode || "",
               countryName: data.countryName || "",
@@ -108,26 +126,38 @@ export function LanguageProvider({ children }: { children: React.ReactNode }) {
             localStorage.setItem(STORAGE_GEO_KEY, JSON.stringify(cachePayload));
           }
         }
-      } catch (err) {
-        console.warn("[LanguageProvider] Geolocation lookup error:", err);
-      } finally {
-        if (isMounted) {
-          setIsDetectingGeo(false);
-        }
       }
+    } catch (err) {
+      console.warn("[LanguageProvider] Geolocation lookup error:", err);
+    } finally {
+      setIsDetectingGeo(false);
     }
+  };
 
+  useEffect(() => {
     initializeLanguage();
-
-    return () => {
-      isMounted = false;
-    };
   }, []);
 
+  // User manually chooses a language from Profile
   const setLanguage = (lang: Language) => {
     setCurrentLanguageState(lang);
-    localStorage.setItem(STORAGE_LANG_KEY, lang);
+    setIsManualOverride(true);
     setHasAutoSwitched(false);
+    if (typeof window !== "undefined") {
+      localStorage.setItem(STORAGE_LANG_KEY, lang);
+      localStorage.setItem(STORAGE_MANUAL_KEY, "true");
+    }
+    applyHtmlAttributes(lang);
+  };
+
+  // Revert back to auto-detecting language based on connecting location
+  const resetToGeoLocation = async () => {
+    setIsManualOverride(false);
+    if (typeof window !== "undefined") {
+      localStorage.removeItem(STORAGE_MANUAL_KEY);
+      localStorage.removeItem(STORAGE_GEO_KEY);
+    }
+    await initializeLanguage(true);
   };
 
   const t = useMemo(() => {
@@ -140,6 +170,8 @@ export function LanguageProvider({ children }: { children: React.ReactNode }) {
       value={{
         currentLanguage,
         setLanguage,
+        resetToGeoLocation,
+        isManualOverride,
         countryCode,
         countryName,
         cityName,
