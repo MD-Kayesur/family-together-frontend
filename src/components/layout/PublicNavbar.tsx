@@ -10,7 +10,6 @@ import { getDashboardRouteByRole, getDashboardLabelByRole } from "@/lib/utils/ro
 import UserNavbarAvatarMenu from "@/components/dashboard/UserNavbarAvatarMenu";
 import NavbarNotificationMenu from "@/components/dashboard/NavbarNotificationMenu";
 import ThemeToggle from "@/components/theme/ThemeToggle";
-import LanguageSwitcher from "@/components/common/LanguageSwitcher";
 import { useTranslation } from "@/lib/i18n/LanguageContext";
 
 export default function PublicNavbar() {
@@ -62,11 +61,8 @@ export default function PublicNavbar() {
             );
           })}
 
-          {/* Language Switcher, Theme Toggle & Auth Cluster */}
+          {/* Theme Toggle & Auth Cluster */}
           <div className="flex items-center gap-2.5 pl-3 border-l border-slate-200 dark:border-slate-800">
-            {/* IP Geolocation Language Switcher */}
-            <LanguageSwitcher />
-
             {/* Dark/Light Theme Toggle */}
             <ThemeToggle />
 
@@ -104,9 +100,8 @@ export default function PublicNavbar() {
           </div>
         </div>
 
-        {/* Mobile Toggle, Language & Theme */}
+        {/* Mobile Toggle & Theme */}
         <div className="flex items-center gap-1.5 md:hidden">
-          <LanguageSwitcher />
           <ThemeToggle />
           <button
             type="button"

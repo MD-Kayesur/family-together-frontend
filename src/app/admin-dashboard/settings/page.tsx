@@ -16,6 +16,7 @@ import {
   Copy,
   Check,
 } from "lucide-react";
+import ProfileLanguageSelector from "@/components/common/ProfileLanguageSelector";
 
 export default function AdminSettingsPage() {
   const [saved, setSaved] = useState(false);
@@ -72,6 +73,9 @@ export default function AdminSettingsPage() {
       )}
 
       <div className="space-y-6 max-w-3xl">
+        {/* Global Language & Localization Preferences */}
+        <ProfileLanguageSelector />
+
         {/* Security & Token Expiry */}
         <div className="p-6 rounded-2xl bg-slate-900 border border-slate-800 shadow-xl space-y-4">
           <h2 className="font-bold text-lg text-white flex items-center gap-2">

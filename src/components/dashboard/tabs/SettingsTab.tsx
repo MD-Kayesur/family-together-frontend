@@ -12,6 +12,7 @@ import {
   useGetSanctuaryQuery,
   useUpdateSanctuarySettingsMutation,
 } from "@/redux/api/familyApi";
+import ProfileLanguageSelector from "@/components/common/ProfileLanguageSelector";
 import {
   Settings,
   Shield,
@@ -563,7 +564,10 @@ export default function SettingsTab() {
             </form>
           </div>
 
-          {/* 3. CHANGE PASSWORD FORM */}
+          {/* 3. LANGUAGE & LOCALIZATION PREFERENCES */}
+          <ProfileLanguageSelector />
+
+          {/* 4. CHANGE PASSWORD FORM */}
           <div className="p-6 sm:p-8 rounded-3xl bg-slate-900 border border-slate-800 shadow-xl space-y-6">
             <div className="flex items-center justify-between border-b border-slate-800 pb-4">
               <div className="space-y-1">
