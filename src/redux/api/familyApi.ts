@@ -112,6 +112,42 @@ export interface ActivityRecord {
   user?: string;
 }
 
+export interface AnnouncementRecord {
+  id: string;
+  familyId?: string;
+  senderUserId?: string;
+  senderName: string;
+  senderEmail: string;
+  subject: string;
+  message: string;
+  totalRecipients: number;
+  successfulSent: number;
+  failedCount: number;
+  targetRole?: string;
+  replyToEmail: string;
+  createdAt: string;
+}
+
+export interface BroadcastRecipientsResponse {
+  totalCount: number;
+  recipients: Array<{
+    personId: string;
+    name: string;
+    email: string;
+    role: string;
+  }>;
+}
+
+export interface BroadcastAnnouncementResponse {
+  success: boolean;
+  broadcastId: string;
+  totalRecipients: number;
+  totalSent: number;
+  failed: number;
+  replyToEmail: string;
+  message: string;
+}
+
 export interface PaginationMeta {
   total: number;
   page: number;
@@ -578,6 +614,44 @@ export const familyApi = baseApi.injectEndpoints({
       }),
       invalidatesTags: ["Sanctuary"],
     }),
+    broadcastAnnouncement: builder.mutation<
+      BroadcastAnnouncementResponse,
+      { subject: string; message: string; targetRole?: string; priority?: string }
+    >({
+      query: (body) => ({
+        url: "/family/announcements/broadcast",
+        method: "POST",
+        body,
+      }),
+      invalidatesTags: ["Sanctuary", "Activity", "Announcements"],
+    }),
+    getBroadcastHistory: builder.query<
+      PaginatedList<AnnouncementRecord>,
+      { page?: number; limit?: number; search?: string } | void
+    >({
+      query: (params) => {
+        if (!params) return "/family/announcements/history";
+        const sp = new URLSearchParams();
+        if (params.page) sp.set("page", String(params.page));
+        if (params.limit) sp.set("limit", String(params.limit));
+        if (params.search) sp.set("search", params.search);
+        const qs = sp.toString();
+        return qs ? `/family/announcements/history?${qs}` : "/family/announcements/history";
+      },
+      transformResponse: (res) => transformPaginatedList<AnnouncementRecord>(res),
+      providesTags: ["Announcements"],
+    }),
+    getBroadcastRecipientsPreview: builder.query<BroadcastRecipientsResponse, void>({
+      query: () => "/family/announcements/recipients",
+      providesTags: ["Members"],
+    }),
+    deleteBroadcastHistoryItem: builder.mutation<{ success: boolean; message: string }, string>({
+      query: (id) => ({
+        url: `/family/announcements/${id}`,
+        method: "DELETE",
+      }),
+      invalidatesTags: ["Announcements"],
+    }),
   }),
 });
 
@@ -613,5 +687,9 @@ export const {
   useDeleteInvitationMutation,
   useGetActivityLogsQuery,
   useUpdateSanctuarySettingsMutation,
+  useBroadcastAnnouncementMutation,
+  useGetBroadcastHistoryQuery,
+  useGetBroadcastRecipientsPreviewQuery,
+  useDeleteBroadcastHistoryItemMutation,
 } = familyApi;
 

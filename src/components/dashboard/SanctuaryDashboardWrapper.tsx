@@ -41,6 +41,7 @@ export function normalizeDashboardTab(rawTab?: string | null): string {
   if (cleaned === "documents" || cleaned === "document" || cleaned === "docs") return "documents";
   if (cleaned === "invitations" || cleaned === "invites" || cleaned === "invite") return "invitations";
   if (cleaned === "messages" || cleaned === "message" || cleaned === "chat" || cleaned === "inbox") return "messages";
+  if (cleaned === "broadcasts" || cleaned === "announcements" || cleaned === "broadcast" || cleaned === "emailhistory") return "broadcasts";
   if (cleaned === "settings" || cleaned === "setting") return "settings";
   if (cleaned === "billing" || cleaned === "subscription" || cleaned === "plans" || cleaned === "upgrade") return "billing";
   if (cleaned === "profile" || cleaned === "myprofile") return "profile";
@@ -66,6 +67,7 @@ function SidebarNavLinks({ isOwnerOrAdmin, pathname, onNavigate }: SidebarNavLin
         { name: "Members", href: "/owner-dashboard?tab=members", tabKey: "members", icon: UserCheck, badge: null },
         { name: "Relationships", href: "/owner-dashboard?tab=relationships", tabKey: "relationships", icon: Heart, badge: null },
         { name: "Messages", href: "/owner-dashboard?tab=messages", tabKey: "messages", icon: MessageSquare, badge: "3" },
+        { name: "Broadcasts", href: "/owner-dashboard?tab=broadcasts", tabKey: "broadcasts", icon: Mail, badge: "NEW" },
         { name: "Memories", href: "/owner-dashboard?tab=memories", tabKey: "memories", icon: ImageIcon, badge: null },
         { name: "Events", href: "/owner-dashboard?tab=events", tabKey: "events", icon: Calendar, badge: null },
         { name: "Documents", href: "/owner-dashboard?tab=documents", tabKey: "documents", icon: FolderLock, badge: null },

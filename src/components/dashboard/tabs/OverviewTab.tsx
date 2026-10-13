@@ -33,6 +33,8 @@ import AddMemberModal from "@/components/modals/AddMemberModal";
 import AddMemoryModal from "@/components/modals/AddMemoryModal";
 import MemberCreationHeatmap from "@/components/dashboard/MemberCreationHeatmap";
 import LandingFamilyTreeCanvas from "@/components/tree/LandingFamilyTreeCanvas";
+import BroadcastHistoryCard from "@/components/dashboard/BroadcastHistoryCard";
+import BroadcastEmailModal from "@/components/modals/BroadcastEmailModal";
 
 export default function OverviewTab() {
   const { user, isAuthenticated } = useAppSelector((state) => state.auth);
@@ -54,6 +56,7 @@ export default function OverviewTab() {
 
   const [isAddMemberOpen, setIsAddMemberOpen] = useState(false);
   const [isAddMemoryOpen, setIsAddMemoryOpen] = useState(false);
+  const [isBroadcastModalOpen, setIsBroadcastModalOpen] = useState(false);
   const [timeRange, setTimeRange] = useState<"6M" | "1Y" | "ALL">("6M");
 
   const pendingRequests = invitations.filter((inv) => inv.status === "PENDING");
@@ -118,6 +121,15 @@ export default function OverviewTab() {
         </div>
 
         <div className="flex items-center gap-3">
+          <button
+            type="button"
+            onClick={() => setIsBroadcastModalOpen(true)}
+            className="px-4 py-2.5 rounded-xl border border-indigo-500/40 bg-indigo-950/60 hover:bg-indigo-900/60 text-indigo-300 font-bold text-xs shadow-sm transition-all inline-flex items-center gap-2 cursor-pointer hover:border-indigo-400"
+          >
+            <Mail className="h-4 w-4 text-indigo-400" />
+            <span>Broadcast Email</span>
+          </button>
+
           <Link
             href="/owner-dashboard?tab=invitations"
             className="px-4 py-2.5 rounded-xl border border-slate-800 bg-slate-900 hover:bg-slate-800 text-slate-200 font-bold text-xs shadow-sm transition-all inline-flex items-center gap-2 cursor-pointer"
@@ -680,6 +692,9 @@ export default function OverviewTab() {
         </div>
       </div>
 
+      {/* Broadcast Email History (Owner Sanctuary Archives) */}
+      <BroadcastHistoryCard onOpenNewBroadcast={() => setIsBroadcastModalOpen(true)} />
+
       {/* Bottom Card: Family Overview */}
       <div className="p-6 rounded-2xl bg-slate-900 border border-slate-800 shadow-sm space-y-3">
         <div className="flex items-center justify-between">
@@ -714,6 +729,10 @@ export default function OverviewTab() {
           refetchSanctuary();
           refetchLogs();
         }}
+      />
+      <BroadcastEmailModal
+        isOpen={isBroadcastModalOpen}
+        onClose={() => setIsBroadcastModalOpen(false)}
       />
     </div>
   );

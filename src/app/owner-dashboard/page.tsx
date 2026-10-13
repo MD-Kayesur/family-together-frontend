@@ -22,6 +22,7 @@ import InvitationsTab from "@/components/dashboard/tabs/InvitationsTab";
 import SettingsTab from "@/components/dashboard/tabs/SettingsTab";
 import MessagesTab from "@/components/dashboard/tabs/MessagesTab";
 import BillingTab from "@/components/dashboard/tabs/BillingTab";
+import BroadcastsTab from "@/components/dashboard/tabs/BroadcastsTab";
 import CreateMemberForm from "@/components/dashboard/members/CreateMemberForm";
 
 function OwnerDashboardContent() {
@@ -63,6 +64,9 @@ function OwnerDashboardContent() {
       return <SettingsTab />;
     case "billing":
       return <BillingTab />;
+    case "broadcasts":
+    case "announcements":
+      return <BroadcastsTab />;
     case "dashboard":
     default:
       return <OverviewTab />;
