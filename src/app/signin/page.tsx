@@ -8,6 +8,7 @@ import { useAppSelector } from "@/redux/store";
 import { getDashboardRouteByRole } from "@/lib/utils/roleUtils";
 import { Eye, EyeOff } from "lucide-react";
 import ThemeToggle from "@/components/theme/ThemeToggle";
+import ForgotPasswordModal from "@/components/modals/ForgotPasswordModal";
 
 function SignInContent() {
   const router = useRouter();
@@ -19,6 +20,7 @@ function SignInContent() {
   const [errorMsg, setErrorMsg] = useState("");
   const [successMsg, setSuccessMsg] = useState("");
   const [needsVerification, setNeedsVerification] = useState(false);
+  const [isForgotModalOpen, setIsForgotModalOpen] = useState(false);
 
   const [signIn, { isLoading: isSigningIn }] = useSignInMutation();
   const [forgotPassword] = useForgotPasswordMutation();
@@ -235,23 +237,12 @@ function SignInContent() {
                 <div className="flex justify-end mt-2">
                   <button
                     type="button"
-                    className="font-label-sm text-xs font-semibold text-primary hover:underline hover:text-primary-fixed-dim transition-colors cursor-pointer"
-                    onClick={async (e) => {
-                      e.preventDefault();
+                    onClick={() => {
                       setErrorMsg("");
                       setSuccessMsg("");
-                      if (!email || !email.includes("@")) {
-                        setErrorMsg("Please enter your email address first to reset password.");
-                        return;
-                      }
-                      try {
-                        const res = await forgotPassword({ email }).unwrap();
-                        setSuccessMsg(res.message || "Password reset instructions sent to your email.");
-                      } catch (err: any) {
-                        const msg = err?.data?.message || "Could not process password reset request.";
-                        setErrorMsg(Array.isArray(msg) ? msg.join(", ") : msg);
-                      }
+                      setIsForgotModalOpen(true);
                     }}
+                    className="font-label-sm text-xs font-semibold text-primary hover:underline hover:text-primary-fixed-dim transition-colors cursor-pointer"
                   >
                     Forgot Password?
                   </button>
@@ -289,6 +280,18 @@ function SignInContent() {
             </p>
           </div>
         </div>
+
+        {/* 3-Step Interactive Forgot Password Modal */}
+        <ForgotPasswordModal
+          isOpen={isForgotModalOpen}
+          onClose={() => setIsForgotModalOpen(false)}
+          initialEmail={email}
+          onSuccess={(resetEmail, newPass) => {
+            if (resetEmail) setEmail(resetEmail);
+            if (newPass) setPassword(newPass);
+            setSuccessMsg("Password reset successfully! You can now click 'Sign In' below.");
+          }}
+        />
       </div>
     </main>
   );
