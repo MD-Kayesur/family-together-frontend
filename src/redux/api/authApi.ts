@@ -131,9 +131,20 @@ export const authApi = baseApi.injectEndpoints({
       providesTags: ["User"],
     }),
 
-    forgotPassword: builder.mutation<{ message: string }, { email: string }>({
+    forgotPassword: builder.mutation<{ message: string; success?: boolean }, { email: string }>({
       query: (body) => ({
         url: "/auth/forgot-password",
+        method: "POST",
+        body,
+      }),
+    }),
+
+    verifyResetCode: builder.mutation<
+      { success?: boolean; resetToken: string; message: string },
+      { email: string; code: string }
+    >({
+      query: (body) => ({
+        url: "/auth/verify-reset-code",
         method: "POST",
         body,
       }),
@@ -238,6 +249,7 @@ export const {
   useResendVerificationMutation,
   useGetProfileQuery,
   useForgotPasswordMutation,
+  useVerifyResetCodeMutation,
   useLogoutMutation,
   useUpdateProfileMutation,
   useChangePasswordMutation,
