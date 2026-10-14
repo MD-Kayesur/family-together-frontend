@@ -201,16 +201,17 @@ export const familyApi = baseApi.injectEndpoints({
     }),
     getMembers: builder.query<
       PaginatedList<FamilyMemberRecord>,
-      { page?: number; limit?: number; search?: string; q?: string } | void
+      { page?: number; limit?: number; search?: string; q?: string; paginate?: boolean } | void
     >({
       query: (params) => {
-        if (!params) return "/family/members";
+        if (!params) return "/family/members?paginate=false";
         const sp = new URLSearchParams();
         if (params.page) sp.set("page", String(params.page));
         if (params.limit) sp.set("limit", String(params.limit));
         if (params.search || params.q) sp.set("search", params.search || params.q || "");
+        if (params.paginate !== undefined) sp.set("paginate", String(params.paginate));
         const qs = sp.toString();
-        return qs ? `/family/members?${qs}` : "/family/members";
+        return qs ? `/family/members?${qs}` : "/family/members?paginate=false";
       },
       transformResponse: (res) => transformPaginatedList<FamilyMemberRecord>(res),
       providesTags: ["Members"],
@@ -445,17 +446,18 @@ export const familyApi = baseApi.injectEndpoints({
     }),
     getRelationships: builder.query<
       PaginatedList<RelationshipRecord>,
-      { page?: number; limit?: number; search?: string; personId?: string } | void
+      { page?: number; limit?: number; search?: string; personId?: string; paginate?: boolean } | void
     >({
       query: (params) => {
-        if (!params) return "/family/relationships";
+        if (!params) return "/family/relationships?paginate=false";
         const sp = new URLSearchParams();
         if (params.page) sp.set("page", String(params.page));
         if (params.limit) sp.set("limit", String(params.limit));
         if (params.search) sp.set("search", params.search);
         if (params.personId) sp.set("personId", params.personId);
+        if (params.paginate !== undefined) sp.set("paginate", String(params.paginate));
         const qs = sp.toString();
-        return qs ? `/family/relationships?${qs}` : "/family/relationships";
+        return qs ? `/family/relationships?${qs}` : "/family/relationships?paginate=false";
       },
       transformResponse: (res) => transformPaginatedList<RelationshipRecord>(res),
       providesTags: ["Relationships"],
