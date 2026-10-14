@@ -16,7 +16,7 @@ export default function AdminActivityPage() {
     setSearchTerm,
     setPage,
     clearSearch,
-  } = usePaginationSearch({ defaultLimit: 8, searchParamKey: "search" });
+  } = usePaginationSearch({ defaultLimit: 10, searchParamKey: "search" });
 
   const { data: logs = [], isLoading } = useGetActivityLogsQuery({
     page,

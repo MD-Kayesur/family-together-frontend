@@ -25,7 +25,7 @@ export default function MembersTab({ role, currentUserId }: MembersTabProps = {}
     setSearchTerm,
     setPage,
     clearSearch,
-  } = usePaginationSearch({ defaultLimit: 9, searchParamKey: "search" });
+  } = usePaginationSearch({ defaultLimit: 10, searchParamKey: "search" });
 
   const { data: members = [], isLoading, refetch } = useGetMembersQuery({
     page,

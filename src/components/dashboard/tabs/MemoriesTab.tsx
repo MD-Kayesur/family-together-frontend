@@ -26,7 +26,7 @@ export default function MemoriesTab({ role }: MemoriesTabProps = {}) {
     setSearchTerm,
     setPage,
     clearSearch,
-  } = usePaginationSearch({ defaultLimit: 6, searchParamKey: "search" });
+  } = usePaginationSearch({ defaultLimit: 10, searchParamKey: "search" });
 
   const { data: memories = [], isLoading, refetch } = useGetMemoriesQuery(
     user?.id || user?.email

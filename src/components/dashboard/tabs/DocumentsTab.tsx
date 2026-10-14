@@ -50,7 +50,7 @@ export default function DocumentsTab() {
     setSearchTerm,
     setPage,
     clearSearch,
-  } = usePaginationSearch({ defaultLimit: 9, searchParamKey: "search" });
+  } = usePaginationSearch({ defaultLimit: 10, searchParamKey: "search" });
 
   const { data: documents = [], isLoading, refetch } = useGetDocumentsQuery({
     page,

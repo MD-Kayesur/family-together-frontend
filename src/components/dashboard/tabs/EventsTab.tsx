@@ -477,7 +477,7 @@ export default function EventsTab() {
     setSearchTerm,
     setPage,
     clearSearch,
-  } = usePaginationSearch({ defaultLimit: 6, searchParamKey: "search" });
+  } = usePaginationSearch({ defaultLimit: 10, searchParamKey: "search" });
 
   const { data: events = [], isLoading, refetch } = useGetEventsQuery({
     page,

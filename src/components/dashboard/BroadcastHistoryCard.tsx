@@ -26,6 +26,8 @@ import {
   useDeleteBroadcastHistoryItemMutation,
   AnnouncementRecord,
 } from "@/redux/api/familyApi";
+import { usePaginationSearch } from "@/hooks/usePaginationSearch";
+import PaginationControls from "@/components/common/PaginationControls";
 
 interface BroadcastHistoryCardProps {
   onOpenNewBroadcast: () => void;
@@ -34,7 +36,20 @@ interface BroadcastHistoryCardProps {
 export default function BroadcastHistoryCard({
   onOpenNewBroadcast,
 }: BroadcastHistoryCardProps) {
-  const [searchTerm, setSearchTerm] = useState("");
+  const {
+    searchTerm,
+    debouncedSearch,
+    page,
+    limit,
+    setLimit,
+    setSearchTerm,
+    setPage,
+  } = usePaginationSearch({
+    defaultLimit: 10,
+    searchParamKey: "broadcast_search",
+    pageParamKey: "broadcast_page",
+    limitParamKey: "broadcast_limit",
+  });
   const [selectedAnnouncement, setSelectedAnnouncement] =
     useState<AnnouncementRecord | null>(null);
   const [expandedId, setExpandedId] = useState<string | null>(null);
@@ -44,7 +59,9 @@ export default function BroadcastHistoryCard({
     isLoading,
     refetch,
   } = useGetBroadcastHistoryQuery({
-    search: searchTerm,
+    page,
+    limit,
+    search: debouncedSearch,
   });
 
   const [deleteBroadcastItem, { isLoading: isDeleting }] =
@@ -147,8 +164,9 @@ export default function BroadcastHistoryCard({
           </button>
         </div>
       ) : (
-        <div className="space-y-3">
-          {announcements.map((item) => {
+        <div className="space-y-4">
+          <div className="space-y-3">
+            {announcements.map((item) => {
             const isExpanded = expandedId === item.id;
             const formattedDate = new Date(item.createdAt).toLocaleDateString(
               undefined,
@@ -258,6 +276,21 @@ export default function BroadcastHistoryCard({
             );
           })}
         </div>
+
+        {/* Pagination Controls */}
+        {paginationMeta && paginationMeta.total > 0 && (
+          <PaginationControls
+            meta={paginationMeta}
+            currentPage={page}
+            onPageChange={setPage}
+            limit={limit}
+            onLimitChange={setLimit}
+            isLoading={isLoading}
+            itemLabel="announcements"
+            className="mt-4"
+          />
+        )}
+      </div>
       )}
     </div>
   );
