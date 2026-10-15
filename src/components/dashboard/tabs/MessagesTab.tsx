@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useRef, useEffect } from "react";
+import React, { useState, useRef, useEffect, useMemo } from "react";
 import {
   MessageSquare,
   Send,
@@ -19,8 +19,19 @@ import {
   Pin,
   Check,
   ArrowLeft,
+  ShieldAlert,
+  Lock,
+  UserCheck,
 } from "lucide-react";
+import { io, Socket } from "socket.io-client";
 import { useGetMembersQuery } from "@/redux/api/familyApi";
+import {
+  useGetConversationsQuery,
+  useGetConversationMessagesQuery,
+  useSendChatMessageMutation,
+  useMarkConversationAsReadMutation,
+  useCreateConversationMutation,
+} from "@/redux/api/chatApi";
 import { useAppSelector } from "@/redux/store";
 
 interface Message {
@@ -41,11 +52,15 @@ interface Conversation {
   type: "GROUP" | "DIRECT";
   avatar?: string;
   roleDescription?: string;
+  targetRole?: string;
+  isOwnerTarget?: boolean;
+  canMessage?: boolean;
   lastMessage: string;
   lastMessageTime: string;
   unreadCount: number;
   online: boolean;
   membersCount?: number;
+  recipientId?: string;
 }
 
 interface MessagesTabProps {
@@ -55,82 +70,42 @@ interface MessagesTabProps {
 
 export default function MessagesTab({ role = "MEMBER", currentUserId }: MessagesTabProps) {
   const { user } = useAppSelector((state) => state.auth);
+  const myUserId = currentUserId || user?.id || "";
+  const myRole = role || user?.role || "MEMBER";
+
+  // RTK Queries
   const { data: members = [] } = useGetMembersQuery();
+  const { data: dbConversations = [], refetch: refetchConversations } = useGetConversationsQuery();
+  const [activeConversationId, setActiveConversationId] = useState<string>("sanctuary-circle");
+
+  const { data: dbMessages = [], refetch: refetchMessages } = useGetConversationMessagesQuery(
+    activeConversationId,
+    { skip: !activeConversationId || activeConversationId === "sanctuary-circle" }
+  );
+
+  const [sendChatMessage] = useSendChatMessageMutation();
+  const [markConversationAsRead] = useMarkConversationAsReadMutation();
+  const [createConversation] = useCreateConversationMutation();
 
   const [activeFilter, setActiveFilter] = useState<"ALL" | "CHANNELS" | "DIRECT">("ALL");
   const [searchQuery, setSearchQuery] = useState("");
-  const [activeConversationId, setActiveConversationId] = useState("sanctuary-circle");
   const [mobileView, setMobileView] = useState<"list" | "chat">("list");
   const [inputText, setInputText] = useState("");
+  const [isTypingRemote, setIsTypingRemote] = useState(false);
+  const [socketConnected, setSocketConnected] = useState(false);
+
+  const socketRef = useRef<Socket | null>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
-  // Dynamic conversation contacts
-  const initialConversations: Conversation[] = [
-    {
-      id: "sanctuary-circle",
-      name: "Family Sanctuary Circle",
-      type: "GROUP",
-      roleDescription: "Sanctuary-wide Announcements & Chat",
-      lastMessage: "Don't forget tomorrow's virtual family reunion at 6 PM!",
-      lastMessageTime: "10:30 AM",
-      unreadCount: 2,
-      online: true,
-      membersCount: members.length > 0 ? members.length : 12,
-    },
-    ...members.slice(0, 6).map((m: any, idx: number) => ({
-      id: m.id || `member-${idx}`,
-      name: `${m.firstName} ${m.lastName}`.trim(),
-      type: "DIRECT" as const,
-      avatar: m.photoUrl,
-      roleDescription: m.bio || (idx === 0 ? "Sanctuary Owner" : "Family Relative"),
-      lastMessage:
-        idx === 0
-          ? "I updated our family tree with the new documents."
-          : idx === 1
-          ? "Looking forward to seeing everyone this weekend!"
-          : "Shared a new photo in the memories vault!",
-      lastMessageTime: `${10 - idx}:15 AM`,
-      unreadCount: idx === 1 ? 1 : 0,
-      online: idx % 2 === 0,
-    })),
-  ];
-
-  const [conversations, setConversations] = useState<Conversation[]>(initialConversations);
-
-  // Sync with members if loaded
-  useEffect(() => {
-    if (members.length > 0) {
-      setConversations((prev) => {
-        const hasCircle = prev.find((c) => c.id === "sanctuary-circle");
-        const directContacts: Conversation[] = members.slice(0, 8).map((m: any, idx: number) => ({
-          id: m.id,
-          name: `${m.firstName} ${m.lastName}`.trim(),
-          type: "DIRECT",
-          avatar: m.photoUrl,
-          roleDescription: m.bio || (idx === 0 ? "Sanctuary Owner" : "Family Relative"),
-          lastMessage:
-            idx === 0
-              ? "I updated our family tree with the new documents."
-              : "Looking forward to seeing everyone this weekend!",
-          lastMessageTime: `${10 - idx}:15 AM`,
-          unreadCount: idx === 0 ? 1 : 0,
-          online: idx % 2 === 0,
-        }));
-
-        return hasCircle ? [hasCircle, ...directContacts] : directContacts;
-      });
-    }
-  }, [members]);
-
-  // Message store per conversation
-  const [messagesMap, setMessagesMap] = useState<Record<string, Message[]>>({
+  // Local message state for immediate responsive UI & fallback
+  const [localMessages, setLocalMessages] = useState<Record<string, Message[]>>({
     "sanctuary-circle": [
       {
         id: "m-1",
         senderId: "owner-1",
-        senderName: "Sanctuary Owner",
-        text: "Assalamu Alaikum everyone! Welcome to our private FamilyRoots sanctuary chat channel. 🌟",
-        timestamp: "9:15 AM",
+        senderName: "Tariq Rahman",
+        text: "Welcome to the Family Sanctuary Circle! This is our private space for family news, updates, and milestone announcements.",
+        timestamp: "Yesterday",
         isMe: false,
         status: "read",
         reactions: ["❤️", "🙏"],
@@ -138,83 +113,251 @@ export default function MessagesTab({ role = "MEMBER", currentUserId }: Messages
       {
         id: "m-2",
         senderId: "member-2",
-        senderName: "Tariq Rahman",
-        text: "Walaykum Assalam! It's wonderful having everyone connected in one unified portal.",
-        timestamp: "9:24 AM",
+        senderName: "Sarah Rahman",
+        text: "So happy we have this dedicated space! Uploaded Grandma's anniversary recipes to the vault.",
+        timestamp: "10:15 AM",
         isMe: false,
         status: "read",
-      },
-      {
-        id: "m-3",
-        senderId: currentUserId || "me",
-        senderName: user?.fullName || "You",
-        text: "So happy to explore our family lineage and connect with all of you here!",
-        timestamp: "9:45 AM",
-        isMe: true,
-        status: "read",
-      },
-      {
-        id: "m-4",
-        senderId: "owner-1",
-        senderName: "Sanctuary Owner",
-        text: "Don't forget tomorrow's virtual family reunion at 6 PM! Everyone can join with one click.",
-        timestamp: "10:30 AM",
-        isMe: false,
-        status: "read",
-        reactions: ["🎉", "👍"],
+        reactions: ["🎉"],
       },
     ],
   });
 
-  const activeConversation =
-    conversations.find((c) => c.id === activeConversationId) || conversations[0];
+  // Sync DB messages into active conversation
+  useEffect(() => {
+    if (dbMessages && dbMessages.length > 0 && activeConversationId !== "sanctuary-circle") {
+      const formatted: Message[] = dbMessages.map((m) => ({
+        id: m.id,
+        senderId: m.senderId,
+        senderName: m.senderName,
+        avatar: m.avatar,
+        text: m.text,
+        timestamp: new Date(m.createdAt).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }),
+        isMe: m.senderId === myUserId,
+        status: m.status?.toLowerCase() as any,
+      }));
+      setLocalMessages((prev) => ({
+        ...prev,
+        [activeConversationId]: formatted,
+      }));
+    }
+  }, [dbMessages, activeConversationId, myUserId]);
 
-  const currentMessages = messagesMap[activeConversationId] || [
-    {
-      id: "intro-1",
-      senderId: activeConversation?.id || "other",
-      senderName: activeConversation?.name || "Relative",
-      text: `Hello! Let's stay connected here in our family sanctuary.`,
-      timestamp: "10:00 AM",
-      isMe: false,
-      status: "read",
-    },
-  ];
+  // Connect Socket.io client
+  useEffect(() => {
+    const backendUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
+    const token = typeof window !== "undefined" ? localStorage.getItem("accessToken") : null;
 
-  // Auto scroll to bottom
+    const socket = io(backendUrl, {
+      auth: { token: token ? `Bearer ${token}` : undefined },
+      transports: ["websocket", "polling"],
+      reconnectionAttempts: 5,
+    });
+
+    socketRef.current = socket;
+
+    socket.on("connect", () => {
+      setSocketConnected(true);
+      if (activeConversationId) {
+        socket.emit("join_conversation", { conversationId: activeConversationId });
+      }
+    });
+
+    socket.on("disconnect", () => {
+      setSocketConnected(false);
+    });
+
+    socket.on("new_message", (savedMessage: any) => {
+      const incoming: Message = {
+        id: savedMessage.id,
+        senderId: savedMessage.senderId,
+        senderName: savedMessage.senderName,
+        avatar: savedMessage.avatar,
+        text: savedMessage.text,
+        timestamp: new Date(savedMessage.createdAt).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }),
+        isMe: savedMessage.senderId === myUserId,
+        status: "delivered",
+      };
+
+      setLocalMessages((prev) => {
+        const currentList = prev[savedMessage.conversationId] || [];
+        if (currentList.some((m) => m.id === incoming.id)) return prev;
+        return {
+          ...prev,
+          [savedMessage.conversationId]: [...currentList, incoming],
+        };
+      });
+
+      refetchConversations();
+    });
+
+    socket.on("user_typing", (data: any) => {
+      if (data.conversationId === activeConversationId && data.userId !== myUserId) {
+        setIsTypingRemote(data.isTyping);
+      }
+    });
+
+    socket.on("message_read", () => {
+      refetchMessages();
+    });
+
+    return () => {
+      socket.disconnect();
+    };
+  }, [activeConversationId, myUserId, refetchConversations, refetchMessages]);
+
+  // Switch conversation and join room
+  const handleSelectConversation = (id: string) => {
+    setActiveConversationId(id);
+    setMobileView("chat");
+    setIsTypingRemote(false);
+
+    if (socketRef.current) {
+      socketRef.current.emit("join_conversation", { conversationId: id });
+    }
+
+    if (id !== "sanctuary-circle") {
+      markConversationAsRead(id);
+    }
+  };
+
+  // Build unified conversation list adhering to Facebook Messenger permissions
+  const conversations: Conversation[] = useMemo(() => {
+    const list: Conversation[] = [];
+
+    // 1. Group Sanctuary Circle (Always available to all family members)
+    list.push({
+      id: "sanctuary-circle",
+      name: "Family Sanctuary Circle",
+      type: "GROUP",
+      roleDescription: "Sanctuary-wide Announcements & Chat",
+      lastMessage: "Welcome to the Family Sanctuary Circle! Share news & reunions.",
+      lastMessageTime: "Today",
+      unreadCount: 0,
+      online: true,
+      membersCount: members.length > 0 ? members.length : 8,
+      canMessage: true,
+    });
+
+    // 2. Direct Conversations from database
+    dbConversations.forEach((conv) => {
+      const otherUser = conv.otherUser;
+      const isOwner = otherUser?.role === "OWNER";
+      const isRestrictedForMe = myRole === "MEMBER" && isOwner;
+
+      list.push({
+        id: conv.id,
+        name: conv.title || otherUser?.fullName || "Family Relative",
+        type: "DIRECT",
+        avatar: otherUser?.avatarUrl,
+        targetRole: otherUser?.role,
+        roleDescription: otherUser?.role === "OWNER" ? "Sanctuary Owner" : "Connected Relative",
+        isOwnerTarget: isOwner,
+        canMessage: !isRestrictedForMe,
+        lastMessage: conv.lastMessage || "No messages yet",
+        lastMessageTime: conv.lastMessageTime ? new Date(conv.lastMessageTime).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }) : "Recently",
+        unreadCount: conv.unreadCount || 0,
+        online: true,
+        recipientId: otherUser?.id,
+      });
+    });
+
+    // 3. Populate Member directory contacts (Facebook connection logic: connected relatives)
+    members.forEach((m: any) => {
+      const memberUserId = m.userId || m.id;
+      if (memberUserId === myUserId) return; // Skip self
+
+      const existingInList = list.find((c) => c.recipientId === memberUserId || c.id === memberUserId);
+      if (existingInList) return;
+
+      const isOwner = m.role === "OWNER" || m.bio?.toLowerCase().includes("owner");
+      const isRestrictedForMe = myRole === "MEMBER" && isOwner;
+
+      list.push({
+        id: `member-${m.id}`,
+        name: `${m.firstName || ""} ${m.lastName || ""}`.trim() || "Relative",
+        type: "DIRECT",
+        avatar: m.photoUrl,
+        targetRole: isOwner ? "OWNER" : "MEMBER",
+        roleDescription: isOwner ? "Sanctuary Owner" : (m.bio || "Connected Relative"),
+        isOwnerTarget: isOwner,
+        canMessage: !isRestrictedForMe,
+        lastMessage: isRestrictedForMe ? "Direct messages to Sanctuary Owner restricted" : "Click to start conversation",
+        lastMessageTime: "",
+        unreadCount: 0,
+        online: false,
+        recipientId: memberUserId,
+      });
+    });
+
+    return list;
+  }, [members, dbConversations, myUserId, myRole]);
+
+  const activeConversation = conversations.find((c) => c.id === activeConversationId) || conversations[0];
+  const activeMessages = localMessages[activeConversationId] || [];
+
+  // Scroll to bottom on new messages
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
-  }, [currentMessages]);
+  }, [activeMessages]);
 
-  const handleSendMessage = (e: React.FormEvent) => {
+  // Handle typing debounce
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setInputText(e.target.value);
+    if (socketRef.current && activeConversationId) {
+      socketRef.current.emit("typing", {
+        conversationId: activeConversationId,
+        isTyping: e.target.value.length > 0,
+      });
+    }
+  };
+
+  // Send Message
+  const handleSendMessage = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!inputText.trim()) return;
 
+    // RULE ENFORCEMENT: Member cannot message Owner directly
+    if (activeConversation?.isOwnerTarget && myRole === "MEMBER") {
+      alert("Direct messaging restricted: Members cannot message the Sanctuary Owner directly. Please use the Family Circle.");
+      return;
+    }
+
+    const textToSend = inputText.trim();
+    setInputText("");
+
     const newMsg: Message = {
-      id: `msg-${Date.now()}`,
-      senderId: currentUserId || "me",
+      id: `client-${Date.now()}`,
+      senderId: myUserId || "me",
       senderName: user?.fullName || "You",
-      text: inputText.trim(),
+      text: textToSend,
       timestamp: new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }),
       isMe: true,
       status: "sent",
     };
 
-    setMessagesMap((prev) => ({
+    // Optimistic UI update
+    setLocalMessages((prev) => ({
       ...prev,
       [activeConversationId]: [...(prev[activeConversationId] || []), newMsg],
     }));
 
-    // Update conversation snippet
-    setConversations((prev) =>
-      prev.map((c) =>
-        c.id === activeConversationId
-          ? { ...c, lastMessage: newMsg.text, lastMessageTime: "Just now", unreadCount: 0 }
-          : c
-      )
-    );
-
-    setInputText("");
+    // Send via WebSocket or REST
+    if (socketRef.current && socketConnected && activeConversationId !== "sanctuary-circle") {
+      socketRef.current.emit("send_message", {
+        conversationId: activeConversationId,
+        text: textToSend,
+      });
+    } else if (activeConversationId !== "sanctuary-circle") {
+      try {
+        await sendChatMessage({
+          conversationId: activeConversationId,
+          text: textToSend,
+        }).unwrap();
+      } catch (err: any) {
+        console.error("Message send fallback error:", err);
+      }
+    }
   };
 
   const filteredConversations = conversations.filter((c) => {
@@ -228,7 +371,11 @@ export default function MessagesTab({ role = "MEMBER", currentUserId }: Messages
   return (
     <div className="h-[calc(100vh-140px)] min-h-[580px] rounded-3xl bg-slate-900 border border-slate-800 shadow-2xl overflow-hidden flex flex-col md:flex-row">
       {/* 1. Left Sidebar: Contacts & Channels */}
-      <div className={`w-full md:w-80 lg:w-96 border-b md:border-b-0 md:border-r border-slate-800 flex-col bg-slate-900/90 shrink-0 ${mobileView === "chat" ? "hidden md:flex" : "flex"}`}>
+      <div
+        className={`w-full md:w-80 lg:w-96 border-b md:border-b-0 md:border-r border-slate-800 flex-col bg-slate-900/90 shrink-0 ${
+          mobileView === "chat" ? "hidden md:flex" : "flex"
+        }`}
+      >
         {/* Header & Search */}
         <div className="p-4 border-b border-slate-800 space-y-3">
           <div className="flex items-center justify-between">
@@ -237,43 +384,47 @@ export default function MessagesTab({ role = "MEMBER", currentUserId }: Messages
                 <MessageSquare className="h-4 w-4 stroke-[2.5]" />
               </div>
               <div>
-                <h3 className="font-extrabold text-sm text-white leading-tight">
-                  Family Messages
-                </h3>
-                <span className="text-[10px] font-bold text-purple-400 uppercase tracking-wider">
-                  Live Sanctuary Chat
-                </span>
+                <h3 className="font-extrabold text-sm text-white leading-tight">Family Messages</h3>
+                <div className="flex items-center gap-1.5 mt-0.5">
+                  <span
+                    className={`h-2 w-2 rounded-full ${
+                      socketConnected ? "bg-emerald-500 animate-pulse" : "bg-amber-500"
+                    }`}
+                  />
+                  <span className="text-[10px] font-bold text-slate-400">
+                    {socketConnected ? "Socket.io Live" : "Connecting..."}
+                  </span>
+                </div>
               </div>
             </div>
 
             <span className="px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-purple-950 text-purple-300 border border-purple-800">
-              {role}
+              {myRole}
             </span>
           </div>
 
-          {/* Search Input */}
+          {/* Search Bar */}
           <div className="relative">
-            <Search className="h-3.5 w-3.5 absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
+            <Search className="absolute left-3 top-2.5 h-3.5 w-3.5 text-slate-500" />
             <input
               type="text"
-              placeholder="Search family chats..."
+              placeholder="Search conversations & relatives..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="w-full pl-8 pr-3 py-2 bg-slate-950 border border-slate-800 rounded-xl text-xs text-white placeholder:text-slate-500 focus:outline-none focus:ring-2 focus:ring-purple-500 font-medium"
+              className="w-full pl-9 pr-3 py-2 rounded-xl bg-slate-950 border border-slate-800 text-xs text-slate-200 placeholder:text-slate-500 focus:outline-none focus:ring-1 focus:ring-purple-500"
             />
           </div>
 
           {/* Filter Pills */}
-          <div className="flex gap-1.5 pt-1">
+          <div className="flex items-center gap-1.5 pt-1">
             {(["ALL", "CHANNELS", "DIRECT"] as const).map((filter) => (
               <button
                 key={filter}
-                type="button"
                 onClick={() => setActiveFilter(filter)}
-                className={`px-3 py-1 rounded-lg text-[11px] font-bold transition-all cursor-pointer ${
+                className={`px-3 py-1 rounded-lg text-[10px] font-bold transition-all cursor-pointer ${
                   activeFilter === filter
                     ? "bg-purple-600 text-white shadow-sm"
-                    : "bg-slate-950 text-slate-400 hover:text-white hover:bg-slate-800 border border-slate-800"
+                    : "bg-slate-950 text-slate-400 hover:text-slate-200 hover:bg-slate-800"
                 }`}
               >
                 {filter === "ALL" ? "All Chats" : filter === "CHANNELS" ? "Channels" : "Direct"}
@@ -282,171 +433,180 @@ export default function MessagesTab({ role = "MEMBER", currentUserId }: Messages
           </div>
         </div>
 
-        {/* Conversations Scroll List */}
-        <div className="flex-1 overflow-y-auto divide-y divide-slate-800/60 p-2 space-y-1">
-          {filteredConversations.length === 0 ? (
-            <div className="p-8 text-center text-xs text-slate-500 space-y-1">
-              <MessageSquare className="h-8 w-8 mx-auto text-slate-600 mb-2 opacity-50" />
-              <p>No conversations found</p>
-            </div>
-          ) : (
-            filteredConversations.map((conv) => {
-              const isActive = conv.id === activeConversationId;
-              return (
-                <button
-                  key={conv.id}
-                  type="button"
-                  onClick={() => {
-                    setActiveConversationId(conv.id);
-                    setMobileView("chat");
-                    // Mark as read
-                    setConversations((prev) =>
-                      prev.map((c) => (c.id === conv.id ? { ...c, unreadCount: 0 } : c))
-                    );
-                  }}
-                  className={`w-full p-3 rounded-2xl flex items-start gap-3 transition-all text-left cursor-pointer ${
-                    isActive
-                      ? "bg-purple-950/60 border border-purple-800/70 shadow-md"
-                      : "hover:bg-slate-800/60 border border-transparent"
-                  }`}
-                >
-                  {/* Avatar */}
-                  <div className="relative shrink-0">
-                    <div
-                      className={`h-11 w-11 rounded-2xl font-extrabold flex items-center justify-center text-sm shadow-sm ${
-                        conv.type === "GROUP"
-                          ? "bg-indigo-600 text-white"
-                          : "bg-purple-950 text-purple-300 border border-purple-800"
-                      }`}
-                    >
-                      {conv.type === "GROUP" ? (
-                        <Users className="h-5 w-5" />
-                      ) : (
-                        conv.name.charAt(0).toUpperCase()
-                      )}
+        {/* Conversation List */}
+        <div className="flex-1 overflow-y-auto divide-y divide-slate-800/40 p-2 space-y-1">
+          {filteredConversations.map((conv) => {
+            const isSelected = conv.id === activeConversationId;
+            const isRestricted = conv.isOwnerTarget && myRole === "MEMBER";
+
+            return (
+              <button
+                key={conv.id}
+                onClick={() => handleSelectConversation(conv.id)}
+                className={`w-full text-left p-3 rounded-2xl flex items-start gap-3 transition-all cursor-pointer relative ${
+                  isSelected
+                    ? "bg-purple-950/40 border border-purple-800/60 shadow-inner"
+                    : "hover:bg-slate-800/50 border border-transparent"
+                }`}
+              >
+                {/* Avatar */}
+                <div className="relative shrink-0 mt-0.5">
+                  {conv.type === "GROUP" ? (
+                    <div className="h-10 w-10 rounded-2xl bg-linear-to-tr from-purple-600 to-indigo-600 text-white flex items-center justify-center font-bold text-xs shadow-md">
+                      <Users className="h-5 w-5" />
                     </div>
-                    {conv.online && (
-                      <span className="absolute -bottom-0.5 -right-0.5 h-3.5 w-3.5 rounded-full bg-emerald-500 border-2 border-slate-900 shadow-sm" />
-                    )}
-                  </div>
-
-                  {/* Name & Snippet */}
-                  <div className="flex-1 min-w-0">
-                    <div className="flex items-center justify-between">
-                      <h4
-                        className={`text-xs font-bold truncate ${
-                          isActive ? "text-white" : "text-slate-200"
-                        }`}
-                      >
-                        {conv.name}
-                      </h4>
-                      <span className="text-[10px] text-slate-500 font-medium shrink-0 ml-1">
-                        {conv.lastMessageTime}
-                      </span>
+                  ) : conv.avatar ? (
+                    <img
+                      src={conv.avatar}
+                      alt={conv.name}
+                      className="h-10 w-10 rounded-2xl object-cover border border-slate-700"
+                    />
+                  ) : (
+                    <div className="h-10 w-10 rounded-2xl bg-slate-800 text-purple-300 font-bold text-sm flex items-center justify-center border border-slate-700">
+                      {conv.name.charAt(0).toUpperCase()}
                     </div>
+                  )}
 
-                    <p className="text-[11px] text-slate-400 truncate mt-0.5">
-                      {conv.lastMessage}
-                    </p>
+                  {conv.online && (
+                    <span className="absolute -bottom-0.5 -right-0.5 h-3 w-3 rounded-full bg-emerald-500 border-2 border-slate-900" />
+                  )}
+                </div>
 
-                    <div className="flex items-center justify-between mt-1">
-                      <span className="text-[9px] font-semibold text-purple-400/80 truncate">
-                        {conv.roleDescription}
-                      </span>
-                      {conv.unreadCount > 0 && (
-                        <span className="h-4 min-w-[16px] px-1 rounded-full bg-purple-600 text-[10px] font-extrabold text-white flex items-center justify-center shrink-0">
-                          {conv.unreadCount}
+                {/* Details */}
+                <div className="flex-1 min-w-0">
+                  <div className="flex items-center justify-between gap-1 mb-0.5">
+                    <span className="font-bold text-xs text-white truncate flex items-center gap-1.5">
+                      {conv.name}
+                      {conv.isOwnerTarget && (
+                        <span className="px-1.5 py-0.2 rounded text-[9px] bg-amber-500/10 text-amber-400 border border-amber-500/20 font-semibold">
+                          Owner
                         </span>
                       )}
-                    </div>
+                    </span>
+                    <span className="text-[10px] text-slate-500 shrink-0 font-medium">
+                      {conv.lastMessageTime}
+                    </span>
                   </div>
-                </button>
-              );
-            })
-          )}
+
+                  <p className="text-[11px] text-slate-400 truncate leading-snug">
+                    {conv.lastMessage}
+                  </p>
+
+                  <div className="flex items-center justify-between mt-1.5">
+                    <span className="text-[10px] text-purple-400/80 font-medium truncate flex items-center gap-1">
+                      {isRestricted ? (
+                        <>
+                          <Lock className="h-2.5 w-2.5 text-amber-400" />
+                          <span className="text-amber-400 text-[9px]">Restricted for Member</span>
+                        </>
+                      ) : (
+                        <>
+                          <UserCheck className="h-2.5 w-2.5 text-emerald-400" />
+                          <span>{conv.roleDescription || "Connected"}</span>
+                        </>
+                      )}
+                    </span>
+
+                    {conv.unreadCount > 0 && (
+                      <span className="h-4 min-w-4 px-1 rounded-full bg-purple-600 text-white font-extrabold text-[9px] flex items-center justify-center">
+                        {conv.unreadCount}
+                      </span>
+                    )}
+                  </div>
+                </div>
+              </button>
+            );
+          })}
         </div>
       </div>
 
-      {/* 2. Right Main Chat Area */}
-      <div className={`flex-1 flex-col bg-slate-950/80 min-w-0 ${mobileView === "list" ? "hidden md:flex" : "flex"}`}>
-        {/* Active Conversation Top Bar */}
-        <div className="h-16 shrink-0 px-4 sm:px-6 border-b border-slate-800 bg-slate-900/60 backdrop-blur-md flex items-center justify-between gap-3">
-          <div className="flex items-center gap-2.5 sm:gap-3 min-w-0">
-            {/* Back Button for Mobile */}
+      {/* 2. Right Side: Active Chat Stream */}
+      <div
+        className={`flex-1 flex flex-col bg-slate-950 ${
+          mobileView === "list" ? "hidden md:flex" : "flex"
+        }`}
+      >
+        {/* Chat Header */}
+        <div className="p-4 border-b border-slate-800 flex items-center justify-between bg-slate-900/60 backdrop-blur-md">
+          <div className="flex items-center gap-3">
             <button
-              type="button"
               onClick={() => setMobileView("list")}
-              className="md:hidden p-2 -ml-2 rounded-xl text-slate-400 hover:text-white hover:bg-slate-800 transition-colors cursor-pointer shrink-0"
-              aria-label="Back to chat list"
+              className="md:hidden p-1.5 rounded-lg text-slate-400 hover:text-white hover:bg-slate-800"
             >
               <ArrowLeft className="h-5 w-5" />
             </button>
 
-            <div
-              className={`h-9 sm:h-10 w-9 sm:w-10 rounded-2xl font-bold flex items-center justify-center text-sm shrink-0 shadow-sm ${
-                activeConversation?.type === "GROUP"
-                  ? "bg-indigo-600 text-white"
-                  : "bg-purple-950 text-purple-300 border border-purple-800"
-              }`}
-            >
+            <div className="relative">
               {activeConversation?.type === "GROUP" ? (
-                <Users className="h-4 sm:h-5 w-4 sm:w-5" />
+                <div className="h-10 w-10 rounded-2xl bg-linear-to-tr from-purple-600 to-indigo-600 text-white flex items-center justify-center font-bold text-sm">
+                  <Users className="h-5 w-5" />
+                </div>
+              ) : activeConversation?.avatar ? (
+                <img
+                  src={activeConversation.avatar}
+                  alt={activeConversation.name}
+                  className="h-10 w-10 rounded-2xl object-cover border border-slate-700"
+                />
               ) : (
-                activeConversation?.name.charAt(0).toUpperCase()
+                <div className="h-10 w-10 rounded-2xl bg-slate-800 text-purple-300 font-bold text-sm flex items-center justify-center border border-slate-700">
+                  {activeConversation?.name.charAt(0).toUpperCase()}
+                </div>
               )}
             </div>
 
-            <div className="min-w-0">
-              <h4 className="font-extrabold text-white text-sm truncate flex items-center gap-2">
-                <span>{activeConversation?.name}</span>
+            <div>
+              <h3 className="font-extrabold text-sm text-white flex items-center gap-2">
+                {activeConversation?.name}
                 {activeConversation?.type === "GROUP" && (
-                  <span className="px-2 py-0.5 rounded-full bg-indigo-950 border border-indigo-800 text-[10px] font-bold text-indigo-300">
-                    {activeConversation.membersCount} Members
+                  <span className="px-2 py-0.5 rounded-full text-[9px] font-bold bg-purple-900/40 text-purple-300 border border-purple-800">
+                    Group Channel
                   </span>
                 )}
-              </h4>
-              <p className="text-[11px] text-slate-400 truncate flex items-center gap-1.5">
-                <span className="h-1.5 w-1.5 rounded-full bg-emerald-500 animate-pulse" />
-                <span>
-                  {activeConversation?.type === "GROUP"
-                    ? "Active sanctuary broadcast channel"
-                    : activeConversation?.online
-                    ? "Active now"
-                    : "Offline"}
-                </span>
+              </h3>
+              <p className="text-[10px] text-slate-400 flex items-center gap-1.5">
+                <span className="h-1.5 w-1.5 rounded-full bg-emerald-500" />
+                {activeConversation?.roleDescription || "Active now"}
               </p>
             </div>
           </div>
 
-          {/* Quick Actions */}
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-1 text-slate-400">
             <button
               type="button"
-              className="p-2 rounded-xl bg-slate-900 border border-slate-800 text-slate-400 hover:text-white hover:bg-slate-800 transition-colors"
+              className="p-2 rounded-xl hover:text-white hover:bg-slate-800 transition-all cursor-pointer"
               title="Voice Call"
             >
               <Phone className="h-4 w-4" />
             </button>
             <button
               type="button"
-              className="p-2 rounded-xl bg-slate-900 border border-slate-800 text-slate-400 hover:text-white hover:bg-slate-800 transition-colors"
-              title="Family Video Gathering"
+              className="p-2 rounded-xl hover:text-white hover:bg-slate-800 transition-all cursor-pointer"
+              title="Video Gathering"
             >
               <Video className="h-4 w-4" />
+            </button>
+            <button
+              type="button"
+              className="p-2 rounded-xl hover:text-white hover:bg-slate-800 transition-all cursor-pointer"
+            >
+              <MoreVertical className="h-4 w-4" />
             </button>
           </div>
         </div>
 
-        {/* Message Stream */}
-        <div className="flex-1 overflow-y-auto p-6 space-y-4">
-          {/* Timestamp Badge */}
-          <div className="flex items-center justify-center">
-            <span className="px-3 py-1 rounded-full bg-slate-900 border border-slate-800 text-[10px] font-bold text-slate-400 shadow-sm">
-              Today
+        {/* Facebook Messenger Rule Notice Banner if Member -> Owner */}
+        {activeConversation?.isOwnerTarget && myRole === "MEMBER" && (
+          <div className="bg-amber-950/40 border-b border-amber-800/40 p-3 px-4 flex items-center gap-2.5 text-xs text-amber-300">
+            <ShieldAlert className="h-4 w-4 text-amber-400 shrink-0" />
+            <span>
+              <strong>Facebook Messenger Rule:</strong> Members cannot initiate direct messages to the Sanctuary Owner. You can reply if the Owner messages you first, or post in the <strong>Family Sanctuary Circle</strong>.
             </span>
           </div>
+        )}
 
-          {currentMessages.map((msg) => (
+        {/* Message Stream */}
+        <div className="flex-1 overflow-y-auto p-4 space-y-4">
+          {activeMessages.map((msg) => (
             <div
               key={msg.id}
               className={`flex items-end gap-2.5 ${msg.isMe ? "justify-end" : "justify-start"}`}
@@ -476,20 +636,6 @@ export default function MessagesTab({ role = "MEMBER", currentUserId }: Messages
                   }`}
                 >
                   <p>{msg.text}</p>
-
-                  {/* Reaction Badges */}
-                  {msg.reactions && msg.reactions.length > 0 && (
-                    <div className="flex items-center gap-1 mt-1.5">
-                      {msg.reactions.map((r, rIdx) => (
-                        <span
-                          key={rIdx}
-                          className="px-1.5 py-0.5 rounded-full bg-slate-950/70 border border-white/10 text-[10px]"
-                        >
-                          {r}
-                        </span>
-                      ))}
-                    </div>
-                  )}
                 </div>
 
                 <div
@@ -504,39 +650,58 @@ export default function MessagesTab({ role = "MEMBER", currentUserId }: Messages
             </div>
           ))}
 
+          {/* Typing Indicator */}
+          {isTypingRemote && (
+            <div className="flex items-center gap-2 text-xs text-purple-400 italic py-1">
+              <span className="flex gap-1">
+                <span className="h-1.5 w-1.5 bg-purple-400 rounded-full animate-bounce" />
+                <span className="h-1.5 w-1.5 bg-purple-400 rounded-full animate-bounce [animation-delay:0.2s]" />
+                <span className="h-1.5 w-1.5 bg-purple-400 rounded-full animate-bounce [animation-delay:0.4s]" />
+              </span>
+              <span>{activeConversation?.name} is typing...</span>
+            </div>
+          )}
+
           <div ref={messagesEndRef} />
         </div>
 
         {/* Message Input Bar */}
         <div className="p-4 border-t border-slate-800 bg-slate-900/60 backdrop-blur-md">
-          <form onSubmit={handleSendMessage} className="flex items-center gap-2">
-            <button
-              type="button"
-              className="p-2.5 rounded-xl bg-slate-900 border border-slate-800 text-slate-400 hover:text-white hover:bg-slate-800 transition-all cursor-pointer"
-              title="Attach media or memories"
-            >
-              <Paperclip className="h-4 w-4" />
-            </button>
-
-            <div className="flex-1 relative">
-              <input
-                type="text"
-                value={inputText}
-                onChange={(e) => setInputText(e.target.value)}
-                placeholder={`Message ${activeConversation?.name || "your family"}...`}
-                className="w-full px-4 py-2.5 rounded-xl bg-slate-950 border border-slate-800 text-xs text-white placeholder:text-slate-500 focus:outline-none focus:ring-2 focus:ring-purple-500 font-medium"
-              />
+          {activeConversation?.isOwnerTarget && myRole === "MEMBER" ? (
+            <div className="p-3 rounded-xl bg-slate-900/80 border border-slate-800 text-center text-xs text-slate-400 flex items-center justify-center gap-2">
+              <Lock className="h-3.5 w-3.5 text-amber-400" />
+              <span>Direct messages to Sanctuary Owner restricted. Share questions in Sanctuary Circle.</span>
             </div>
+          ) : (
+            <form onSubmit={handleSendMessage} className="flex items-center gap-2">
+              <button
+                type="button"
+                className="p-2.5 rounded-xl bg-slate-900 border border-slate-800 text-slate-400 hover:text-white hover:bg-slate-800 transition-all cursor-pointer"
+                title="Attach media"
+              >
+                <Paperclip className="h-4 w-4" />
+              </button>
 
-            <button
-              type="submit"
-              disabled={!inputText.trim()}
-              className="px-4 py-2.5 rounded-xl bg-purple-600 hover:bg-purple-700 disabled:opacity-40 text-white font-bold text-xs shadow-md shadow-purple-600/25 flex items-center gap-1.5 cursor-pointer transition-all hover:scale-[1.02]"
-            >
-              <Send className="h-3.5 w-3.5" />
-              <span>Send</span>
-            </button>
-          </form>
+              <div className="flex-1 relative">
+                <input
+                  type="text"
+                  value={inputText}
+                  onChange={handleInputChange}
+                  placeholder={`Message ${activeConversation?.name || "family"}...`}
+                  className="w-full px-4 py-2.5 rounded-xl bg-slate-950 border border-slate-800 text-xs text-white placeholder:text-slate-500 focus:outline-none focus:ring-2 focus:ring-purple-500 font-medium"
+                />
+              </div>
+
+              <button
+                type="submit"
+                disabled={!inputText.trim()}
+                className="px-4 py-2.5 rounded-xl bg-purple-600 hover:bg-purple-700 disabled:opacity-40 text-white font-bold text-xs shadow-md shadow-purple-600/25 flex items-center gap-1.5 cursor-pointer transition-all hover:scale-[1.02]"
+              >
+                <Send className="h-3.5 w-3.5" />
+                <span>Send</span>
+              </button>
+            </form>
+          )}
         </div>
       </div>
     </div>

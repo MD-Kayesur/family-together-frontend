@@ -34,6 +34,8 @@ export const baseApi = createApi({
     "Subscription",
     "Billing",
     "Announcements",
+    "Conversations",
+    "ChatMessages",
   ],
   endpoints: () => ({}),
 });
