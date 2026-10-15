@@ -228,7 +228,7 @@ export default function MemberCreationHeatmap({ members = [] }: MemberCreationHe
   const dayLabels = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
 
   return (
-    <div className="p-6 rounded-3xl bg-slate-900 border border-slate-800 shadow-xl space-y-6">
+    <div className="w-full p-6 rounded-3xl bg-slate-900 border border-slate-800 shadow-xl space-y-6">
       {/* 1. Header with Title & Range Switcher */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div className="flex items-center gap-3">
@@ -321,44 +321,46 @@ export default function MemberCreationHeatmap({ members = [] }: MemberCreationHe
       </div>
 
       {/* 3. Heatmap Calendar Matrix */}
-      <div className="space-y-2">
-        <div className="overflow-x-auto pb-3 pt-1 scrollbar-thin scrollbar-thumb-slate-800">
-          <div className="inline-block min-w-full">
-            {/* Month Labels */}
-            <div className="flex text-[10px] font-bold text-slate-400 mb-1.5 pl-8">
-              {monthHeaders.map((hdr, idx) => (
-                <div
-                  key={idx}
-                  style={{
-                    marginLeft: idx === 0 ? `${hdr.weekIndex * 14}px` : undefined,
-                    width: idx < monthHeaders.length - 1 ? `${(monthHeaders[idx + 1].weekIndex - hdr.weekIndex) * 14}px` : "auto",
-                  }}
-                  className="truncate"
-                >
-                  {hdr.label}
-                </div>
-              ))}
-            </div>
-
-            {/* Matrix Grid: Left Day Labels + 7 rows of Week Columns */}
-            <div className="flex gap-1.5 items-start">
-              {/* Day Labels (Mon, Wed, Fri) */}
-              <div className="flex flex-col gap-1 pr-1.5 text-[9px] font-semibold text-slate-500 pt-0.5 shrink-0 select-none">
-                <span className="h-[12px] leading-[12px]">Sun</span>
-                <span className="h-[12px] leading-[12px] text-slate-400">Mon</span>
-                <span className="h-[12px] leading-[12px]">Tue</span>
-                <span className="h-[12px] leading-[12px] text-slate-400">Wed</span>
-                <span className="h-[12px] leading-[12px]">Thu</span>
-                <span className="h-[12px] leading-[12px] text-slate-400">Fri</span>
-                <span className="h-[12px] leading-[12px]">Sat</span>
+      <div className="space-y-2 w-full">
+        <div className="overflow-x-auto pb-3 pt-1 scrollbar-thin scrollbar-thumb-slate-800 w-full">
+          <div className="min-w-[700px] w-full">
+            {/* Matrix Grid: Left Day Labels + Full-Width Columns */}
+            <div className="flex gap-2.5 items-start w-full">
+              {/* Day Labels (Sun, Mon, Tue, Wed, Thu, Fri, Sat) */}
+              <div className="flex flex-col justify-between h-[126px] sm:h-[133px] pr-1 text-[9px] font-semibold text-slate-500 pt-5 shrink-0 select-none">
+                <span className="leading-none">Sun</span>
+                <span className="leading-none text-slate-400">Mon</span>
+                <span className="leading-none">Tue</span>
+                <span className="leading-none text-slate-400">Wed</span>
+                <span className="leading-none">Thu</span>
+                <span className="leading-none text-slate-400">Fri</span>
+                <span className="leading-none">Sat</span>
               </div>
 
-              {/* 52 Columns of 7 Days */}
-              <div className="flex gap-[3.5px] items-center">
-                {weeks.map((week, wIdx) => (
-                  <div key={wIdx} className="flex flex-col gap-[3.5px]">
-                    {week.map((day, dIdx) => {
-                      return (
+              {/* Full-width columns area */}
+              <div className="flex-1 w-full min-w-0">
+                {/* Month Labels proportionally aligned */}
+                <div className="relative w-full h-4 mb-2 text-[10px] font-bold text-slate-400 select-none">
+                  {monthHeaders.map((hdr, idx) => {
+                    const totalW = weeks.length || 52;
+                    const leftPercent = Math.min(94, Math.max(0, (hdr.weekIndex / totalW) * 100));
+                    return (
+                      <div
+                        key={idx}
+                        style={{ left: `${leftPercent}%` }}
+                        className="absolute transform -translate-x-1/2 whitespace-nowrap"
+                      >
+                        {hdr.label}
+                      </div>
+                    );
+                  })}
+                </div>
+
+                {/* Columns of 7 Days stretched to 100% full width */}
+                <div className="flex w-full justify-between gap-[3px] sm:gap-[4px] items-stretch">
+                  {weeks.map((week, wIdx) => (
+                    <div key={wIdx} className="flex-1 min-w-[7px] flex flex-col justify-between gap-[3px] sm:gap-[4px]">
+                      {week.map((day, dIdx) => (
                         <div
                           key={dIdx}
                           onMouseEnter={() =>
@@ -370,16 +372,16 @@ export default function MemberCreationHeatmap({ members = [] }: MemberCreationHe
                             })
                           }
                           onMouseLeave={() => setHoveredDay(null)}
-                          className={`h-[12px] w-[12px] rounded-[3px] transition-transform duration-150 cursor-pointer ${getCellColor(
+                          className={`w-full h-[14px] sm:h-[15px] rounded-[3px] transition-transform duration-150 cursor-pointer ${getCellColor(
                             day.level,
                             day.isFuture
                           )}`}
                           title={`${day.count} people created on ${day.formattedDate}`}
                         />
-                      );
-                    })}
-                  </div>
-                ))}
+                      ))}
+                    </div>
+                  ))}
+                </div>
               </div>
             </div>
           </div>
