@@ -32,6 +32,7 @@ import {
   FamilyMemberRecord,
 } from "@/redux/api/familyApi";
 import { ALL_FAMILY_RELATIONSHIPS, getRelationshipMeta } from "@/lib/familyRelationships";
+import { useAppSelector } from "@/redux/store";
 
 interface AddMemberModalProps {
   isOpen: boolean;
@@ -40,6 +41,7 @@ interface AddMemberModalProps {
   role?: string;
   defaultRelationship?: string;
   relativeToName?: string;
+  familyId?: string;
 }
 
 export default function AddMemberModal({
@@ -49,9 +51,13 @@ export default function AddMemberModal({
   role,
   defaultRelationship = "CHILD",
   relativeToName,
+  familyId,
 }: AddMemberModalProps) {
+  const { user } = useAppSelector((state) => state.auth);
   // Fetch existing members from database for real-time deduplication suggestions
-  const { data: existingMembers = [], refetch: refetchMembers } = useGetMembersQuery();
+  const { data: existingMembers = [], refetch: refetchMembers } = useGetMembersQuery(
+    familyId ? { familyId, paginate: false } : { paginate: false }
+  );
 
   // Relationship selection when adding a relative
   const [relationshipType, setRelationshipType] = useState(defaultRelationship);
@@ -143,6 +149,8 @@ export default function AddMemberModal({
       if (selectedLinkedMember) {
         await addMember({
           existingPersonId: selectedLinkedMember.id,
+          familyId: familyId || undefined,
+          creatorUserId: user?.id || undefined,
           firstName: firstName.trim(),
           lastName: lastName.trim(),
           relativeToPersonId: relativeToPersonId || undefined,
@@ -154,6 +162,8 @@ export default function AddMemberModal({
         );
       } else {
         await addMember({
+          familyId: familyId || undefined,
+          creatorUserId: user?.id || undefined,
           firstName: firstName.trim(),
           lastName: lastName.trim(),
           middleName: middleName.trim(),

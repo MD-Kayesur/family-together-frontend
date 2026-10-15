@@ -184,8 +184,15 @@ export function transformPaginatedList<T>(response: any): PaginatedList<T> {
 
 export const familyApi = baseApi.injectEndpoints({
   endpoints: (builder) => ({
-    getSanctuary: builder.query<SanctuaryResponse, void>({
-      query: () => "/family/sanctuary",
+    getSanctuary: builder.query<SanctuaryResponse, { userId?: string; familyId?: string } | void>({
+      query: (params) => {
+        if (!params) return "/family/sanctuary";
+        const sp = new URLSearchParams();
+        if (params.userId) sp.set("userId", params.userId);
+        if (params.familyId) sp.set("familyId", params.familyId);
+        const qs = sp.toString();
+        return qs ? `/family/sanctuary?${qs}` : "/family/sanctuary";
+      },
       providesTags: ["Sanctuary"],
     }),
     updateFamilyDetails: builder.mutation<
@@ -201,7 +208,7 @@ export const familyApi = baseApi.injectEndpoints({
     }),
     getMembers: builder.query<
       PaginatedList<FamilyMemberRecord>,
-      { page?: number; limit?: number; search?: string; q?: string; paginate?: boolean } | void
+      { page?: number; limit?: number; search?: string; q?: string; paginate?: boolean; familyId?: string; userId?: string } | void
     >({
       query: (params) => {
         if (!params) return "/family/members?paginate=false";
@@ -210,6 +217,8 @@ export const familyApi = baseApi.injectEndpoints({
         if (params.limit) sp.set("limit", String(params.limit));
         if (params.search || params.q) sp.set("search", params.search || params.q || "");
         if (params.paginate !== undefined) sp.set("paginate", String(params.paginate));
+        if (params.familyId) sp.set("familyId", params.familyId);
+        if (params.userId) sp.set("userId", params.userId);
         const qs = sp.toString();
         return qs ? `/family/members?${qs}` : "/family/members?paginate=false";
       },
@@ -236,6 +245,8 @@ export const familyApi = baseApi.injectEndpoints({
     addMember: builder.mutation<
       FamilyMemberRecord,
       {
+        familyId?: string;
+        creatorUserId?: string;
         existingPersonId?: string;
         firstName: string;
         lastName: string;
@@ -446,7 +457,7 @@ export const familyApi = baseApi.injectEndpoints({
     }),
     getRelationships: builder.query<
       PaginatedList<RelationshipRecord>,
-      { page?: number; limit?: number; search?: string; personId?: string; paginate?: boolean } | void
+      { page?: number; limit?: number; search?: string; personId?: string; paginate?: boolean; familyId?: string; userId?: string } | void
     >({
       query: (params) => {
         if (!params) return "/family/relationships?paginate=false";
@@ -456,6 +467,8 @@ export const familyApi = baseApi.injectEndpoints({
         if (params.search) sp.set("search", params.search);
         if (params.personId) sp.set("personId", params.personId);
         if (params.paginate !== undefined) sp.set("paginate", String(params.paginate));
+        if (params.familyId) sp.set("familyId", params.familyId);
+        if (params.userId) sp.set("userId", params.userId);
         const qs = sp.toString();
         return qs ? `/family/relationships?${qs}` : "/family/relationships?paginate=false";
       },

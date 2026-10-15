@@ -41,9 +41,24 @@ import InteractiveFamilyTreeCanvas from "@/components/tree/InteractiveFamilyTree
 
 export default function FamilyTab() {
   const { user } = useAppSelector((state) => state.auth);
-  const { data: sanctuaryData, isLoading: isLoadingSanctuary, refetch: refetchSanctuary } = useGetSanctuaryQuery();
-  const { data: members = [], isLoading: isLoadingMembers, refetch: refetchMembers } = useGetMembersQuery();
-  const { data: relationships = [], refetch: refetchRelationships } = useGetRelationshipsQuery();
+  const { data: sanctuaryData, isLoading: isLoadingSanctuary, refetch: refetchSanctuary } = useGetSanctuaryQuery(
+    user?.id ? { userId: user.id } : undefined
+  );
+
+  const family = sanctuaryData?.family;
+  const userFamilyId = family?.id;
+  const stats = sanctuaryData?.stats;
+
+  const { data: members = [], isLoading: isLoadingMembers, refetch: refetchMembers } = useGetMembersQuery(
+    userFamilyId || user?.id
+      ? { familyId: userFamilyId, userId: user?.id, paginate: false }
+      : { paginate: false }
+  );
+  const { data: relationships = [], refetch: refetchRelationships } = useGetRelationshipsQuery(
+    userFamilyId || user?.id
+      ? { familyId: userFamilyId, userId: user?.id, paginate: false }
+      : { paginate: false }
+  );
   const { data: memories = [], refetch: refetchMemories } = useGetMemoriesQuery(
     user?.id || user?.email ? { userId: user.id, userEmail: user.email } : undefined,
     { skip: !user?.id && !user?.email }
@@ -60,9 +75,6 @@ export default function FamilyTab() {
   const [familyName, setFamilyName] = useState("");
   const [familyDesc, setFamilyDesc] = useState("");
   const [editSuccessMsg, setEditSuccessMsg] = useState("");
-
-  const family = sanctuaryData?.family;
-  const stats = sanctuaryData?.stats;
 
   // Filter members by search
   const filteredMembers = members.filter((m) =>
@@ -245,7 +257,7 @@ export default function FamilyTab() {
         </div>
 
         {/* Dynamic Full Screen Viewport 2D Canvas */}
-        <InteractiveFamilyTreeCanvas />
+        <InteractiveFamilyTreeCanvas familyId={userFamilyId} scope="my-family" />
       </div>
 
       {/* 4. Ancestral Lineage & Heritage Cards */}
@@ -421,6 +433,7 @@ export default function FamilyTab() {
       {/* Modals */}
       <AddMemberModal
         isOpen={isAddMemberOpen}
+        familyId={userFamilyId}
         onClose={() => {
           setIsAddMemberOpen(false);
           refetchMembers();

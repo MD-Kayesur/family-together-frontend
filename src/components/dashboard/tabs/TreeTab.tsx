@@ -16,8 +16,8 @@ interface TreeTabProps {
 export default function TreeTab({ role, currentUserId }: TreeTabProps) {
   const router = useRouter();
   const [canvasMode, setCanvasMode] = useState<"LANDING" | "DB">("LANDING");
-  const { data: members = [], refetch: refetchMembers } = useGetMembersQuery();
-  const { data: relationships = [], refetch: refetchRelationships } = useGetRelationshipsQuery();
+  const { data: members = [], refetch: refetchMembers } = useGetMembersQuery({ paginate: false });
+  const { data: relationships = [], refetch: refetchRelationships } = useGetRelationshipsQuery({ paginate: false });
 
   const { user } = useAppSelector((state) => state.auth);
   const activeUserId = currentUserId || user?.id;
@@ -119,7 +119,7 @@ export default function TreeTab({ role, currentUserId }: TreeTabProps) {
             />
           </div>
         ) : (
-          <InteractiveFamilyTreeCanvas role={role} currentUserId={currentUserId} />
+          <InteractiveFamilyTreeCanvas role={role} currentUserId={currentUserId} scope="all" />
         )}
       </div>
 

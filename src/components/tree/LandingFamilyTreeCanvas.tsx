@@ -117,10 +117,10 @@ export default function LandingFamilyTreeCanvas({
   const defaultZoom = isCard ? 70 : 100;
 
   const { user } = useAppSelector((state) => state.auth);
-  const { data: dbMembers = [], refetch: refetchMembers } = useGetMembersQuery(undefined, {
+  const { data: dbMembers = [], refetch: refetchMembers } = useGetMembersQuery({ paginate: false }, {
     skip: !useDatabaseData,
   });
-  const { data: dbRelationships = [], refetch: refetchRelationships } = useGetRelationshipsQuery(undefined, {
+  const { data: dbRelationships = [], refetch: refetchRelationships } = useGetRelationshipsQuery({ paginate: false }, {
     skip: !useDatabaseData,
   });
 

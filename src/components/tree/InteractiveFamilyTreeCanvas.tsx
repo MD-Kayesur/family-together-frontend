@@ -43,16 +43,34 @@ export default function InteractiveFamilyTreeCanvas({
   isCompact = false,
   role,
   currentUserId,
+  familyId,
+  scope,
 }: {
   isCompact?: boolean;
   role?: string;
   currentUserId?: string;
+  familyId?: string;
+  scope?: "my-family" | "all";
 }) {
-  const { data: members = [], isLoading: isLoadingMembers, refetch: refetchMembers } = useGetMembersQuery();
-  const { data: serverRelationships = [], refetch: refetchRelationships } = useGetRelationshipsQuery();
+  const queryParams =
+    scope === "my-family" || familyId
+      ? { familyId, userId: currentUserId, paginate: false }
+      : { paginate: false };
+
+  const { data: members = [], isLoading: isLoadingMembers, refetch: refetchMembers } = useGetMembersQuery(queryParams);
+  const { data: serverRelationships = [], refetch: refetchRelationships } = useGetRelationshipsQuery(queryParams);
   const [addRelationship] = useAddRelationshipMutation();
 
   const canvasRef = useRef<HTMLDivElement>(null);
+
+  const storageKey =
+    scope === "my-family"
+      ? `my_family_positions_${familyId || currentUserId || "user"}`
+      : "family_tree_positions_v1";
+  const connStorageKey =
+    scope === "my-family"
+      ? `my_family_connections_${familyId || currentUserId || "user"}`
+      : "family_tree_connections_v1";
 
   // Layout & State
   const [nodePositions, setNodePositions] = useState<Record<string, { x: number; y: number }>>({});
@@ -80,7 +98,7 @@ export default function InteractiveFamilyTreeCanvas({
   useEffect(() => {
     if (members.length === 0) return;
 
-    const savedPositions = localStorage.getItem("family_tree_positions_v1");
+    const savedPositions = localStorage.getItem(storageKey);
     if (savedPositions) {
       try {
         setNodePositions(JSON.parse(savedPositions));
@@ -106,7 +124,7 @@ export default function InteractiveFamilyTreeCanvas({
 
   // 2. Load connections from server & LocalStorage
   useEffect(() => {
-    const savedConnections = localStorage.getItem("family_tree_connections_v1");
+    const savedConnections = localStorage.getItem(connStorageKey);
     if (savedConnections) {
       try {
         setConnections(JSON.parse(savedConnections));
@@ -142,16 +160,16 @@ export default function InteractiveFamilyTreeCanvas({
 
   // Save Layout
   const saveLayout = () => {
-    localStorage.setItem("family_tree_positions_v1", JSON.stringify(nodePositions));
-    localStorage.setItem("family_tree_connections_v1", JSON.stringify(connections));
+    localStorage.setItem(storageKey, JSON.stringify(nodePositions));
+    localStorage.setItem(connStorageKey, JSON.stringify(connections));
     setSavedToast(true);
     setTimeout(() => setSavedToast(false), 2500);
   };
 
   // Reset Layout
   const resetLayout = () => {
-    localStorage.removeItem("family_tree_positions_v1");
-    localStorage.removeItem("family_tree_connections_v1");
+    localStorage.removeItem(storageKey);
+    localStorage.removeItem(connStorageKey);
     const initial: Record<string, { x: number; y: number }> = {};
     const startX = 60;
     const startY = 50;
@@ -284,7 +302,7 @@ export default function InteractiveFamilyTreeCanvas({
 
     const updated = [...connections, newConn];
     setConnections(updated);
-    localStorage.setItem("family_tree_connections_v1", JSON.stringify(updated));
+    localStorage.setItem(connStorageKey, JSON.stringify(updated));
 
     // Try posting to backend
     const fromM = members.find((m) => m.id === selectedSourceId);
@@ -312,7 +330,7 @@ export default function InteractiveFamilyTreeCanvas({
   const handleDeleteConnection = (connId: string) => {
     const updated = connections.filter((c) => c.id !== connId);
     setConnections(updated);
-    localStorage.setItem("family_tree_connections_v1", JSON.stringify(updated));
+    localStorage.setItem(connStorageKey, JSON.stringify(updated));
   };
 
   // Dimensions
