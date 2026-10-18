@@ -22,7 +22,8 @@ export async function GET(request: NextRequest) {
     const queryIp = searchParams.get("ip");
     const queryCountry = searchParams.get("country");
 
-    // 1. Resolve client IP from headers
+    // 1. Resolve client IP and Edge Country Headers
+    const edgeCountry = request.headers.get("x-vercel-ip-country") || request.headers.get("cf-ipcountry");
     const forwardedFor = request.headers.get("x-forwarded-for");
     const realIp = request.headers.get("x-real-ip");
     const cfIp = request.headers.get("cf-connecting-ip");
@@ -45,12 +46,28 @@ export async function GET(request: NextRequest) {
       });
     }
 
+    // 2. Check Edge Gateway Headers (Vercel / Cloudflare provide this for free with zero API keys)
+    if (edgeCountry && edgeCountry.length === 2 && edgeCountry.toUpperCase() !== "XX") {
+      const countryCode = edgeCountry.toUpperCase();
+      const suggestedLanguage: Language = COUNTRY_TO_LANGUAGE_MAP[countryCode] || "en";
+      return NextResponse.json({
+        success: true,
+        ip: clientIp || "edge_ip",
+        countryCode,
+        countryName: getCountryNameByCode(countryCode),
+        cityName: request.headers.get("x-vercel-ip-city") || "",
+        regionName: request.headers.get("x-vercel-ip-country-region") || "",
+        suggestedLanguage,
+        source: "edge_header",
+      });
+    }
+
     const apiKey =
       process.env.IP2LOCATION_API_KEY ||
       process.env.NEXT_PUBLIC_IP2LOCATION_API_KEY ||
       "";
 
-    // 2. Call IP2Location.io if key is configured
+    // 3. Call IP2Location.io if key is configured
     if (apiKey) {
       try {
         let apiUrl = `https://api.ip2location.io/?key=${encodeURIComponent(apiKey)}`;
@@ -75,7 +92,6 @@ export async function GET(request: NextRequest) {
           const data = await response.json();
           if (data && data.country_code) {
             const countryCode = String(data.country_code).toUpperCase();
-            // Default to 'en' for English locations and unmapped countries
             const suggestedLanguage: Language =
               COUNTRY_TO_LANGUAGE_MAP[countryCode] || "en";
 
@@ -93,11 +109,51 @@ export async function GET(request: NextRequest) {
           }
         }
       } catch (apiErr) {
-        console.warn("[IP2Location] Remote lookup failed, falling back to heuristics:", apiErr);
+        console.warn("[IP2Location] Remote lookup failed, falling back to public IP resolution:", apiErr);
       }
     }
 
-    // 3. Fallback Heuristics for localhost, development, or network offline
+    // 4. Free Public IP Geolocation (Zero-config fallback: no API key required!)
+    try {
+      let publicApiUrl = "https://freeipapi.com/api/json/";
+      if (clientIp && !isPrivateOrLocalIp(clientIp)) {
+        publicApiUrl += encodeURIComponent(clientIp);
+      }
+
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), 3500);
+
+      const pubRes = await fetch(publicApiUrl, {
+        signal: controller.signal,
+        headers: { Accept: "application/json" },
+        cache: "no-store",
+      });
+      clearTimeout(timeoutId);
+
+      if (pubRes.ok) {
+        const pubData = await pubRes.json();
+        if (pubData && pubData.countryCode) {
+          const countryCode = String(pubData.countryCode).toUpperCase();
+          const suggestedLanguage: Language = COUNTRY_TO_LANGUAGE_MAP[countryCode] || "en";
+
+          return NextResponse.json({
+            success: true,
+            ip: pubData.ipAddress || clientIp,
+            countryCode,
+            countryName: pubData.countryName || getCountryNameByCode(countryCode),
+            regionName: pubData.regionName || "",
+            cityName: pubData.cityName || "",
+            timeZone: pubData.timeZone || "",
+            suggestedLanguage,
+            source: "free_ip_resolver",
+          });
+        }
+      }
+    } catch {
+      // Fall through to browser heuristics
+    }
+
+    // 5. Fallback Heuristics for offline / localhost without public internet
     const acceptLanguage = (request.headers.get("accept-language") || "").toLowerCase();
     let fallbackLang: Language = "en";
     let fallbackCountry = "US";
