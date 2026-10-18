@@ -1,0 +1,51 @@
+
+  <!DOCTYPE html>
+  <html>
+  <head>
+    <meta charset="utf-8">
+    <title>Authenticated Route Redirection & Dashboard Architecture Guide</title>
+    <style>
+      body { font-family: 'Segoe UI', Arial, sans-serif; line-height: 1.6; color: #1e293b; padding: 40px; }
+      h1 { color: #1e3a8a; border-bottom: 2px solid #e2e8f0; padding-bottom: 8px; }
+      h2 { color: #0f172a; margin-top: 30px; }
+      table { width: 100%; border-collapse: collapse; margin: 20px 0; }
+      th, td { border: 1px solid #cbd5e1; padding: 10px 14px; text-align: left; }
+      th { background-color: #1e3a8a; color: #ffffff; }
+      code { background-color: #f1f5f9; padding: 2px 6px; border-radius: 4px; font-family: Consolas, monospace; }
+      .badge { display: inline-block; padding: 4px 8px; border-radius: 4px; font-weight: bold; }
+      .success { background-color: #dcfce7; color: #166534; }
+    </style>
+  </head>
+  <body>
+    <h1>🛡️ Authenticated Route Redirection & Zero-Flash Dashboard Architecture</h1>
+    <p><em>Comprehensive Technical Documentation on Server-Side Edge Proxy, Role-Based URL Redirection, and History Protection</em></p>
+    <hr/>
+    <h2>1. Executive Summary & Problem Solved</h2>
+    <p>When an authenticated user enters <code>/login</code>, <code>/signin</code>, or <code>/signup</code> in their browser address bar, this architecture ensures they are immediately and seamlessly redirected to their role-specific dashboard with <strong>zero flash of unauthenticated login forms</strong>.</p>
+    
+    <h2>2. Multi-Layer Redirection Stack</h2>
+    <table>
+      <tr><th>Layer</th><th>File</th><th>Description</th></tr>
+      <tr><td>Edge Proxy</td><td><code>src/proxy.ts</code></td><td>Next.js 16 convention. Inspects cookies before render. Returns HTTP 307 redirect immediately.</td></tr>
+      <tr><td>Server Route</td><td><code>src/app/login/page.tsx</code></td><td>Server Component for /login. Redirects authenticated users directly to role dashboard.</td></tr>
+      <tr><td>Cookie Sync</td><td><code>src/redux/slices/authSlice.ts</code></td><td>Maintains lightweight <code>is_authenticated</code> and <code>user_role</code> cookies across auth lifecycle.</td></tr>
+      <tr><td>Client Guard</td><td><code>src/app/signin/page.tsx</code> & <code>src/app/signup/page.tsx</code></td><td>Short-circuits rendering if authenticated, replaces history using <code>router.replace</code>.</td></tr>
+    </table>
+
+    <h2>3. Destination Matrix by Role</h2>
+    <table>
+      <tr><th>Role</th><th>Destination</th><th>Description</th></tr>
+      <tr><td><strong>OWNER</strong></td><td><code>/owner-dashboard</code></td><td>Family Sanctuary Manager: family tree editor, billing, member management.</td></tr>
+      <tr><td><strong>ADMIN / SUPER_ADMIN</strong></td><td><code>/admin-dashboard</code></td><td>System Administration: audit logs, platform analytics, moderation.</td></tr>
+      <tr><td><strong>USER / MEMBER</strong></td><td><code>/user-dashboard</code></td><td>Family Member Sanctuary: memories, events, private messages, profile.</td></tr>
+    </table>
+
+    <h2>4. Live Verification Results</h2>
+    <p><span class="badge success">PASS</span> <strong>cURL /signin (OWNER)</strong>: <code>HTTP/1.1 307 Temporary Redirect -> /owner-dashboard</code></p>
+    <p><span class="badge success">PASS</span> <strong>cURL /signin (USER)</strong>: <code>HTTP/1.1 307 Temporary Redirect -> /user-dashboard</code></p>
+    <p><span class="badge success">PASS</span> <strong>cURL /signin (ADMIN)</strong>: <code>HTTP/1.1 307 Temporary Redirect -> /admin-dashboard</code></p>
+    <p><span class="badge success">PASS</span> <strong>cURL /signin (Guest)</strong>: <code>HTTP/1.1 200 OK (Loads signin form)</code></p>
+    <p><span class="badge success">PASS</span> <strong>TypeScript Verification</strong>: <code>npx tsc --noEmit</code> exited with code 0 (zero errors).</p>
+  </body>
+  </html>
+  

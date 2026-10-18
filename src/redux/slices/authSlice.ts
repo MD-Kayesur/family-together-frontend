@@ -21,6 +21,20 @@ interface AuthState {
   isAuthenticated: boolean;
 }
 
+export const syncAuthCookies = (isAuth: boolean, role?: string) => {
+  if (typeof document === "undefined") return;
+  if (isAuth) {
+    const maxAge = 7 * 24 * 60 * 60; // 7 days
+    document.cookie = `is_authenticated=true; path=/; max-age=${maxAge}; SameSite=Lax`;
+    if (role) {
+      document.cookie = `user_role=${role}; path=/; max-age=${maxAge}; SameSite=Lax`;
+    }
+  } else {
+    document.cookie = "is_authenticated=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT; SameSite=Lax";
+    document.cookie = "user_role=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT; SameSite=Lax";
+  }
+};
+
 const getInitialState = (): AuthState => {
   if (typeof window === "undefined") {
     return { user: null, token: null, isAuthenticated: false };
@@ -38,10 +52,15 @@ const getInitialState = (): AuthState => {
     }
   }
 
+  const isAuth = Boolean(token);
+  if (isAuth && user) {
+    syncAuthCookies(true, user.role);
+  }
+
   return {
     user,
     token,
-    isAuthenticated: Boolean(token),
+    isAuthenticated: isAuth,
   };
 };
 
@@ -65,6 +84,7 @@ const authSlice = createSlice({
           if (refreshToken) {
             localStorage.setItem("refreshToken", refreshToken);
           }
+          syncAuthCookies(true, user.role);
         }
       }
     },
@@ -77,6 +97,7 @@ const authSlice = createSlice({
         localStorage.removeItem("accessToken");
         localStorage.removeItem("refreshToken");
         localStorage.removeItem("user");
+        syncAuthCookies(false);
       }
     },
     updateUser: (state, action: PayloadAction<Partial<User>>) => {
@@ -84,6 +105,7 @@ const authSlice = createSlice({
         state.user = { ...state.user, ...action.payload };
         if (typeof window !== "undefined") {
           localStorage.setItem("user", JSON.stringify(state.user));
+          syncAuthCookies(true, state.user.role);
         }
       }
     },

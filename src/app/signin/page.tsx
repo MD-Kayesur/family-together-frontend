@@ -29,9 +29,24 @@ function SignInContent() {
 
   useEffect(() => {
     if (isAuthenticated) {
-      router.push(getDashboardRouteByRole(user?.role));
+      router.replace(getDashboardRouteByRole(user?.role));
     }
   }, [isAuthenticated, user, router]);
+
+  // Prevent flash of sign-in page if already authenticated
+  if (isAuthenticated) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-background text-on-surface">
+        <div className="flex flex-col items-center gap-4 text-center p-8 rounded-2xl bg-surface-container-high/70 backdrop-blur-md border border-outline-variant/30 shadow-2xl max-w-sm">
+          <div className="h-10 w-10 border-3 border-primary border-t-transparent rounded-full animate-spin" />
+          <div>
+            <h3 className="text-lg font-semibold text-on-surface">Already Logged In</h3>
+            <p className="text-sm text-on-surface-variant mt-1">Redirecting to your dashboard...</p>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   useEffect(() => {
     const verified = searchParams.get("verified");
@@ -65,7 +80,7 @@ function SignInContent() {
       const target = getDashboardRouteByRole(response.user?.role);
       setSuccessMsg(`Welcome back, ${response.user?.fullName || "User"}! Redirecting...`);
       setTimeout(() => {
-        router.push(target);
+        router.replace(target);
       }, 800);
     } catch (err: any) {
       if (err?.data?.requiresEmailVerification) {
