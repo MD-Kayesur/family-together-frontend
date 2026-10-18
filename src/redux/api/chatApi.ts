@@ -83,6 +83,40 @@ export const chatApi = baseApi.injectEndpoints({
     checkCanMessage: builder.query<{ allowed: boolean }, string>({
       query: (recipientId) => `/family/chat/can-message/${recipientId}`,
     }),
+    updateChatMessage: builder.mutation<
+      ChatMessageItem,
+      { id: string; conversationId: string; text: string; mediaUrl?: string }
+    >({
+      query: ({ id, text, mediaUrl }) => ({
+        url: `/family/chat/messages/${id}`,
+        method: "PATCH",
+        body: { text, mediaUrl },
+      }),
+      invalidatesTags: (result, error, arg) => [
+        "Conversations",
+        { type: "ChatMessages", id: arg.conversationId },
+      ],
+    }),
+    deleteChatMessage: builder.mutation<
+      { success: boolean; deletedId: string; conversationId?: string },
+      { id: string; conversationId: string }
+    >({
+      query: ({ id }) => ({
+        url: `/family/chat/messages/${id}`,
+        method: "DELETE",
+      }),
+      invalidatesTags: (result, error, arg) => [
+        "Conversations",
+        { type: "ChatMessages", id: arg.conversationId },
+      ],
+    }),
+    deleteConversation: builder.mutation<{ success: boolean; deletedId: string }, string>({
+      query: (conversationId) => ({
+        url: `/family/chat/conversations/${conversationId}`,
+        method: "DELETE",
+      }),
+      invalidatesTags: ["Conversations"],
+    }),
   }),
   overrideExisting: true,
 });
@@ -94,4 +128,8 @@ export const {
   useSendChatMessageMutation,
   useMarkConversationAsReadMutation,
   useCheckCanMessageQuery,
+  useUpdateChatMessageMutation,
+  useDeleteChatMessageMutation,
+  useDeleteConversationMutation,
 } = chatApi;
+

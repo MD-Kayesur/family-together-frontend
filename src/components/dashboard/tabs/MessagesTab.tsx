@@ -22,6 +22,11 @@ import {
   ShieldAlert,
   Lock,
   UserCheck,
+  Edit2,
+  Trash2,
+  AlertTriangle,
+  X,
+  Loader2,
 } from "lucide-react";
 import { io, Socket } from "socket.io-client";
 import { useGetMembersQuery } from "@/redux/api/familyApi";
@@ -31,6 +36,9 @@ import {
   useSendChatMessageMutation,
   useMarkConversationAsReadMutation,
   useCreateConversationMutation,
+  useUpdateChatMessageMutation,
+  useDeleteChatMessageMutation,
+  useDeleteConversationMutation,
 } from "@/redux/api/chatApi";
 import { useAppSelector } from "@/redux/store";
 
@@ -86,6 +94,9 @@ export default function MessagesTab({ role = "MEMBER", currentUserId }: Messages
   const [sendChatMessage] = useSendChatMessageMutation();
   const [markConversationAsRead] = useMarkConversationAsReadMutation();
   const [createConversation] = useCreateConversationMutation();
+  const [updateChatMessage, { isLoading: isUpdatingMessage }] = useUpdateChatMessageMutation();
+  const [deleteChatMessage, { isLoading: isDeletingMessage }] = useDeleteChatMessageMutation();
+  const [deleteConversation, { isLoading: isDeletingConversation }] = useDeleteConversationMutation();
 
   const [activeFilter, setActiveFilter] = useState<"ALL" | "CHANNELS" | "DIRECT">("ALL");
   const [searchQuery, setSearchQuery] = useState("");
@@ -93,6 +104,11 @@ export default function MessagesTab({ role = "MEMBER", currentUserId }: Messages
   const [inputText, setInputText] = useState("");
   const [isTypingRemote, setIsTypingRemote] = useState(false);
   const [socketConnected, setSocketConnected] = useState(false);
+
+  // Message Editing & Deletion State
+  const [editingMessageId, setEditingMessageId] = useState<string | null>(null);
+  const [editingText, setEditingText] = useState<string>("");
+  const [isDeleteConvModalOpen, setIsDeleteConvModalOpen] = useState(false);
 
   const socketRef = useRef<Socket | null>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
@@ -585,12 +601,16 @@ export default function MessagesTab({ role = "MEMBER", currentUserId }: Messages
             >
               <Video className="h-4 w-4" />
             </button>
-            <button
-              type="button"
-              className="p-2 rounded-xl hover:text-white hover:bg-slate-800 transition-all cursor-pointer"
-            >
-              <MoreVertical className="h-4 w-4" />
-            </button>
+            {activeConversationId !== "sanctuary-circle" && (
+              <button
+                type="button"
+                onClick={() => setIsDeleteConvModalOpen(true)}
+                className="p-2 rounded-xl text-slate-400 hover:text-rose-400 hover:bg-rose-950/40 transition-all cursor-pointer"
+                title="Delete Conversation Thread"
+              >
+                <Trash2 className="h-4 w-4" />
+              </button>
+            )}
           </div>
         </div>
 
@@ -635,7 +655,117 @@ export default function MessagesTab({ role = "MEMBER", currentUserId }: Messages
                       : "bg-slate-900 border border-slate-800 text-slate-200 rounded-bl-xs"
                   }`}
                 >
-                  <p>{msg.text}</p>
+                  {editingMessageId === msg.id ? (
+                    <div className="space-y-2">
+                      <input
+                        type="text"
+                        value={editingText}
+                        onChange={(e) => setEditingText(e.target.value)}
+                        className="w-full px-2.5 py-1.5 bg-slate-950 border border-purple-400 rounded-lg text-xs text-white focus:outline-none"
+                        autoFocus
+                        onKeyDown={(e) => {
+                          if (e.key === "Enter") {
+                            e.preventDefault();
+                            if (editingText.trim()) {
+                              updateChatMessage({
+                                id: msg.id,
+                                conversationId: activeConversationId,
+                                text: editingText.trim(),
+                              });
+                              setLocalMessages((prev) => ({
+                                ...prev,
+                                [activeConversationId]: (prev[activeConversationId] || []).map((m) =>
+                                  m.id === msg.id ? { ...m, text: editingText.trim() } : m
+                                ),
+                              }));
+                              setEditingMessageId(null);
+                            }
+                          } else if (e.key === "Escape") {
+                            setEditingMessageId(null);
+                          }
+                        }}
+                      />
+                      <div className="flex items-center justify-end gap-1.5">
+                        <button
+                          type="button"
+                          onClick={() => setEditingMessageId(null)}
+                          className="px-2 py-0.5 rounded text-[10px] bg-slate-800 text-slate-300 hover:text-white"
+                        >
+                          Cancel
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => {
+                            if (editingText.trim()) {
+                              updateChatMessage({
+                                id: msg.id,
+                                conversationId: activeConversationId,
+                                text: editingText.trim(),
+                              });
+                              setLocalMessages((prev) => ({
+                                ...prev,
+                                [activeConversationId]: (prev[activeConversationId] || []).map((m) =>
+                                  m.id === msg.id ? { ...m, text: editingText.trim() } : m
+                                ),
+                              }));
+                              setEditingMessageId(null);
+                            }
+                          }}
+                          className="px-2 py-0.5 rounded text-[10px] bg-white text-purple-900 font-bold hover:bg-slate-200"
+                        >
+                          Save
+                        </button>
+                      </div>
+                    </div>
+                  ) : (
+                    <>
+                      <p>{msg.text}</p>
+                      {(msg.isMe || myRole === "OWNER" || myRole === "ADMIN") && (
+                        <div
+                          className={`absolute top-1 ${
+                            msg.isMe ? "-left-14" : "-right-14"
+                          } hidden group-hover:flex items-center gap-1 bg-slate-900/95 border border-slate-700 rounded-lg p-1 shadow-md z-10`}
+                        >
+                          {msg.isMe && (
+                            <button
+                              type="button"
+                              onClick={() => {
+                                setEditingMessageId(msg.id);
+                                setEditingText(msg.text);
+                              }}
+                              className="p-1 text-slate-400 hover:text-indigo-400 transition-colors"
+                              title="Edit message"
+                            >
+                              <Edit2 className="h-3 w-3" />
+                            </button>
+                          )}
+                          <button
+                            type="button"
+                            onClick={async () => {
+                              try {
+                                await deleteChatMessage({
+                                  id: msg.id,
+                                  conversationId: activeConversationId,
+                                }).unwrap();
+                              } catch (err) {
+                                console.error("Error deleting msg:", err);
+                              }
+                              setLocalMessages((prev) => ({
+                                ...prev,
+                                [activeConversationId]: (prev[activeConversationId] || []).filter(
+                                  (m) => m.id !== msg.id
+                                ),
+                              }));
+                            }}
+                            className="p-1 text-slate-400 hover:text-rose-400 transition-colors"
+                            title="Delete message"
+                          >
+                            <Trash2 className="h-3 w-3" />
+                          </button>
+                        </div>
+                      )}
+                    </>
+                  )}
                 </div>
 
                 <div
@@ -704,6 +834,54 @@ export default function MessagesTab({ role = "MEMBER", currentUserId }: Messages
           )}
         </div>
       </div>
+
+      {/* Delete Conversation Confirmation Modal */}
+      {isDeleteConvModalOpen && (
+        <div className="fixed inset-0 z-50 bg-slate-950/80 backdrop-blur-sm flex items-center justify-center p-4">
+          <div className="bg-slate-900 border border-slate-800 rounded-3xl p-6 max-w-sm w-full shadow-2xl space-y-4">
+            <div className="h-12 w-12 rounded-2xl bg-rose-950/80 border border-rose-800/60 text-rose-400 flex items-center justify-center mx-auto">
+              <AlertTriangle className="h-6 w-6" />
+            </div>
+
+            <div className="text-center space-y-1">
+              <h3 className="font-bold text-white text-base">Delete Conversation?</h3>
+              <p className="text-xs text-slate-400">
+                Are you sure you want to delete this thread with{" "}
+                <strong className="text-white">{activeConversation?.name}</strong>? All messages in
+                this conversation will be permanently removed.
+              </p>
+            </div>
+
+            <div className="flex items-center justify-center gap-3 pt-2">
+              <button
+                type="button"
+                onClick={() => setIsDeleteConvModalOpen(false)}
+                className="px-4 py-2 rounded-xl border border-slate-800 text-slate-300 font-bold text-xs hover:bg-slate-800 cursor-pointer"
+              >
+                Keep Thread
+              </button>
+              <button
+                type="button"
+                disabled={isDeletingConversation}
+                onClick={async () => {
+                  try {
+                    await deleteConversation(activeConversationId).unwrap();
+                    setActiveConversationId("sanctuary-circle");
+                    setIsDeleteConvModalOpen(false);
+                    refetchConversations();
+                  } catch (err) {
+                    console.error("Failed to delete conversation:", err);
+                  }
+                }}
+                className="px-4 py-2 rounded-xl bg-rose-600 hover:bg-rose-700 text-white font-bold text-xs flex items-center gap-1.5 cursor-pointer disabled:opacity-50"
+              >
+                {isDeletingConversation && <Loader2 className="h-3.5 w-3.5 animate-spin" />}
+                <span>Delete Conversation</span>
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

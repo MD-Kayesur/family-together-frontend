@@ -5,6 +5,7 @@ import {
   useGetDocumentsQuery,
   useAddDocumentMutation,
   useAddMultipleDocumentsMutation,
+  useUpdateDocumentMutation,
   useDeleteDocumentMutation,
   useDeleteAllDocumentsMutation,
   DocumentRecord,
@@ -16,6 +17,7 @@ import {
   FileText,
   ShieldCheck,
   Trash2,
+  Edit3,
   Loader2,
   Upload,
   FileCheck,
@@ -58,6 +60,7 @@ export default function DocumentsTab() {
     search: debouncedSearch,
   });
   const [addDocument, { isLoading: isSubmitting }] = useAddDocumentMutation();
+  const [updateDocument, { isLoading: isUpdatingDoc }] = useUpdateDocumentMutation();
   const [deleteDocument] = useDeleteDocumentMutation();
   const [deleteAllDocuments] = useDeleteAllDocumentsMutation();
 
@@ -70,6 +73,46 @@ export default function DocumentsTab() {
   const [defaultCategory, setDefaultCategory] = useState("Legal Records");
   const [uploadError, setUploadError] = useState("");
   const [uploadSuccess, setUploadSuccess] = useState("");
+
+  // Edit Document Modal State
+  const [docToEdit, setDocToEdit] = useState<DocumentRecord | null>(null);
+  const [editDocName, setEditDocName] = useState("");
+  const [editDocCategory, setEditDocCategory] = useState("Legal Records");
+  const [editDocError, setEditDocError] = useState("");
+  const [editDocSuccess, setEditDocSuccess] = useState("");
+
+  const handleOpenEditDoc = (doc: DocumentRecord) => {
+    setDocToEdit(doc);
+    setEditDocName(doc.name);
+    setEditDocCategory(doc.category || "Legal Records");
+    setEditDocError("");
+    setEditDocSuccess("");
+  };
+
+  const handleSaveEditDoc = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!docToEdit) return;
+    if (!editDocName.trim()) {
+      setEditDocError("Document name cannot be empty");
+      return;
+    }
+    setEditDocError("");
+    setEditDocSuccess("");
+    try {
+      await updateDocument({
+        id: docToEdit.id,
+        name: editDocName.trim(),
+        category: editDocCategory,
+      }).unwrap();
+      setEditDocSuccess("Document renamed & updated successfully!");
+      setTimeout(() => {
+        setDocToEdit(null);
+        setEditDocSuccess("");
+      }, 900);
+    } catch (err: any) {
+      setEditDocError(err?.data?.message || err?.message || "Failed to update document");
+    }
+  };
 
   // PDF Viewport Modal State
   const [selectedDocForViewer, setSelectedDocForViewer] = useState<DocumentRecord | null>(null);
@@ -586,17 +629,30 @@ export default function DocumentsTab() {
                     </div>
                   </div>
 
-                  <button
-                    type="button"
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      setDocToDelete(doc);
-                    }}
-                    className="p-1.5 text-slate-400 hover:text-rose-400 hover:bg-rose-950/40 rounded-lg transition-colors shrink-0 cursor-pointer"
-                    title="Delete document"
-                  >
-                    <Trash2 className="h-4 w-4" />
-                  </button>
+                  <div className="flex items-center gap-1 shrink-0">
+                    <button
+                      type="button"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        handleOpenEditDoc(doc);
+                      }}
+                      className="p-1.5 text-slate-400 hover:text-indigo-400 hover:bg-slate-800 rounded-lg transition-colors cursor-pointer"
+                      title="Edit / Rename document"
+                    >
+                      <Edit3 className="h-4 w-4" />
+                    </button>
+                    <button
+                      type="button"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        setDocToDelete(doc);
+                      }}
+                      className="p-1.5 text-slate-400 hover:text-rose-400 hover:bg-rose-950/40 rounded-lg transition-colors shrink-0 cursor-pointer"
+                      title="Delete document"
+                    >
+                      <Trash2 className="h-4 w-4" />
+                    </button>
+                  </div>
                 </div>
 
                 <div className="pt-3 border-t border-slate-800 flex items-center justify-between gap-2">
@@ -647,6 +703,94 @@ export default function DocumentsTab() {
           itemLabel="documents"
         />
       </div>
+      )}
+
+      {/* Edit Document Metadata Modal */}
+      {docToEdit && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/80 backdrop-blur-sm animate-fadeIn">
+          <div className="bg-slate-900 border border-slate-800 rounded-3xl p-6 sm:p-7 max-w-md w-full space-y-4 shadow-2xl animate-scaleUp">
+            <div className="flex items-center justify-between border-b border-slate-800 pb-3">
+              <div className="flex items-center gap-2.5">
+                <div className="h-9 w-9 rounded-xl bg-indigo-950/80 border border-indigo-800/60 text-indigo-400 flex items-center justify-center shrink-0">
+                  <Edit3 className="h-4 w-4" />
+                </div>
+                <div>
+                  <h3 className="text-sm font-bold text-white">Edit Document Metadata</h3>
+                  <p className="text-[11px] text-slate-400">Rename or change the vault category</p>
+                </div>
+              </div>
+              <button
+                type="button"
+                onClick={() => setDocToEdit(null)}
+                className="text-slate-400 hover:text-white p-1"
+              >
+                <X className="h-4 w-4" />
+              </button>
+            </div>
+
+            <form onSubmit={handleSaveEditDoc} className="space-y-4 text-xs">
+              <div>
+                <label className="block font-bold text-slate-300 mb-1.5">Document Title / Name *</label>
+                <input
+                  type="text"
+                  value={editDocName}
+                  onChange={(e) => setEditDocName(e.target.value)}
+                  placeholder="e.g., Grandfather Birth Certificate 1942"
+                  className="w-full px-3.5 py-2.5 bg-slate-950 border border-slate-800 rounded-xl text-white font-medium focus:ring-2 focus:ring-indigo-500 focus:outline-none"
+                  required
+                />
+              </div>
+
+              <div>
+                <label className="block font-bold text-slate-300 mb-1.5">Vault Category</label>
+                <select
+                  value={editDocCategory}
+                  onChange={(e) => setEditDocCategory(e.target.value)}
+                  className="w-full px-3.5 py-2.5 bg-slate-950 border border-slate-800 rounded-xl text-white font-medium focus:ring-2 focus:ring-indigo-500 focus:outline-none"
+                >
+                  <option value="Legal Records">Legal Records</option>
+                  <option value="Vital Records">Vital Records (Birth/Marriage)</option>
+                  <option value="Immigration">Immigration & Passports</option>
+                  <option value="Property & Deeds">Property & Land Deeds</option>
+                  <option value="Photos & Letters">Photos & Historical Letters</option>
+                  <option value="General">General / Other</option>
+                </select>
+              </div>
+
+              {editDocError && (
+                <div className="p-3 rounded-xl bg-rose-950/60 border border-rose-800/80 text-rose-300 text-xs flex items-center gap-1.5">
+                  <AlertCircle className="h-4 w-4 shrink-0" />
+                  <span>{editDocError}</span>
+                </div>
+              )}
+
+              {editDocSuccess && (
+                <div className="p-3 rounded-xl bg-emerald-950/60 border border-emerald-800/80 text-emerald-300 text-xs flex items-center gap-1.5">
+                  <CheckCircle2 className="h-4 w-4 shrink-0" />
+                  <span>{editDocSuccess}</span>
+                </div>
+              )}
+
+              <div className="flex items-center justify-end gap-2.5 pt-2 border-t border-slate-800">
+                <button
+                  type="button"
+                  onClick={() => setDocToEdit(null)}
+                  className="px-4 py-2 rounded-xl border border-slate-800 text-slate-300 font-bold hover:bg-slate-800 cursor-pointer text-xs"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  disabled={isUpdatingDoc}
+                  className="px-4 py-2 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white font-bold flex items-center gap-1.5 cursor-pointer disabled:opacity-50 text-xs shadow-md shadow-indigo-600/20"
+                >
+                  {isUpdatingDoc && <Loader2 className="h-3.5 w-3.5 animate-spin" />}
+                  <span>Save Changes</span>
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
       )}
 
       {/* Single Document Delete Confirmation Modal */}

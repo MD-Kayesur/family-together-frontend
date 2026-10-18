@@ -293,6 +293,10 @@ export const familyApi = baseApi.injectEndpoints({
       }),
       invalidatesTags: ["Sanctuary", "Members", "Relationships", "Activity"],
     }),
+    getMemberById: builder.query<FamilyMemberRecord, string>({
+      query: (id) => `/family/members/${id}`,
+      providesTags: (_res, _err, id) => [{ type: "Members", id }],
+    }),
     getMemories: builder.query<
       PaginatedList<MemoryRecord>,
       { userId?: string; userEmail?: string; page?: number; limit?: number; search?: string; category?: string } | void
@@ -486,6 +490,24 @@ export const familyApi = baseApi.injectEndpoints({
       }),
       invalidatesTags: ["Sanctuary", "Relationships"],
     }),
+    updateRelationship: builder.mutation<
+      RelationshipRecord,
+      { id: string; fromPersonId?: string; toPersonId?: string; typeCode?: string; status?: string }
+    >({
+      query: ({ id, ...body }) => ({
+        url: `/family/relationships/${id}`,
+        method: "PATCH",
+        body,
+      }),
+      invalidatesTags: ["Sanctuary", "Relationships"],
+    }),
+    deleteRelationship: builder.mutation<{ success: boolean; message?: string }, string>({
+      query: (id) => ({
+        url: `/family/relationships/${id}`,
+        method: "DELETE",
+      }),
+      invalidatesTags: ["Sanctuary", "Relationships"],
+    }),
     getDocuments: builder.query<
       PaginatedList<DocumentRecord>,
       { page?: number; limit?: number; search?: string; category?: string } | void
@@ -530,6 +552,17 @@ export const familyApi = baseApi.injectEndpoints({
       query: (body) => ({
         url: "/family/documents/multiple",
         method: "POST",
+        body,
+      }),
+      invalidatesTags: ["Sanctuary", "Documents"],
+    }),
+    updateDocument: builder.mutation<
+      DocumentRecord,
+      { id: string; name?: string; category?: string; size?: string; fileUrl?: string; uploadedBy?: string }
+    >({
+      query: ({ id, ...body }) => ({
+        url: `/family/documents/${id}`,
+        method: "PATCH",
         body,
       }),
       invalidatesTags: ["Sanctuary", "Documents"],
@@ -674,6 +707,7 @@ export const {
   useGetSanctuaryQuery,
   useUpdateFamilyDetailsMutation,
   useGetMembersQuery,
+  useGetMemberByIdQuery,
   useSearchMembersQuery,
   useAddMemberMutation,
   useUpdateMemberMutation,
@@ -690,9 +724,12 @@ export const {
   useDeleteEventMutation,
   useGetRelationshipsQuery,
   useAddRelationshipMutation,
+  useUpdateRelationshipMutation,
+  useDeleteRelationshipMutation,
   useGetDocumentsQuery,
   useAddDocumentMutation,
   useAddMultipleDocumentsMutation,
+  useUpdateDocumentMutation,
   useDeleteDocumentMutation,
   useDeleteAllDocumentsMutation,
   useGetInvitationsQuery,
