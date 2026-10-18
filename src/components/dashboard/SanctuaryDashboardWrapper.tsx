@@ -25,6 +25,7 @@ import { useAppSelector } from "@/redux/store";
 import NavbarNotificationMenu from "@/components/dashboard/NavbarNotificationMenu";
 import UserNavbarAvatarMenu from "@/components/dashboard/UserNavbarAvatarMenu";
 import ThemeToggle from "@/components/theme/ThemeToggle";
+import LanguageSwitcherModal from "@/components/common/LanguageSwitcherModal";
 import { getDashboardRouteByRole, canAccessRoute } from "@/lib/utils/roleUtils";
 
 export function normalizeDashboardTab(rawTab?: string | null): string {
@@ -313,6 +314,9 @@ export default function SanctuaryDashboardWrapper({
           </div>
 
           <div className="flex items-center gap-1.5 sm:gap-3 shrink-0">
+            {/* Language Switcher Modal */}
+            <LanguageSwitcherModal />
+
             {/* Theme Toggle Button (Sun & Moon) */}
             <ThemeToggle />
 
