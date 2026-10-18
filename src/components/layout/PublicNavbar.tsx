@@ -2,6 +2,7 @@
 
 import React, { useState } from "react";
 import Link from "next/link";
+import Image from "next/image";
 import { usePathname } from "next/navigation";
 import { TreePine, Menu, X, LayoutDashboard, LogOut } from "lucide-react";
 import { useAppSelector } from "@/redux/store";
@@ -35,8 +36,15 @@ export default function PublicNavbar() {
       <nav className="fixed top-0 w-full z-50 bg-[#f9f9ff]/85 dark:bg-slate-950/85 backdrop-blur-md border-b border-[#c7c4d8]/50 dark:border-slate-800/80 px-6 lg:px-12 h-16 flex items-center justify-between transition-colors">
         {/* Brand Logo - clicking goes Home */}
         <Link href="/" className="flex items-center gap-2.5 group">
-          <div className="h-9 w-9 rounded-xl bg-indigo-600 flex items-center justify-center text-white shadow-md shadow-indigo-600/30 group-hover:scale-105 transition-all">
-            <TreePine className="h-5 w-5 stroke-[2.5]" />
+          <div className="relative h-9 w-9 rounded-xl overflow-hidden shadow-md shadow-indigo-600/30 border border-indigo-200/50 dark:border-indigo-800/50 group-hover:scale-105 transition-all bg-indigo-950">
+            <Image
+              src="/logo.png"
+              alt="FamilyRoots Logo"
+              width={36}
+              height={36}
+              className="w-full h-full object-cover"
+              priority
+            />
           </div>
           <span className="font-extrabold text-xl tracking-tight text-indigo-950 dark:text-white">
             FamilyRoots

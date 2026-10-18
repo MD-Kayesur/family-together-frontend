@@ -2,7 +2,8 @@
 
 import React from "react";
 import Link from "next/link";
-import { TreePine, ShieldCheck } from "lucide-react";
+import Image from "next/image";
+import { ShieldCheck } from "lucide-react";
 import { useTranslation } from "@/lib/i18n/LanguageContext";
 
 export default function PublicFooter() {
@@ -13,9 +14,15 @@ export default function PublicFooter() {
       <div className="max-w-7xl mx-auto space-y-12">
         <div className="grid grid-cols-1 md:grid-cols-4 gap-12">
           <div className="space-y-4">
-            <Link href="/" className="flex items-center gap-2.5">
-              <div className="h-8 w-8 rounded-lg bg-indigo-600 flex items-center justify-center text-white font-bold">
-                <TreePine className="h-4 w-4" />
+            <Link href="/" className="flex items-center gap-2.5 group">
+              <div className="relative h-8 w-8 rounded-lg overflow-hidden border border-slate-700 bg-indigo-950 shadow-md group-hover:scale-105 transition-all">
+                <Image
+                  src="/logo.png"
+                  alt="FamilyRoots Logo"
+                  width={32}
+                  height={32}
+                  className="w-full h-full object-cover"
+                />
               </div>
               <span className="font-extrabold text-lg text-white">FamilyRoots</span>
             </Link>

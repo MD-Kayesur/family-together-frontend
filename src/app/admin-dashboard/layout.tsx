@@ -2,6 +2,7 @@
 
 import React, { useEffect, useState, Suspense } from "react";
 import Link from "next/link";
+import Image from "next/image";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import {
   LayoutDashboard,
@@ -131,8 +132,15 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
               onClick={() => setIsMobileNavOpen(false)}
               className="flex items-center gap-3 group"
             >
-              <div className="h-10 w-10 rounded-xl bg-purple-600 flex items-center justify-center text-white shadow-lg shadow-purple-600/30">
-                <TreePine className="h-5 w-5 stroke-[2.5]" />
+              <div className="relative h-10 w-10 rounded-xl overflow-hidden shadow-lg shadow-purple-600/30 border border-purple-500/30 bg-indigo-950 shrink-0">
+                <Image
+                  src="/logo.png"
+                  alt="FamilyRoots Logo"
+                  width={40}
+                  height={40}
+                  className="w-full h-full object-cover"
+                  priority
+                />
               </div>
               <div className="flex flex-col">
                 <span className="font-extrabold text-lg text-white tracking-tight leading-none">
@@ -201,8 +209,15 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
         <div className="space-y-8 overflow-y-auto">
           {/* Brand Logo */}
           <Link href="/admin-dashboard" className="flex items-center gap-3 group">
-            <div className="h-10 w-10 rounded-xl bg-purple-600 flex items-center justify-center text-white shadow-lg shadow-purple-600/30 group-hover:scale-105 transition-all">
-              <TreePine className="h-5 w-5 stroke-[2.5]" />
+            <div className="relative h-10 w-10 rounded-xl overflow-hidden shadow-lg shadow-purple-600/30 border border-purple-500/30 group-hover:scale-105 transition-all bg-indigo-950 shrink-0">
+              <Image
+                src="/logo.png"
+                alt="FamilyRoots Logo"
+                width={40}
+                height={40}
+                className="w-full h-full object-cover"
+                priority
+              />
             </div>
             <div className="flex flex-col">
               <span className="font-extrabold text-lg text-white tracking-tight leading-none">

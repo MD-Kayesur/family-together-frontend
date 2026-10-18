@@ -2,6 +2,7 @@
 
 import React, { useEffect, useState, Suspense } from "react";
 import Link from "next/link";
+import NextImage from "next/image";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import {
   LayoutDashboard,
@@ -204,8 +205,15 @@ export default function SanctuaryDashboardWrapper({
               onClick={() => setIsMobileMenuOpen(false)}
               className="flex items-center gap-3 group"
             >
-              <div className="h-9 w-9 rounded-xl bg-purple-600 flex items-center justify-center text-white shadow-md shadow-purple-600/30">
-                <TreePine className="h-5 w-5 stroke-[2.5]" />
+              <div className="relative h-9 w-9 rounded-xl overflow-hidden shadow-md shadow-purple-600/30 border border-purple-500/30 bg-indigo-950 shrink-0">
+                <NextImage
+                  src="/logo.png"
+                  alt="FamilyRoots Logo"
+                  width={36}
+                  height={36}
+                  className="w-full h-full object-cover"
+                  priority
+                />
               </div>
               <div className="flex flex-col">
                 <span className="font-extrabold text-lg text-white tracking-tight leading-none">
@@ -255,8 +263,15 @@ export default function SanctuaryDashboardWrapper({
         <div className="space-y-7 overflow-y-auto">
           {/* Brand Logo */}
           <Link href="/" className="flex items-center gap-3 group">
-            <div className="h-9 w-9 rounded-xl bg-purple-600 flex items-center justify-center text-white shadow-md shadow-purple-600/30 group-hover:scale-105 transition-all">
-              <TreePine className="h-5 w-5 stroke-[2.5]" />
+            <div className="relative h-9 w-9 rounded-xl overflow-hidden shadow-md shadow-purple-600/30 border border-purple-500/30 group-hover:scale-105 transition-all bg-indigo-950 shrink-0">
+              <NextImage
+                src="/logo.png"
+                alt="FamilyRoots Logo"
+                width={36}
+                height={36}
+                className="w-full h-full object-cover"
+                priority
+              />
             </div>
             <div className="flex flex-col">
               <span className="font-extrabold text-lg text-white tracking-tight leading-none">
