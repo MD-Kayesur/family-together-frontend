@@ -79,7 +79,7 @@ export default function Home() {
                   className="bg-indigo-600 text-white px-8 py-4 rounded-xl font-bold text-sm hover:bg-indigo-700 transition-all shadow-lg shadow-indigo-600/25 flex items-center justify-center gap-2 hover:scale-[1.02]"
                 >
                   <LayoutDashboard className="h-5 w-5" />
-                  <span>Go to {dashboardLabel}</span>
+                  <span>{t("common.goToDashboard", { dashboard: dashboardLabel })}</span>
                   <ArrowRight className="h-5 w-5" />
                 </Link>
               ) : (
@@ -113,10 +113,10 @@ export default function Home() {
           <div className="max-w-7xl mx-auto grid grid-cols-1 lg:grid-cols-2 gap-16 items-center">
             <div className="space-y-6">
               <h2 className="text-3xl sm:text-4xl font-extrabold text-slate-950 dark:text-white tracking-tight">
-                The Signature Tree
+                {t("tree.signatureTitle")}
               </h2>
               <p className="text-base sm:text-lg text-slate-600 dark:text-slate-300 leading-relaxed">
-                Experience a revolutionary way to visualize your lineage. Our interactive workspace makes exploring generational tracking intuitive, beautiful, and deeply personal.
+                {t("tree.signatureDesc")}
               </p>
 
               <div className="space-y-6 pt-4">
@@ -125,8 +125,8 @@ export default function Home() {
                     <TreePine className="h-6 w-6" />
                   </div>
                   <div className="space-y-1">
-                    <h4 className="font-bold text-lg text-slate-900 dark:text-white">Dynamic Mapping</h4>
-                    <p className="text-sm text-slate-600 dark:text-slate-400">Seamlessly trace roots across centuries with fluid, responsive layouts.</p>
+                    <h4 className="font-bold text-lg text-slate-900 dark:text-white">{t("tree.dynamicTitle")}</h4>
+                    <p className="text-sm text-slate-600 dark:text-slate-400">{t("tree.dynamicDesc")}</p>
                   </div>
                 </div>
 
@@ -135,8 +135,8 @@ export default function Home() {
                     <Activity className="h-6 w-6" />
                   </div>
                   <div className="space-y-1">
-                    <h4 className="font-bold text-lg text-slate-900 dark:text-white">Deep Insights</h4>
-                    <p className="text-sm text-slate-600 dark:text-slate-400">Uncover trends, shared traits, and historical context automatically.</p>
+                    <h4 className="font-bold text-lg text-slate-900 dark:text-white">{t("tree.insightsTitle")}</h4>
+                    <p className="text-sm text-slate-600 dark:text-slate-400">{t("tree.insightsDesc")}</p>
                   </div>
                 </div>
               </div>
@@ -154,10 +154,10 @@ export default function Home() {
           <div className="max-w-7xl mx-auto space-y-16">
             <div className="text-center space-y-4 max-w-2xl mx-auto">
               <h2 className="text-3xl sm:text-4xl font-extrabold text-slate-950 dark:text-white tracking-tight">
-                Legacy Vaults
+                {t("vaults.title")}
               </h2>
               <p className="text-base sm:text-lg text-slate-600 dark:text-slate-300 leading-relaxed">
-                More than just names. Organize and preserve the stories, documents, and moments that define your family&apos;s history.
+                {t("vaults.subtitle")}
               </p>
             </div>
 
@@ -167,9 +167,9 @@ export default function Home() {
                 <div className="w-14 h-14 rounded-2xl bg-indigo-600 text-white flex items-center justify-center transition-transform group-hover:scale-110 shadow-md shadow-indigo-600/20">
                   <ImageIcon className="h-6 w-6" />
                 </div>
-                <h3 className="font-bold text-xl text-slate-900 dark:text-white">Memories</h3>
+                <h3 className="font-bold text-xl text-slate-900 dark:text-white">{t("vaults.memoriesTitle")}</h3>
                 <p className="text-sm text-slate-600 dark:text-slate-400 leading-relaxed">
-                  A shared gallery for photos, videos, and audio recordings. Tag relatives to automatically link media to their profile.
+                  {t("vaults.memoriesDesc")}
                 </p>
               </div>
 
@@ -178,9 +178,9 @@ export default function Home() {
                 <div className="w-14 h-14 rounded-2xl bg-purple-600 text-white flex items-center justify-center transition-transform group-hover:scale-110 shadow-md shadow-purple-600/20">
                   <FolderLock className="h-6 w-6" />
                 </div>
-                <h3 className="font-bold text-xl text-slate-900 dark:text-white">Documents</h3>
+                <h3 className="font-bold text-xl text-slate-900 dark:text-white">{t("vaults.documentsTitle")}</h3>
                 <p className="text-sm text-slate-600 dark:text-slate-400 leading-relaxed">
-                  Securely store vital records, certificates, immigration papers, and scanned letters in high-resolution.
+                  {t("vaults.documentsDesc")}
                 </p>
               </div>
 
@@ -189,9 +189,9 @@ export default function Home() {
                 <div className="w-14 h-14 rounded-2xl bg-emerald-600 text-white flex items-center justify-center transition-transform group-hover:scale-110 shadow-md shadow-emerald-600/20">
                   <Calendar className="h-6 w-6" />
                 </div>
-                <h3 className="font-bold text-xl text-slate-900 dark:text-white">Events</h3>
+                <h3 className="font-bold text-xl text-slate-900 dark:text-white">{t("vaults.eventsTitle")}</h3>
                 <p className="text-sm text-slate-600 dark:text-slate-400 leading-relaxed">
-                  A collaborative family calendar for reunions, anniversaries, and memorial dates, complete with RSVP tracking.
+                  {t("vaults.eventsDesc")}
                 </p>
               </div>
             </div>
@@ -203,10 +203,10 @@ export default function Home() {
           <div className="max-w-7xl mx-auto text-center space-y-16">
             <div className="space-y-4 max-w-2xl mx-auto">
               <h2 className="text-3xl sm:text-4xl font-extrabold text-white tracking-tight">
-                Privacy First
+                {t("privacy.title")}
               </h2>
               <p className="text-base sm:text-lg text-slate-400 leading-relaxed">
-                Your family&apos;s history is yours alone. We built FamilyRoots as a private sanctuary, free from ads, data mining, and public exposure.
+                {t("privacy.subtitle")}
               </p>
             </div>
 
@@ -215,24 +215,24 @@ export default function Home() {
                 <div className="h-16 w-16 rounded-2xl bg-indigo-500/10 text-indigo-400 flex items-center justify-center mb-2">
                   <Lock className="h-8 w-8" />
                 </div>
-                <h4 className="font-bold text-lg text-white">End-to-End Encryption</h4>
-                <p className="text-sm text-slate-400">Your sensitive documents and private conversations are securely encrypted.</p>
+                <h4 className="font-bold text-lg text-white">{t("privacy.encryptionTitle")}</h4>
+                <p className="text-sm text-slate-400">{t("privacy.encryptionDesc")}</p>
               </div>
 
               <div className="flex flex-col items-center text-center space-y-3">
                 <div className="h-16 w-16 rounded-2xl bg-emerald-500/10 text-emerald-400 flex items-center justify-center mb-2">
                   <Database className="h-8 w-8" />
                 </div>
-                <h4 className="font-bold text-lg text-white">Data Sovereignty</h4>
-                <p className="text-sm text-slate-400">You own your data. Export your entire family archive in standard formats at any time.</p>
+                <h4 className="font-bold text-lg text-white">{t("privacy.sovereigntyTitle")}</h4>
+                <p className="text-sm text-slate-400">{t("privacy.sovereigntyDesc")}</p>
               </div>
 
               <div className="flex flex-col items-center text-center space-y-3">
                 <div className="h-16 w-16 rounded-2xl bg-amber-500/10 text-amber-400 flex items-center justify-center mb-2">
                   <ShieldCheck className="h-8 w-8" />
                 </div>
-                <h4 className="font-bold text-lg text-white">Private Sanctuary</h4>
-                <p className="text-sm text-slate-400">Invite-only access ensures only verified family members can view your network.</p>
+                <h4 className="font-bold text-lg text-white">{t("privacy.sanctuaryTitle")}</h4>
+                <p className="text-sm text-slate-400">{t("privacy.sanctuaryDesc")}</p>
               </div>
             </div>
           </div>
@@ -243,10 +243,10 @@ export default function Home() {
           <div className="max-w-7xl mx-auto space-y-16">
             <div className="text-center space-y-4 max-w-2xl mx-auto">
               <h2 className="text-3xl sm:text-4xl font-extrabold text-slate-950 dark:text-white tracking-tight">
-                Simple, transparent pricing
+                {t("pricing.title")}
               </h2>
               <p className="text-base sm:text-lg text-slate-600 dark:text-slate-300 leading-relaxed">
-                Choose the perfect plan to grow and preserve your family legacy.
+                {t("pricing.subtitleHome")}
               </p>
             </div>
 
@@ -254,21 +254,21 @@ export default function Home() {
               {/* Legacy Starter */}
               <div className="bg-slate-50/70 dark:bg-slate-900/60 border border-slate-200/80 dark:border-slate-800 rounded-3xl p-8 flex flex-col justify-between space-y-8">
                 <div className="space-y-6">
-                  <h3 className="font-bold text-xl text-slate-900 dark:text-white">Legacy Starter</h3>
+                  <h3 className="font-bold text-xl text-slate-900 dark:text-white">{t("pricing.starterTitle")}</h3>
                   <div className="flex items-baseline gap-1">
-                    <span className="text-4xl font-extrabold text-slate-900 dark:text-white">$0</span>
-                    <span className="text-sm font-semibold text-slate-500 dark:text-slate-400">/mo</span>
+                    <span className="text-4xl font-extrabold text-slate-900 dark:text-white">{t("pricing.starterPrice")}</span>
+                    <span className="text-sm font-semibold text-slate-500 dark:text-slate-400">{t("pricing.starterPeriod")}</span>
                   </div>
-                  <p className="text-sm text-slate-600 dark:text-slate-400">Perfect for getting started with your immediate family.</p>
+                  <p className="text-sm text-slate-600 dark:text-slate-400">{t("pricing.starterDesc")}</p>
 
                   <ul className="space-y-3 pt-2">
                     <li className="flex items-center gap-3 text-sm text-slate-700 dark:text-slate-300">
                       <CheckCircle2 className="h-5 w-5 text-indigo-600 dark:text-indigo-400 shrink-0" />
-                      <span>Up to 5 family members</span>
+                      <span>{t("pricing.starterFeature1")}</span>
                     </li>
                     <li className="flex items-center gap-3 text-sm text-slate-700 dark:text-slate-300">
                       <CheckCircle2 className="h-5 w-5 text-indigo-600 dark:text-indigo-400 shrink-0" />
-                      <span>Basic tree visualization</span>
+                      <span>{t("pricing.starterFeature2")}</span>
                     </li>
                   </ul>
                 </div>
@@ -277,36 +277,36 @@ export default function Home() {
                   type="button"
                   className="w-full py-3.5 rounded-xl border border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-300 font-bold text-xs hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors"
                 >
-                  Current Plan
+                  {t("pricing.starterBtn")}
                 </button>
               </div>
 
               {/* Growth Premium */}
               <div className="bg-indigo-600 text-white rounded-3xl p-8 flex flex-col justify-between space-y-8 shadow-2xl relative border-2 border-indigo-500">
                 <span className="absolute -top-3.5 right-8 bg-amber-400 text-slate-950 text-[10px] font-extrabold px-3 py-1 rounded-full uppercase tracking-wider shadow-sm">
-                  Most Popular
+                  {t("pricing.growthBadge")}
                 </span>
 
                 <div className="space-y-6">
-                  <h3 className="font-bold text-xl text-white">Growth Premium</h3>
+                  <h3 className="font-bold text-xl text-white">{t("pricing.growthTitle")}</h3>
                   <div className="flex items-baseline gap-1">
-                    <span className="text-4xl font-extrabold text-white">$100</span>
-                    <span className="text-sm font-medium text-indigo-200">one-time / tier</span>
+                    <span className="text-4xl font-extrabold text-white">{t("pricing.growthPrice")}</span>
+                    <span className="text-sm font-medium text-indigo-200">{t("pricing.growthPeriod")}</span>
                   </div>
-                  <p className="text-sm text-indigo-100">Expand your roots and connect with extended family.</p>
+                  <p className="text-sm text-indigo-100">{t("pricing.growthDesc")}</p>
 
                   <ul className="space-y-3 pt-2">
                     <li className="flex items-center gap-3 text-sm text-white">
                       <CheckCircle2 className="h-5 w-5 text-indigo-200 shrink-0" />
-                      <span>Up to 10 more members (15 total)</span>
+                      <span>{t("pricing.growthFeature1")}</span>
                     </li>
                     <li className="flex items-center gap-3 text-sm text-white">
                       <CheckCircle2 className="h-5 w-5 text-indigo-200 shrink-0" />
-                      <span>Advanced relationship mapping</span>
+                      <span>{t("pricing.growthFeature2")}</span>
                     </li>
                     <li className="flex items-center gap-3 text-sm text-white">
                       <CheckCircle2 className="h-5 w-5 text-indigo-200 shrink-0" />
-                      <span>Secure document vault</span>
+                      <span>{t("pricing.growthFeature3")}</span>
                     </li>
                   </ul>
                 </div>
@@ -315,32 +315,32 @@ export default function Home() {
                   href="/signup"
                   className="w-full py-3.5 rounded-xl bg-white text-indigo-600 font-bold text-xs hover:bg-slate-100 transition-colors text-center block shadow-md"
                 >
-                  Upgrade to Premium
+                  {t("pricing.growthBtn")}
                 </Link>
               </div>
 
               {/* Heritage Pro */}
               <div className="bg-slate-50/70 dark:bg-slate-900/60 border border-slate-200/80 dark:border-slate-800 rounded-3xl p-8 flex flex-col justify-between space-y-8">
                 <div className="space-y-6">
-                  <h3 className="font-bold text-xl text-slate-900 dark:text-white">Heritage Pro</h3>
+                  <h3 className="font-bold text-xl text-slate-900 dark:text-white">{t("pricing.heritageTitle")}</h3>
                   <div className="flex items-baseline gap-1">
-                    <span className="text-4xl font-extrabold text-slate-900 dark:text-white">$200</span>
-                    <span className="text-sm font-semibold text-slate-500 dark:text-slate-400">one-time / tier</span>
+                    <span className="text-4xl font-extrabold text-slate-900 dark:text-white">{t("pricing.heritagePrice")}</span>
+                    <span className="text-sm font-semibold text-slate-500 dark:text-slate-400">{t("pricing.heritagePeriod")}</span>
                   </div>
-                  <p className="text-sm text-slate-600 dark:text-slate-400">For comprehensive family history projects and deep genealogy.</p>
+                  <p className="text-sm text-slate-600 dark:text-slate-400">{t("pricing.heritageDesc")}</p>
 
                   <ul className="space-y-3 pt-2">
                     <li className="flex items-center gap-3 text-sm text-slate-700 dark:text-slate-300">
                       <CheckCircle2 className="h-5 w-5 text-indigo-600 dark:text-indigo-400 shrink-0" />
-                      <span>Up to 25 family members</span>
+                      <span>{t("pricing.heritageFeature1")}</span>
                     </li>
                     <li className="flex items-center gap-3 text-sm text-slate-700 dark:text-slate-300">
                       <CheckCircle2 className="h-5 w-5 text-indigo-600 dark:text-indigo-400 shrink-0" />
-                      <span>Full analytics & insights</span>
+                      <span>{t("pricing.heritageFeature2")}</span>
                     </li>
                     <li className="flex items-center gap-3 text-sm text-slate-700 dark:text-slate-300">
                       <CheckCircle2 className="h-5 w-5 text-indigo-600 dark:text-indigo-400 shrink-0" />
-                      <span>Priority dedicated support</span>
+                      <span>{t("pricing.heritageFeature3")}</span>
                     </li>
                   </ul>
                 </div>
@@ -349,7 +349,7 @@ export default function Home() {
                   type="button"
                   className="w-full py-3.5 rounded-xl border border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-300 font-bold text-xs hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors"
                 >
-                  Upgrade to Pro
+                  {t("pricing.heritageBtn")}
                 </button>
               </div>
             </div>
@@ -362,50 +362,26 @@ export default function Home() {
             <div className="text-center space-y-4">
               <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-indigo-50 dark:bg-indigo-950/60 border border-indigo-200 dark:border-indigo-800/80 text-indigo-700 dark:text-indigo-300 text-xs font-bold uppercase tracking-wider">
                 <HelpCircle className="h-4 w-4 text-indigo-600 dark:text-indigo-400" />
-                <span>Got Questions?</span>
+                <span>{t("faq.questionsBadge")}</span>
               </div>
               <h2 className="text-3xl sm:text-4xl font-extrabold text-slate-950 dark:text-white tracking-tight">
-                Frequently Asked Questions
+                {t("faq.titleMain")}
               </h2>
               <p className="text-base sm:text-lg text-slate-600 dark:text-slate-300 max-w-xl mx-auto">
-                Everything you need to know about FamilyRoots, user roles, real-time deduplication, and how our private family sanctuary works.
+                {t("faq.subtitleMain")}
               </p>
             </div>
 
             <div className="space-y-4">
               {[
-                {
-                  q: "Why should a family use FamilyRoots over social media or paper trees?",
-                  a: "Social media platforms are noisy, ad-driven, and publicly exposed, while physical paper trees can be easily misplaced or damaged. FamilyRoots gives your lineage a private, ad-free digital sanctuary. You get a modern interactive tree workspace, secure document vaults, and dedicated family features built strictly for your family—with zero algorithms and 100% privacy."
-                },
-                {
-                  q: "What facilities and core features are available in this platform?",
-                  a: "• 🌳 Interactive Family Tree Visualizer: Fluidly trace parents, siblings, children, and extended roots across generations.\n• 🛡️ Real-Time Relative Deduplication: Live validation detects duplicate names or emails instantly when adding family members.\n• 🔐 Secure Legacy Vaults: Store photos, scanned historical records, birth certificates, and memorial dates safely.\n• 🔔 Account Activation & Navbar Alerts: Automated account link generation and instant notifications for new members.\n• 👥 Role-Based Governance: Dedicated dashboards and permissions tailored for Owner, Admin, Member, and Viewer roles."
-                },
-                {
-                  q: "What key benefits will our family gain by using FamilyRoots?",
-                  a: "• 📜 Generational Preservation: Ensure younger generations stay connected to their heritage, stories, and family roots.\n• 🤝 Seamless Extended Connection: Connect family members across different cities and countries in one private hub.\n• 🔒 100% Data Privacy & Ownership: Your family history is strictly yours—never indexed publicly or sold to third parties.\n• ⏱️ Instant Onboarding: Administrators can add relatives with valid emails for immediate account access and notifications."
-                },
-                {
-                  q: "How do user permissions and roles (Owner, Admin, Member, Viewer) work?",
-                  a: "• Owner & Admin: Have full control over managing tree structures, inviting family members, verifying duplicates, and managing user roles.\n• Member: Can view family trees, upload memories, update their own profile, and receive notifications.\n• Viewer: Public/guest access restricted strictly to viewing the landing page without accessing private family dashboard data."
-                },
-                {
-                  q: "How does real-time family member deduplication work?",
-                  a: "When an Admin or Owner adds a new relative to the family tree, FamilyRoots automatically analyzes incoming names and emails against existing family records in real-time. If a potential match or duplicate is detected, administrators receive an instant alert to merge or confirm records, keeping your family tree clean and accurate."
-                },
-                {
-                  q: "What happens when a new family member account is created?",
-                  a: "When a family member is added with a valid email address, an account activation notice is dispatched. Once the user signs in or completes registration, their account automatically links to their designated spot in the family tree, and a notification banner alerts them in their top navbar."
-                },
-                {
-                  q: "Is our family tree and personal media data secure and private?",
-                  a: "Yes! FamilyRoots is built on a privacy-first foundation. Your family photos, vital documents, and relationship histories are completely private to your family sanctuary and never sold, shared, or exposed publicly."
-                },
-                {
-                  q: "How do I get started and create an account today?",
-                  a: "Getting started takes less than a minute! Click the 'Create Your Family' or 'Get Started' button at the top of this page, sign up with your email, name your family sanctuary, and start building your interactive family tree immediately."
-                }
+                { q: t("faq.q1"), a: t("faq.a1") },
+                { q: t("faq.q2"), a: t("faq.a2") },
+                { q: t("faq.q3"), a: t("faq.a3") },
+                { q: t("faq.q4"), a: t("faq.a4") },
+                { q: t("faq.q5"), a: t("faq.a5") },
+                { q: t("faq.q6"), a: t("faq.a6") },
+                { q: t("faq.q7"), a: t("faq.a7") },
+                { q: t("faq.q8"), a: t("faq.a8") },
               ].map((faq, idx) => {
                 const isOpen = openFaqIndex === idx;
                 return (
@@ -436,16 +412,16 @@ export default function Home() {
             {/* FAQ Call to Action Banner */}
             <div className="bg-gradient-to-r from-indigo-600 via-purple-600 to-indigo-700 rounded-3xl p-8 sm:p-10 text-white flex flex-col sm:flex-row items-center justify-between gap-6 shadow-xl border border-indigo-500/30 mt-12">
               <div className="space-y-2 text-center sm:text-left">
-                <h3 className="text-2xl font-extrabold tracking-tight">Ready to preserve your family legacy?</h3>
+                <h3 className="text-2xl font-extrabold tracking-tight">{t("faq.ctaTitle")}</h3>
                 <p className="text-sm text-indigo-100 max-w-lg">
-                  Join thousands of families building their private digital sanctuary today. Setup takes under a minute.
+                  {t("faq.ctaSubtitle")}
                 </p>
               </div>
               <Link
                 href="/signup"
                 className="bg-white text-indigo-600 font-bold px-7 py-3.5 rounded-xl hover:bg-slate-100 transition-all shadow-md shrink-0 flex items-center gap-2 hover:scale-[1.02]"
               >
-                <span>Create Your Account</span>
+                <span>{t("faq.ctaButton")}</span>
                 <ArrowRight className="h-4 w-4" />
               </Link>
             </div>

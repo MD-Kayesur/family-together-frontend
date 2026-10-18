@@ -12,8 +12,10 @@ import { useAppSelector } from "@/redux/store";
 import { getDashboardRouteByRole } from "@/lib/utils/roleUtils";
 import { Eye, EyeOff } from "lucide-react";
 import ThemeToggle from "@/components/theme/ThemeToggle";
+import { useTranslation } from "@/lib/i18n/LanguageContext";
 
 function SignUpContent() {
+  const { t } = useTranslation();
   const router = useRouter();
   const searchParams = useSearchParams();
   const { user, isAuthenticated } = useAppSelector((state) => state.auth);
@@ -261,10 +263,10 @@ function SignUpContent() {
             <>
               <div className="mb-stack-md text-center lg:text-left">
                 <h1 className="font-headline-lg text-[26px] md:text-[32px] text-on-surface mb-2 font-bold tracking-tight">
-                  Create your account
+                  {t("auth.signUpTitle")}
                 </h1>
                 <p className="font-body-md text-body-md text-on-surface-variant">
-                  Join FamilyRoots to begin building your legacy.
+                  {t("auth.signUpSubtitle")}
                 </p>
               </div>
 
@@ -274,7 +276,7 @@ function SignUpContent() {
                     className="block font-label-md text-label-md text-on-surface mb-1 font-medium"
                     htmlFor="fullName"
                   >
-                    Full Name
+                    {t("auth.fullNameLabel")}
                   </label>
                   <div className="relative">
                     <span className="absolute inset-y-0 left-0 flex items-center pl-3 text-outline">
@@ -284,7 +286,7 @@ function SignUpContent() {
                       className="w-full pl-10 pr-3 py-2.5 bg-surface-container-lowest border border-outline-variant rounded-xl focus:ring-2 focus:ring-primary focus:border-primary text-on-surface font-body-md transition-all shadow-sm outline-none placeholder:text-outline-variant"
                       id="fullName"
                       name="fullName"
-                      placeholder="Jane Doe"
+                      placeholder={t("auth.fullNamePlaceholder")}
                       type="text"
                       value={fullName}
                       onChange={(e) => setFullName(e.target.value)}
@@ -298,7 +300,7 @@ function SignUpContent() {
                     className="block font-label-md text-label-md text-on-surface mb-1 font-medium"
                     htmlFor="email"
                   >
-                    Email Address
+                    {t("auth.emailLabel")}
                   </label>
                   <div className="relative">
                     <span className="absolute inset-y-0 left-0 flex items-center pl-3 text-outline">
@@ -308,7 +310,7 @@ function SignUpContent() {
                       className="w-full pl-10 pr-3 py-2.5 bg-surface-container-lowest border border-outline-variant rounded-xl focus:ring-2 focus:ring-primary focus:border-primary text-on-surface font-body-md transition-all shadow-sm outline-none placeholder:text-outline-variant"
                       id="email"
                       name="email"
-                      placeholder="jane@example.com"
+                      placeholder={t("auth.emailPlaceholder")}
                       type="email"
                       value={email}
                       onChange={(e) => setEmail(e.target.value)}
@@ -322,7 +324,7 @@ function SignUpContent() {
                     className="block font-label-md text-label-md text-on-surface mb-1 font-medium"
                     htmlFor="password"
                   >
-                    Password
+                    {t("auth.passwordLabel")}
                   </label>
                   <div className="relative">
                     <span className="absolute inset-y-0 left-0 flex items-center pl-3 text-outline">
@@ -332,7 +334,7 @@ function SignUpContent() {
                       className="w-full pl-10 pr-10 py-2.5 bg-surface-container-lowest border border-outline-variant rounded-xl focus:ring-2 focus:ring-primary focus:border-primary text-on-surface font-body-md transition-all shadow-sm outline-none placeholder:text-outline-variant"
                       id="password"
                       name="password"
-                      placeholder="••••••••"
+                      placeholder={t("auth.passwordPlaceholder")}
                       type={showPassword ? "text" : "password"}
                       value={password}
                       onChange={(e) => setPassword(e.target.value)}
@@ -360,21 +362,21 @@ function SignUpContent() {
                   {isSigningUp ? (
                     <span className="flex items-center gap-2">
                       <span className="h-4 w-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
-                      <span>Creating Account...</span>
+                      <span>{t("auth.signingUp")}</span>
                     </span>
                   ) : (
-                    <span>Create Family Sanctuary</span>
+                    <span>{t("auth.signUpBtn")}</span>
                   )}
                 </button>
               </form>
 
               <div className="mt-6 text-center text-sm text-on-surface-variant">
-                Already have an account?{" "}
+                {t("auth.hasAccount")}{" "}
                 <Link
                   href="/signin"
                   className="text-primary font-semibold hover:underline underline-offset-4"
                 >
-                  Sign in
+                  {t("nav.signin")}
                 </Link>
               </div>
             </>

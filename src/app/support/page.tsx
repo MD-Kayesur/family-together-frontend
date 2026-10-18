@@ -3,8 +3,10 @@
 import React, { useState } from "react";
 import SanctuaryDashboardWrapper from "@/components/dashboard/SanctuaryDashboardWrapper";
 import { HelpCircle, Mail, MessageSquare, Send, Sparkles } from "lucide-react";
+import { useTranslation } from "@/lib/i18n/LanguageContext";
 
 export default function SupportPage() {
+  const { t } = useTranslation();
   const [subject, setSubject] = useState("");
   const [message, setMessage] = useState("");
   const [sent, setSent] = useState(false);
@@ -21,8 +23,8 @@ export default function SupportPage() {
 
   return (
     <SanctuaryDashboardWrapper
-      title="Help & Support Center"
-      subtitle="Find answers to common questions or contact our dedicated sanctuary support team."
+      title={t("support.title")}
+      subtitle={t("support.subtitle")}
     >
       <div className="space-y-8 max-w-4xl">
         {/* Contact Form */}
@@ -32,24 +34,24 @@ export default function SupportPage() {
               <Mail className="h-5 w-5" />
             </div>
             <div>
-              <h3 className="font-extrabold text-white text-base">Contact Support Team</h3>
-              <p className="text-xs text-slate-400">We typically respond within 2-4 hours.</p>
+              <h3 className="font-extrabold text-white text-base">{t("support.contactTeam")}</h3>
+              <p className="text-xs text-slate-400">{t("support.respondTime")}</p>
             </div>
           </div>
 
           {sent && (
             <div className="p-4 rounded-2xl bg-emerald-950/60 border border-emerald-800/80 text-emerald-300 text-xs font-bold flex items-center gap-2">
               <Sparkles className="h-4 w-4" />
-              <span>Thank you! Your support ticket has been submitted successfully.</span>
+              <span>{t("support.ticketSuccess")}</span>
             </div>
           )}
 
           <form onSubmit={handleSubmit} className="space-y-4 text-xs">
             <div>
-              <label className="block font-bold text-slate-300 mb-1">Subject</label>
+              <label className="block font-bold text-slate-300 mb-1">{t("support.subject")}</label>
               <input
                 type="text"
-                placeholder="e.g. Question about adding extended family members"
+                placeholder={t("support.subjectPlaceholder")}
                 value={subject}
                 onChange={(e) => setSubject(e.target.value)}
                 className="w-full px-3.5 py-2.5 rounded-xl border border-slate-800 bg-slate-950 text-white placeholder:text-slate-500 focus:ring-2 focus:ring-indigo-500 focus:outline-none font-medium"
@@ -57,10 +59,10 @@ export default function SupportPage() {
             </div>
 
             <div>
-              <label className="block font-bold text-slate-300 mb-1">Message</label>
+              <label className="block font-bold text-slate-300 mb-1">{t("support.message")}</label>
               <textarea
                 rows={4}
-                placeholder="Describe your issue or question in detail..."
+                placeholder={t("support.messagePlaceholder")}
                 value={message}
                 onChange={(e) => setMessage(e.target.value)}
                 className="w-full px-3.5 py-2.5 rounded-xl border border-slate-800 bg-slate-950 text-white placeholder:text-slate-500 focus:ring-2 focus:ring-indigo-500 focus:outline-none font-medium resize-none"
@@ -72,7 +74,7 @@ export default function SupportPage() {
               className="px-6 py-3 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white font-bold shadow-md shadow-indigo-600/25 flex items-center gap-2 cursor-pointer transition-all hover:scale-[1.02]"
             >
               <Send className="h-4 w-4" />
-              <span>Submit Support Ticket</span>
+              <span>{t("support.sendBtn")}</span>
             </button>
           </form>
         </div>

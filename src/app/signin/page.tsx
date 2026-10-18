@@ -9,8 +9,10 @@ import { getDashboardRouteByRole } from "@/lib/utils/roleUtils";
 import { Eye, EyeOff } from "lucide-react";
 import ThemeToggle from "@/components/theme/ThemeToggle";
 import ForgotPasswordModal from "@/components/modals/ForgotPasswordModal";
+import { useTranslation } from "@/lib/i18n/LanguageContext";
 
 function SignInContent() {
+  const { t } = useTranslation();
   const router = useRouter();
   const searchParams = useSearchParams();
   const { user, isAuthenticated } = useAppSelector((state) => state.auth);
@@ -137,10 +139,10 @@ function SignInContent() {
 
           <div className="mb-stack-md text-center lg:text-left space-y-1">
             <h1 className="font-headline-lg text-[24px] md:text-[30px] text-on-surface mb-2 font-semibold">
-              Sign In
+              {t("auth.signInTitle")}
             </h1>
             <p className="font-body-md text-body-md text-on-surface-variant">
-              Welcome back to your private sanctuary.
+              {t("auth.signInSubtitle")}
             </p>
           </div>
 
@@ -181,7 +183,7 @@ function SignInContent() {
                   className="block font-label-md text-label-md text-on-surface mb-1"
                   htmlFor="email"
                 >
-                  Email Address
+                  {t("auth.emailLabel")}
                 </label>
                 <div className="relative">
                   <span className="absolute inset-y-0 left-0 flex items-center pl-3 text-outline">
@@ -191,7 +193,7 @@ function SignInContent() {
                     className="w-full pl-10 pr-3 py-2 bg-surface-container-lowest border border-outline-variant rounded-lg focus:ring-2 focus:ring-primary focus:border-primary text-on-surface font-body-md transition-all shadow-sm outline-none placeholder:text-outline-variant"
                     id="email"
                     name="email"
-                    placeholder="name@example.com"
+                    placeholder={t("auth.emailPlaceholder")}
                     required
                     type="email"
                     value={email}
@@ -201,13 +203,12 @@ function SignInContent() {
               </div>
 
               {/* Password Field */}
-              {/* Password Field */}
               <div>
                 <label
                   className="block font-label-md text-label-md text-on-surface mb-1"
                   htmlFor="password"
                 >
-                  Password
+                  {t("auth.passwordLabel")}
                 </label>
                 <div className="relative">
                   <span className="absolute inset-y-0 left-0 flex items-center pl-3 text-outline">
@@ -217,7 +218,7 @@ function SignInContent() {
                     className="w-full pl-10 pr-10 py-2 bg-surface-container-lowest border border-outline-variant rounded-lg focus:ring-2 focus:ring-primary focus:border-primary text-on-surface font-body-md transition-all shadow-sm outline-none placeholder:text-outline-variant"
                     id="password"
                     name="password"
-                    placeholder="••••••••"
+                    placeholder={t("auth.passwordPlaceholder")}
                     required
                     type={showPassword ? "text" : "password"}
                     value={password}
@@ -244,7 +245,7 @@ function SignInContent() {
                     }}
                     className="font-label-sm text-xs font-semibold text-primary hover:underline hover:text-primary-fixed-dim transition-colors cursor-pointer"
                   >
-                    Forgot Password?
+                    {t("auth.forgotPassword")}
                   </button>
                 </div>
               </div>
@@ -259,10 +260,10 @@ function SignInContent() {
               {isSigningIn ? (
                 <span className="flex items-center gap-2">
                   <span className="h-4 w-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
-                  <span>Signing In via RTK Query...</span>
+                  <span>{t("auth.signingIn")}</span>
                 </span>
               ) : (
-                "Sign In"
+                t("auth.signInBtn")
               )}
             </button>
           </form>
@@ -270,12 +271,12 @@ function SignInContent() {
           {/* Footer Link */}
           <div className="mt-stack-lg text-center">
             <p className="font-body-md text-body-md text-on-surface-variant">
-              Don&apos;t have an account?{" "}
+              {t("auth.noAccount")}{" "}
               <Link
                 className="font-label-md text-label-md text-primary hover:text-primary-fixed-dim transition-colors underline-offset-4 hover:underline"
                 href="/signup"
               >
-                Sign Up
+                {t("nav.createAccount")}
               </Link>
             </p>
           </div>

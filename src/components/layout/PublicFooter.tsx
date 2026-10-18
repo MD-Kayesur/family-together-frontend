@@ -45,9 +45,9 @@ export default function PublicFooter() {
           <div className="space-y-3 text-xs">
             <h4 className="font-bold text-white uppercase tracking-wider">{t("footer.security")}</h4>
             <ul className="space-y-2 text-slate-400">
-              <li><span className="text-slate-400">Multi-Tenant Isolation</span></li>
-              <li><span className="text-slate-400">Encrypted Document Vault</span></li>
-              <li><span className="text-slate-400">Zero Public Feed / No Ads</span></li>
+              <li><span className="text-slate-400">{t("footer.multiTenant")}</span></li>
+              <li><span className="text-slate-400">{t("footer.encryptedVault")}</span></li>
+              <li><span className="text-slate-400">{t("footer.zeroAds")}</span></li>
             </ul>
           </div>
         </div>

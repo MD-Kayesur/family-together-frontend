@@ -1,71 +1,160 @@
 export interface TranslationDictionary {
   [key: string]: string | undefined;
 
-  // Navigation
-  "nav.about": string;
-  "nav.features": string;
-  "nav.pricing": string;
-  "nav.faq": string;
-  "nav.support": string;
-  "nav.signin": string;
-  "nav.getStarted": string;
-  "nav.createAccount": string;
-  "nav.dashboard": string;
-  "nav.logout": string;
-
-  // Home Hero
-  "home.badge": string;
-  "home.title": string;
-  "home.titleHighlight": string;
-  "home.subtitle": string;
-  "home.createFamily": string;
-  "home.exploreDemo": string;
-  "home.exploreFeatures": string;
-
-  // Features Section
-  "features.badge": string;
-  "features.title": string;
-  "features.titleHighlight": string;
-  "features.subtitle": string;
-
-  // Pricing Section
-  "pricing.badge": string;
-  "pricing.title": string;
-  "pricing.titleHighlight": string;
-  "pricing.subtitle": string;
-
-  // About Section
-  "about.badge": string;
-  "about.title": string;
-  "about.titleHighlight": string;
-  "about.subtitle": string;
-
-  // FAQ Section
-  "faq.badge": string;
-  "faq.title": string;
-  "faq.titleHighlight": string;
-  "faq.subtitle": string;
-
-  // Footer
-  "footer.tagline": string;
-  "footer.product": string;
-  "footer.company": string;
-  "footer.security": string;
-  "footer.rights": string;
-  "footer.secure": string;
-
-  // Geolocation / Language Switcher
-  "geo.detectedLocation": string;
-  "geo.autoSwitched": string;
-  "geo.switchLanguage": string;
-  "geo.selectLanguage": string;
-
-  // Profile Language Section
+  "nav.about"?: string;
+  "nav.features"?: string;
+  "nav.pricing"?: string;
+  "nav.faq"?: string;
+  "nav.support"?: string;
+  "nav.signin"?: string;
+  "nav.getStarted"?: string;
+  "nav.createAccount"?: string;
+  "nav.dashboard"?: string;
+  "nav.logout"?: string;
+  "home.badge"?: string;
+  "home.title"?: string;
+  "home.titleHighlight"?: string;
+  "home.subtitle"?: string;
+  "home.createFamily"?: string;
+  "home.exploreDemo"?: string;
+  "home.exploreFeatures"?: string;
+  "features.badge"?: string;
+  "features.title"?: string;
+  "features.titleHighlight"?: string;
+  "features.subtitle"?: string;
+  "tree.signatureTitle"?: string;
+  "tree.signatureDesc"?: string;
+  "tree.dynamicTitle"?: string;
+  "tree.dynamicDesc"?: string;
+  "tree.insightsTitle"?: string;
+  "tree.insightsDesc"?: string;
+  "vaults.title"?: string;
+  "vaults.subtitle"?: string;
+  "vaults.memoriesTitle"?: string;
+  "vaults.memoriesDesc"?: string;
+  "vaults.documentsTitle"?: string;
+  "vaults.documentsDesc"?: string;
+  "vaults.eventsTitle"?: string;
+  "vaults.eventsDesc"?: string;
+  "privacy.title"?: string;
+  "privacy.subtitle"?: string;
+  "privacy.encryptionTitle"?: string;
+  "privacy.encryptionDesc"?: string;
+  "privacy.sovereigntyTitle"?: string;
+  "privacy.sovereigntyDesc"?: string;
+  "privacy.sanctuaryTitle"?: string;
+  "privacy.sanctuaryDesc"?: string;
+  "pricing.badge"?: string;
+  "pricing.title"?: string;
+  "pricing.titleHighlight"?: string;
+  "pricing.subtitle"?: string;
+  "pricing.subtitleHome"?: string;
+  "pricing.starterTitle"?: string;
+  "pricing.starterPrice"?: string;
+  "pricing.starterPeriod"?: string;
+  "pricing.starterDesc"?: string;
+  "pricing.starterFeature1"?: string;
+  "pricing.starterFeature2"?: string;
+  "pricing.starterBtn"?: string;
+  "pricing.growthTitle"?: string;
+  "pricing.growthBadge"?: string;
+  "pricing.growthPrice"?: string;
+  "pricing.growthPeriod"?: string;
+  "pricing.growthDesc"?: string;
+  "pricing.growthFeature1"?: string;
+  "pricing.growthFeature2"?: string;
+  "pricing.growthFeature3"?: string;
+  "pricing.growthBtn"?: string;
+  "pricing.heritageTitle"?: string;
+  "pricing.heritagePrice"?: string;
+  "pricing.heritagePeriod"?: string;
+  "pricing.heritageDesc"?: string;
+  "pricing.heritageFeature1"?: string;
+  "pricing.heritageFeature2"?: string;
+  "pricing.heritageFeature3"?: string;
+  "pricing.heritageBtn"?: string;
+  "about.badge"?: string;
+  "about.title"?: string;
+  "about.titleHighlight"?: string;
+  "about.subtitle"?: string;
+  "faq.badge"?: string;
+  "faq.title"?: string;
+  "faq.titleHighlight"?: string;
+  "faq.subtitle"?: string;
+  "faq.questionsBadge"?: string;
+  "faq.titleMain"?: string;
+  "faq.subtitleMain"?: string;
+  "faq.q1"?: string;
+  "faq.a1"?: string;
+  "faq.q2"?: string;
+  "faq.a2"?: string;
+  "faq.q3"?: string;
+  "faq.a3"?: string;
+  "faq.q4"?: string;
+  "faq.a4"?: string;
+  "faq.q5"?: string;
+  "faq.a5"?: string;
+  "faq.q6"?: string;
+  "faq.a6"?: string;
+  "faq.q7"?: string;
+  "faq.a7"?: string;
+  "faq.q8"?: string;
+  "faq.a8"?: string;
+  "faq.ctaTitle"?: string;
+  "faq.ctaSubtitle"?: string;
+  "faq.ctaButton"?: string;
+  "footer.tagline"?: string;
+  "footer.product"?: string;
+  "footer.company"?: string;
+  "footer.security"?: string;
+  "footer.rights"?: string;
+  "footer.secure"?: string;
+  "footer.multiTenant"?: string;
+  "footer.encryptedVault"?: string;
+  "footer.zeroAds"?: string;
+  "geo.detectedLocation"?: string;
+  "geo.autoSwitched"?: string;
+  "geo.switchLanguage"?: string;
+  "geo.selectLanguage"?: string;
   "profile.langTitle"?: string;
   "profile.langDesc"?: string;
   "profile.langActive"?: string;
   "profile.langSearch"?: string;
   "profile.langChangedToast"?: string;
+  "auth.signInTitle"?: string;
+  "auth.signInSubtitle"?: string;
+  "auth.emailLabel"?: string;
+  "auth.emailPlaceholder"?: string;
+  "auth.passwordLabel"?: string;
+  "auth.passwordPlaceholder"?: string;
+  "auth.forgotPassword"?: string;
+  "auth.signInBtn"?: string;
+  "auth.signingIn"?: string;
+  "auth.noAccount"?: string;
+  "auth.signUpTitle"?: string;
+  "auth.signUpSubtitle"?: string;
+  "auth.fullNameLabel"?: string;
+  "auth.fullNamePlaceholder"?: string;
+  "auth.signUpBtn"?: string;
+  "auth.signingUp"?: string;
+  "auth.hasAccount"?: string;
+  "auth.orContinueWith"?: string;
+  "common.backToHome"?: string;
+  "common.goToDashboard"?: string;
+  "common.loading"?: string;
+  "common.save"?: string;
+  "common.cancel"?: string;
+  "common.search"?: string;
+  "support.title"?: string;
+  "support.subtitle"?: string;
+  "support.contactTeam"?: string;
+  "support.respondTime"?: string;
+  "support.ticketSuccess"?: string;
+  "support.subject"?: string;
+  "support.subjectPlaceholder"?: string;
+  "support.message"?: string;
+  "support.messagePlaceholder"?: string;
+  "support.sendBtn"?: string;
 }
 
 export type TranslationKey = keyof TranslationDictionary;
