@@ -60,6 +60,21 @@ export function LanguageProvider({ children }: { children: React.ReactNode }) {
     try {
       setIsDetectingGeo(true);
 
+      // 0. Check URL query parameter ?lang= (e.g. /pricing?lang=bn)
+      if (typeof window !== "undefined") {
+        const urlParams = new URLSearchParams(window.location.search);
+        const urlLang = urlParams.get("lang") as Language | null;
+        if (urlLang && SUPPORTED_LANGUAGES.some((l) => l.code === urlLang)) {
+          setIsManualOverride(true);
+          setCurrentLanguageState(urlLang);
+          applyHtmlAttributes(urlLang);
+          localStorage.setItem(STORAGE_LANG_KEY, urlLang);
+          localStorage.setItem(STORAGE_MANUAL_KEY, "true");
+          setIsDetectingGeo(false);
+          return;
+        }
+      }
+
       // 1. Check if user has an explicit manual override in localStorage
       const manualFlag = typeof window !== "undefined" && localStorage.getItem(STORAGE_MANUAL_KEY) === "true";
       const savedLang = typeof window !== "undefined" ? (localStorage.getItem(STORAGE_LANG_KEY) as Language | null) : null;
@@ -138,7 +153,7 @@ export function LanguageProvider({ children }: { children: React.ReactNode }) {
     initializeLanguage();
   }, []);
 
-  // User manually chooses a language from Profile
+  // User manually chooses a language from Profile or Language Modal
   const setLanguage = (lang: Language) => {
     setCurrentLanguageState(lang);
     setIsManualOverride(true);
@@ -146,6 +161,14 @@ export function LanguageProvider({ children }: { children: React.ReactNode }) {
     if (typeof window !== "undefined") {
       localStorage.setItem(STORAGE_LANG_KEY, lang);
       localStorage.setItem(STORAGE_MANUAL_KEY, "true");
+      // Seamlessly sync URL query parameter without full-page reload
+      try {
+        const url = new URL(window.location.href);
+        url.searchParams.set("lang", lang);
+        window.history.replaceState({}, "", url.toString());
+      } catch (e) {
+        console.warn("[LanguageContext] Failed to update URL lang param:", e);
+      }
     }
     applyHtmlAttributes(lang);
   };
@@ -156,6 +179,13 @@ export function LanguageProvider({ children }: { children: React.ReactNode }) {
     if (typeof window !== "undefined") {
       localStorage.removeItem(STORAGE_MANUAL_KEY);
       localStorage.removeItem(STORAGE_GEO_KEY);
+      try {
+        const url = new URL(window.location.href);
+        url.searchParams.delete("lang");
+        window.history.replaceState({}, "", url.toString());
+      } catch (e) {
+        console.warn("[LanguageContext] Failed to clear URL lang param:", e);
+      }
     }
     await initializeLanguage(true);
   };

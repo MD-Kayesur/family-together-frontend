@@ -1,0 +1,313 @@
+import fs from 'fs';
+import path from 'path';
+import {
+  Document,
+  Packer,
+  Paragraph,
+  TextRun,
+  HeadingLevel,
+  Table,
+  TableRow,
+  TableCell,
+  WidthType,
+  AlignmentType,
+  ShadingType,
+} from 'docx';
+
+async function generateLanguageModalFixDoc() {
+  const doc = new Document({
+    styles: {
+      default: {
+        document: {
+          run: {
+            font: 'Segoe UI',
+            size: 22,
+            color: '1E293B',
+          },
+        },
+      },
+    },
+    sections: [
+      {
+        properties: {},
+        children: [
+          new Paragraph({
+            heading: HeadingLevel.TITLE,
+            alignment: AlignmentType.CENTER,
+            spacing: { before: 200, after: 200 },
+            children: [
+              new TextRun({
+                text: '🌐 Language Switcher Modal (4 Default Languages + Search) & URL Resolution Report',
+                bold: true,
+                size: 32,
+                color: '1E3A8A',
+              }),
+            ],
+          }),
+
+          new Paragraph({
+            alignment: AlignmentType.CENTER,
+            spacing: { after: 300 },
+            children: [
+              new TextRun({
+                text: 'Technical Implementation: Strict 4 Default Languages Display, Instant Dynamic Search Across 25 Languages, Turbopack 500 Error Resolution, and Direct ?lang= URL Synchronization',
+                italics: true,
+                size: 21,
+                color: '64748B',
+              }),
+            ],
+          }),
+
+          new Paragraph({
+            heading: HeadingLevel.HEADING_1,
+            spacing: { before: 240, after: 120 },
+            children: [
+              new TextRun({
+                text: '1. User Requirements & Wireframe Alignment',
+                bold: true,
+                size: 26,
+                color: '0F172A',
+              }),
+            ],
+          }),
+
+          new Paragraph({
+            spacing: { after: 150 },
+            children: [
+              new TextRun({
+                text: 'The user requested a cleaner, focused language modal matching their wireframe diagram: a top header with title and close button, an input field for search at the top, a clean horizontal divider, and exactly 4 default/featured languages below. When the search query is empty, only the 4 default languages are shown (no 25-language list clutter). When searching, it dynamically queries across all 25 supported languages and displays exact matches.',
+              }),
+            ],
+          }),
+
+          new Paragraph({
+            heading: HeadingLevel.HEADING_1,
+            spacing: { before: 240, after: 120 },
+            children: [
+              new TextRun({
+                text: '2. "Visit URL" & Turbopack 500 Error Root Cause and Resolution',
+                bold: true,
+                size: 26,
+                color: '0F172A',
+              }),
+            ],
+          }),
+
+          new Paragraph({
+            spacing: { after: 120 },
+            children: [
+              new TextRun({
+                text: 'When visiting the URL, Next.js returned a 500 server error caused by Turbopack attempting to parse an invalid ICO header on src/app/favicon.ico ("Caused by: The decoder for Bmp does not support format features Unknown bitmap header type").',
+              }),
+            ],
+          }),
+
+          new Paragraph({
+            spacing: { after: 150 },
+            children: [
+              new TextRun({
+                text: 'Resolution: Using sharp (v0.34.5), we converted the brand logo into pure PNGs (512x512 icon.png, 180x180 apple-icon.png) and multi-resolution ICO in public/favicon.ico. We removed the uncompressed src/app/favicon.ico to let Next.js serve static public/favicon.ico and src/app/icon.png cleanly. All routes immediately returned HTTP 200 OK.',
+              }),
+            ],
+          }),
+
+          new Paragraph({
+            heading: HeadingLevel.HEADING_1,
+            spacing: { before: 240, after: 120 },
+            children: [
+              new TextRun({
+                text: '3. Direct URL Language Synchronization (?lang=...) in LanguageContext',
+                bold: true,
+                size: 26,
+                color: '0F172A',
+              }),
+            ],
+          }),
+
+          new Paragraph({
+            spacing: { after: 120 },
+            children: [
+              new TextRun({
+                text: 'We added direct URL parameter synchronization in LanguageContext.tsx: when a user visits any URL with ?lang=... (e.g. /?lang=bn or /pricing?lang=ar), the application automatically detects the parameter and sets the active language. When a user selects a language in the modal, window.history.replaceState updates the URL query parameter gracefully without triggering a full page reload.',
+              }),
+            ],
+          }),
+
+          new Paragraph({
+            heading: HeadingLevel.HEADING_1,
+            spacing: { before: 240, after: 120 },
+            children: [
+              new TextRun({
+                text: '4. Summary of Supported Default & Search Languages',
+                bold: true,
+                size: 26,
+                color: '0F172A',
+              }),
+            ],
+          }),
+
+          new Table({
+            width: { size: 100, type: WidthType.PERCENTAGE },
+            rows: [
+              new TableRow({
+                children: [
+                  new TableCell({
+                    shading: { fill: '1E3A8A', type: ShadingType.CLEAR },
+                    children: [new Paragraph({ children: [new TextRun({ text: 'Category', bold: true, color: 'FFFFFF' })] })],
+                  }),
+                  new TableCell({
+                    shading: { fill: '1E3A8A', type: ShadingType.CLEAR },
+                    children: [new Paragraph({ children: [new TextRun({ text: 'Languages Displayed', bold: true, color: 'FFFFFF' })] })],
+                  }),
+                  new TableCell({
+                    shading: { fill: '1E3A8A', type: ShadingType.CLEAR },
+                    children: [new Paragraph({ children: [new TextRun({ text: 'Behavior', bold: true, color: 'FFFFFF' })] })],
+                  }),
+                ],
+              }),
+              new TableRow({
+                children: [
+                  new TableCell({ children: [new Paragraph({ children: [new TextRun({ text: 'Default (No search)' })] })] }),
+                  new TableCell({ children: [new Paragraph({ children: [new TextRun({ text: '🇺🇸 English, 🇧🇩 বাংলা, 🇪🇸 Español, 🇸🇦 العربية' })] })] }),
+                  new TableCell({ children: [new Paragraph({ children: [new TextRun({ text: 'Strictly 4 featured cards. Clean, compact, zero clutter.' })] })] }),
+                ],
+              }),
+              new TableRow({
+                children: [
+                  new TableCell({ children: [new Paragraph({ children: [new TextRun({ text: 'Search Active' })] })] }),
+                  new TableCell({ children: [new Paragraph({ children: [new TextRun({ text: 'Any of 25 supported world languages matching input' })] })] }),
+                  new TableCell({ children: [new Paragraph({ children: [new TextRun({ text: 'Instant dynamic filtering on keystroke with empty state.' })] })] }),
+                ],
+              }),
+            ],
+          }),
+
+          new Paragraph({
+            heading: HeadingLevel.HEADING_1,
+            spacing: { before: 240, after: 120 },
+            children: [
+              new TextRun({
+                text: '5. Verification Status',
+                bold: true,
+                size: 26,
+                color: '0F172A',
+              }),
+            ],
+          }),
+
+          new Paragraph({
+            spacing: { after: 100 },
+            children: [
+              new TextRun({
+                text: '✓ HTTP GET / -> 200 OK',
+              }),
+            ],
+          }),
+          new Paragraph({
+            spacing: { after: 100 },
+            children: [
+              new TextRun({
+                text: '✓ HTTP GET /pricing -> 200 OK',
+              }),
+            ],
+          }),
+          new Paragraph({
+            spacing: { after: 100 },
+            children: [
+              new TextRun({
+                text: '✓ HTTP GET /?lang=bn -> 200 OK',
+              }),
+            ],
+          }),
+          new Paragraph({
+            spacing: { after: 100 },
+            children: [
+              new TextRun({
+                text: '✓ HTTP GET /pricing?lang=ar -> 200 OK',
+              }),
+            ],
+          }),
+          new Paragraph({
+            spacing: { after: 100 },
+            children: [
+              new TextRun({
+                text: '✓ TypeScript Typecheck (npx tsc --noEmit) -> 0 errors',
+              }),
+            ],
+          }),
+        ],
+      },
+    ],
+  });
+
+  const buffer = await Packer.toBuffer(doc);
+  const docxPath = path.resolve('LANGUAGE_MODAL_4_DEFAULT_AND_URL_SEARCH_FIX_REPORT.docx');
+  fs.writeFileSync(docxPath, buffer);
+  console.log(`Created DOCX: ${docxPath}`);
+
+  const backendDocxPath = path.resolve('../family-together-backend/LANGUAGE_MODAL_4_DEFAULT_AND_URL_SEARCH_FIX_REPORT.docx');
+  fs.writeFileSync(backendDocxPath, buffer);
+  console.log(`Created Backend DOCX: ${backendDocxPath}`);
+
+  const docHtml = `
+  <!DOCTYPE html>
+  <html>
+  <head>
+    <meta charset="utf-8">
+    <title>Language Switcher Modal (4 Default Languages + Search) & URL Resolution Report</title>
+    <style>
+      body { font-family: 'Segoe UI', Arial, sans-serif; line-height: 1.6; color: #1e293b; padding: 40px; }
+      h1 { color: #1e3a8a; border-bottom: 2px solid #e2e8f0; padding-bottom: 8px; }
+      h2 { color: #0f172a; margin-top: 25px; }
+      table { width: 100%; border-collapse: collapse; margin: 15px 0; }
+      th, td { border: 1px solid #cbd5e1; padding: 10px 14px; text-align: left; }
+      th { background-color: #1e3a8a; color: #ffffff; }
+      code { background-color: #f1f5f9; padding: 2px 6px; border-radius: 4px; font-family: Consolas, monospace; }
+      .box { background-color: #eff6ff; border-left: 4px solid #2563eb; padding: 14px 18px; margin: 15px 0; }
+      .badge { display: inline-block; padding: 3px 8px; border-radius: 4px; font-weight: bold; background-color: #dcfce7; color: #166534; }
+    </style>
+  </head>
+  <body>
+    <h1>🌐 Language Switcher Modal (4 Default Languages + Search) & URL Resolution Report</h1>
+    <p><em>Technical Implementation: Strict 4 Default Languages Display, Instant Dynamic Search Across 25 Languages, Turbopack 500 Error Resolution, and Direct ?lang= URL Synchronization</em></p>
+    <hr/>
+
+    <h2>১. ইউজার ওয়্যারফ্রেম ডিজাইন বাস্তবায়ন</h2>
+    <div class="box">
+      <strong>ওয়্যারফ্রেম কাঠামো:</strong><br/>
+      ১. <strong>শীর্ষ হেডার:</strong> টাইটেল ও ক্লোজ বাটন।<br/>
+      ২. <strong>ইনপুট সার্চ বক্স:</strong> সার্চ আইকন ও ক্লিয়ার বাটনসহ ইনপুট ফিল্ড।<br/>
+      ৩. <strong>ডিভাইডার রেখা:</strong> সূক্ষ্ম সেপারেটর লাইন।<br/>
+      ৪. <strong>ডিফল্ট ৪টি ভাষা:</strong> কোনো সার্চ না থাকা অবস্থায় শুধুমাত্র নির্ধারিত ৪টি মূল ভাষা (🇺🇸 English, 🇧🇩 বাংলা, 🇪🇸 Español, 🇸🇦 العربية) প্রদর্শিত হবে। কোনো অতিরিক্ত ২৫টি ভাষার অনাকাঙ্ক্ষিত তালিকা থাকবে না।<br/>
+      ৫. <strong>সার্চ রেজাল্ট:</strong> সার্চ বক্সে কিছু লিখলে তাৎক্ষণিকভাবে ২৫টি বিশ্বভাষার মধ্যে থেকে ফিল্টার করে ম্যাচিং ভাষাগুলো দেখাবে।
+    </div>
+
+    <h2>২. URL ভিজিট ও 500 এরর সমাধান ("visit url when will update code")</h2>
+    <p>ইউআরএল ভিজিট করার সময় নেক্সট.জেএস টার্বোপ্যাক <code>src/app/favicon.ico</code> ডিকোড করতে গিয়ে 500 ইন্টারনাল সার্ভার এরর দিচ্ছিল।</p>
+    <p><strong>সমাধান:</strong> <code>sharp</code> লাইব্রেরি দিয়ে হাই-রেজোলিউশন পিএনজি আইকন এবং স্ট্যান্ডার্ড মাল্টি-সাইজ <code>public/favicon.ico</code> তৈরি করা হয়েছে এবং কনফ্লিক্ট সৃষ্টিকারী <code>src/app/favicon.ico</code> সরানো হয়েছে। এখন সমস্ত ইউআরএল <code>200 OK</code> দিচ্ছে।</p>
+
+    <h2>৩. URL Query Parameter (?lang=...) সিঙ্ক</h2>
+    <p><code>LanguageContext.tsx</code>-এ সরাসরি URL প্যারামিটার সাপোর্ট যুক্ত করা হয়েছে। যেমন: <code>/?lang=bn</code> বা <code>/pricing?lang=es</code> ভিজিট করলে স্বয়ংক্রিয়ভাবে সেই ভাষা সক্রিয় হবে। একই সাথে মডালে ভাষা পরিবর্তন করলে <code>window.history.replaceState</code> দিয়ে ইউআরএল নির্বিঘ্নে আপডেট হবে।</p>
+
+    <h2>৪. ভেরিফিকেশন ফলাফল</h2>
+    <table>
+      <tr><th>ইউআরএল এন্ডপয়েন্ট</th><th>স্ট্যাটাস কোড</th><th>ফলাফল</th></tr>
+      <tr><td><code>http://localhost:3001/</code></td><td><strong>200 OK</strong></td><td>হোমপেজ সফলভাবে লোড হচ্ছে</td></tr>
+      <tr><td><code>http://localhost:3001/pricing</code></td><td><strong>200 OK</strong></td><td>প্রাইসিং পেজ সম্পূর্ণ সচল</td></tr>
+      <tr><td><code>http://localhost:3001/?lang=bn</code></td><td><strong>200 OK</strong></td><td>বাংলা ভাষা ইউআরএল প্যারামিটার কার্যকরী</td></tr>
+      <tr><td><code>http://localhost:3001/pricing?lang=ar</code></td><td><strong>200 OK</strong></td><td>আরবি ভাষা ইউআরএল প্যারামিটার কার্যকরী</td></tr>
+    </table>
+  </body>
+  </html>
+  `;
+
+  const docPath = path.resolve('LANGUAGE_MODAL_4_DEFAULT_AND_URL_SEARCH_FIX_REPORT.doc');
+  fs.writeFileSync(docPath, docHtml, 'utf8');
+  console.log(`Created DOC: ${docPath}`);
+
+  const backendDocPath = path.resolve('../family-together-backend/LANGUAGE_MODAL_4_DEFAULT_AND_URL_SEARCH_FIX_REPORT.doc');
+  fs.writeFileSync(backendDocPath, docHtml, 'utf8');
+  console.log(`Created Backend DOC: ${backendDocPath}`);
+}
+
+generateLanguageModalFixDoc().catch(console.error);
