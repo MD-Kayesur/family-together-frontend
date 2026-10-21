@@ -39,6 +39,7 @@ import {
   useUpdateChatMessageMutation,
   useDeleteChatMessageMutation,
   useDeleteConversationMutation,
+  useGetOnlineUsersQuery,
 } from "@/redux/api/chatApi";
 import { useAppSelector } from "@/redux/store";
 
@@ -54,6 +55,13 @@ interface Message {
   reactions?: string[];
 }
 
+interface LastActiveDetail {
+  relativeText: string;
+  exactTimeStr: string;
+  combinedText: string;
+  fullTooltip: string;
+}
+
 interface Conversation {
   id: string;
   name: string;
@@ -67,8 +75,90 @@ interface Conversation {
   lastMessageTime: string;
   unreadCount: number;
   online: boolean;
+  lastActiveText?: string;
+  lastActiveCombined?: string;
+  lastActiveExactTime?: string;
+  lastActiveTooltip?: string;
+  lastActiveAt?: string;
   membersCount?: number;
   recipientId?: string;
+}
+
+function formatLastActive(timestamp?: string | null, nowMs: number = Date.now()): LastActiveDetail {
+  if (!timestamp) {
+    return {
+      relativeText: "Offline",
+      exactTimeStr: "",
+      combinedText: "Offline",
+      fullTooltip: "Offline • No activity timestamp recorded",
+    };
+  }
+  try {
+    const date = new Date(timestamp);
+    const time = date.getTime();
+    if (isNaN(time)) {
+      return {
+        relativeText: "Offline",
+        exactTimeStr: "",
+        combinedText: "Offline",
+        fullTooltip: "Offline",
+      };
+    }
+    const diffMs = nowMs - time;
+    // Guard against negative clock offset between server and client
+    const elapsedSec = Math.max(0, Math.floor(diffMs / 1000));
+    const elapsedMin = Math.floor(elapsedSec / 60);
+    const elapsedHour = Math.floor(elapsedMin / 60);
+    const elapsedDay = Math.floor(elapsedHour / 24);
+
+    const timeFormatted = date.toLocaleTimeString([], { hour: "numeric", minute: "2-digit", hour12: true });
+    const dateFormatted = date.toLocaleDateString([], { month: "short", day: "numeric" });
+    const fullDateFormatted = date.toLocaleDateString([], { weekday: "short", year: "numeric", month: "short", day: "numeric" });
+    const fullTooltip = `Last seen: ${fullDateFormatted} at ${timeFormatted}`;
+
+    let relativeText = "Active just now";
+    let combinedText = `Active just now • ${timeFormatted}`;
+
+    // Exact threshold logic requested:
+    // < 1 minute: Active just now
+    // < 60 minutes: Active 5m ago, Active 15m ago, etc.
+    // < 24 hours: Active 2h ago, Active 8h ago, etc.
+    // 1 to 2 days: Active yesterday
+    // > 2 days: Active 3d ago or exact date
+    if (elapsedMin < 1) {
+      relativeText = "Active just now";
+      combinedText = `Active just now • ${timeFormatted}`;
+    } else if (elapsedMin < 60) {
+      relativeText = `Active ${elapsedMin}m ago`;
+      combinedText = `Active ${elapsedMin}m ago • ${timeFormatted}`;
+    } else if (elapsedHour < 24) {
+      relativeText = `Active ${elapsedHour}h ago`;
+      combinedText = `Active ${elapsedHour}h ago • ${timeFormatted}`;
+    } else if (elapsedDay === 1 || (elapsedHour >= 24 && elapsedHour < 48)) {
+      relativeText = "Active yesterday";
+      combinedText = `Active yesterday • ${timeFormatted}`;
+    } else if (elapsedDay < 7) {
+      relativeText = `Active ${elapsedDay}d ago`;
+      combinedText = `Active ${elapsedDay}d ago • ${dateFormatted} ${timeFormatted}`;
+    } else {
+      relativeText = `Active ${dateFormatted}`;
+      combinedText = `Active ${dateFormatted} • ${timeFormatted}`;
+    }
+
+    return {
+      relativeText,
+      exactTimeStr: timeFormatted,
+      combinedText,
+      fullTooltip,
+    };
+  } catch {
+    return {
+      relativeText: "Offline",
+      exactTimeStr: "",
+      combinedText: "Offline",
+      fullTooltip: "Offline",
+    };
+  }
 }
 
 interface MessagesTabProps {
@@ -97,6 +187,32 @@ export default function MessagesTab({ role = "MEMBER", currentUserId }: Messages
   const [updateChatMessage, { isLoading: isUpdatingMessage }] = useUpdateChatMessageMutation();
   const [deleteChatMessage, { isLoading: isDeletingMessage }] = useDeleteChatMessageMutation();
   const [deleteConversation, { isLoading: isDeletingConversation }] = useDeleteConversationMutation();
+  const { data: onlineUsersData } = useGetOnlineUsersQuery(undefined, {
+    pollingInterval: 10000,
+  });
+
+  const [onlineUserIds, setOnlineUserIds] = useState<Set<string>>(new Set());
+  const [lastActiveMap, setLastActiveMap] = useState<Record<string, string>>({});
+
+  // Real-time ticking state: updates every 10 seconds so elapsed time updates live on screen without page refresh
+  const [nowTimestamp, setNowTimestamp] = useState<number>(() => Date.now());
+
+  useEffect(() => {
+    const timer = setInterval(() => {
+      setNowTimestamp(Date.now());
+    }, 10000);
+    return () => clearInterval(timer);
+  }, []);
+
+  // Initialize online users and last active timestamps from initial REST fetch
+  useEffect(() => {
+    if (onlineUsersData?.onlineUserIds) {
+      setOnlineUserIds(new Set(onlineUsersData.onlineUserIds));
+    }
+    if (onlineUsersData?.lastActiveMap) {
+      setLastActiveMap((prev) => ({ ...prev, ...onlineUsersData.lastActiveMap }));
+    }
+  }, [onlineUsersData]);
 
   const [activeFilter, setActiveFilter] = useState<"ALL" | "CHANNELS" | "DIRECT">("ALL");
   const [searchQuery, setSearchQuery] = useState("");
@@ -217,13 +333,62 @@ export default function MessagesTab({ role = "MEMBER", currentUserId }: Messages
       refetchMessages();
     });
 
+    // Real-Time Online Presence & Last Active Listeners
+    socket.on("presence_data", (data: { onlineUserIds: string[]; lastActiveMap: Record<string, string> }) => {
+      if (data.onlineUserIds) setOnlineUserIds(new Set(data.onlineUserIds));
+      if (data.lastActiveMap) setLastActiveMap((prev) => ({ ...prev, ...data.lastActiveMap }));
+    });
+
+    socket.on("online_users_list", (userIds: string[]) => {
+      setOnlineUserIds(new Set(userIds));
+    });
+
+    socket.on("user_status_changed", (data: { userId: string; status: "online" | "offline"; lastActiveAt?: string }) => {
+      setOnlineUserIds((prev) => {
+        const next = new Set(prev);
+        if (data.status === "online") {
+          next.add(data.userId);
+        } else {
+          next.delete(data.userId);
+        }
+        return next;
+      });
+
+      if (data.lastActiveAt) {
+        setLastActiveMap((prev) => ({ ...prev, [data.userId]: data.lastActiveAt! }));
+      }
+    });
+
     return () => {
       socket.disconnect();
     };
   }, [activeConversationId, myUserId, refetchConversations, refetchMessages]);
 
   // Switch conversation and join room
-  const handleSelectConversation = (id: string) => {
+  const handleSelectConversation = async (id: string) => {
+    // If clicking a member from the directory who does not have an active thread yet
+    if (id.startsWith("member-")) {
+      const targetMember = conversations.find((c) => c.id === id);
+      if (targetMember?.recipientId) {
+        try {
+          const res = await createConversation({ recipientId: targetMember.recipientId }).unwrap();
+          if (res?.id) {
+            setActiveConversationId(res.id);
+            setMobileView("chat");
+            setIsTypingRemote(false);
+            if (socketRef.current) {
+              socketRef.current.emit("join_conversation", { conversationId: res.id });
+            }
+            markConversationAsRead(res.id);
+            refetchConversations();
+            return;
+          }
+        } catch (err) {
+          console.error("Direct conversation start error:", err);
+        }
+      }
+    }
+
     setActiveConversationId(id);
     setMobileView("chat");
     setIsTypingRemote(false);
@@ -258,8 +423,16 @@ export default function MessagesTab({ role = "MEMBER", currentUserId }: Messages
     // 2. Direct Conversations from database
     dbConversations.forEach((conv) => {
       const otherUser = conv.otherUser;
+      const otherUserId = otherUser?.id;
       const isOwner = otherUser?.role === "OWNER";
       const isRestrictedForMe = myRole === "MEMBER" && isOwner;
+      const isOnline = otherUserId ? onlineUserIds.has(otherUserId) : false;
+      const lastActiveIso = otherUserId ? lastActiveMap[otherUserId] : undefined;
+      const activeDetails = formatLastActive(lastActiveIso, nowTimestamp);
+      const lastActiveText = isOnline ? "Active now" : activeDetails.relativeText;
+      const lastActiveCombined = isOnline ? "Active now" : activeDetails.combinedText;
+      const lastActiveExactTime = isOnline ? "" : activeDetails.exactTimeStr;
+      const lastActiveTooltip = isOnline ? "Online now (Active)" : activeDetails.fullTooltip;
 
       list.push({
         id: conv.id,
@@ -271,10 +444,19 @@ export default function MessagesTab({ role = "MEMBER", currentUserId }: Messages
         isOwnerTarget: isOwner,
         canMessage: !isRestrictedForMe,
         lastMessage: conv.lastMessage || "No messages yet",
-        lastMessageTime: conv.lastMessageTime ? new Date(conv.lastMessageTime).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }) : "Recently",
+        lastMessageTime: conv.lastMessageTime
+          ? new Date(conv.lastMessageTime).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })
+          : isOnline
+          ? "Active now"
+          : activeDetails.relativeText,
         unreadCount: conv.unreadCount || 0,
-        online: true,
-        recipientId: otherUser?.id,
+        online: isOnline,
+        lastActiveText,
+        lastActiveCombined,
+        lastActiveExactTime,
+        lastActiveTooltip,
+        lastActiveAt: lastActiveIso,
+        recipientId: otherUserId,
       });
     });
 
@@ -288,6 +470,13 @@ export default function MessagesTab({ role = "MEMBER", currentUserId }: Messages
 
       const isOwner = m.role === "OWNER" || m.bio?.toLowerCase().includes("owner");
       const isRestrictedForMe = myRole === "MEMBER" && isOwner;
+      const isOnline = memberUserId ? onlineUserIds.has(memberUserId) : false;
+      const lastActiveIso = memberUserId ? lastActiveMap[memberUserId] : undefined;
+      const activeDetails = formatLastActive(lastActiveIso, nowTimestamp);
+      const lastActiveText = isOnline ? "Active now" : activeDetails.relativeText;
+      const lastActiveCombined = isOnline ? "Active now" : activeDetails.combinedText;
+      const lastActiveExactTime = isOnline ? "" : activeDetails.exactTimeStr;
+      const lastActiveTooltip = isOnline ? "Online now (Active)" : activeDetails.fullTooltip;
 
       list.push({
         id: `member-${m.id}`,
@@ -298,16 +487,25 @@ export default function MessagesTab({ role = "MEMBER", currentUserId }: Messages
         roleDescription: isOwner ? "Sanctuary Owner" : (m.bio || "Connected Relative"),
         isOwnerTarget: isOwner,
         canMessage: !isRestrictedForMe,
-        lastMessage: isRestrictedForMe ? "Direct messages to Sanctuary Owner restricted" : "Click to start conversation",
-        lastMessageTime: "",
+        lastMessage: isRestrictedForMe
+          ? "Direct messages to Sanctuary Owner restricted"
+          : isOnline
+          ? "Active now • Click to chat"
+          : `${activeDetails.combinedText} • Click to chat`,
+        lastMessageTime: isOnline ? "Online" : activeDetails.relativeText,
         unreadCount: 0,
-        online: false,
+        online: isOnline,
+        lastActiveText,
+        lastActiveCombined,
+        lastActiveExactTime,
+        lastActiveTooltip,
+        lastActiveAt: lastActiveIso,
         recipientId: memberUserId,
       });
     });
 
     return list;
-  }, [members, dbConversations, myUserId, myRole]);
+  }, [members, dbConversations, myUserId, myRole, onlineUserIds, lastActiveMap, nowTimestamp]);
 
   const activeConversation = conversations.find((c) => c.id === activeConversationId) || conversations[0];
   const activeMessages = localMessages[activeConversationId] || [];
@@ -483,8 +681,19 @@ export default function MessagesTab({ role = "MEMBER", currentUserId }: Messages
                     </div>
                   )}
 
-                  {conv.online && (
-                    <span className="absolute -bottom-0.5 -right-0.5 h-3 w-3 rounded-full bg-emerald-500 border-2 border-slate-900" />
+                  {conv.online ? (
+                    <span
+                      className="absolute -bottom-0.5 -right-0.5 flex h-3.5 w-3.5"
+                      title={conv.lastActiveTooltip || "Online now (Active)"}
+                    >
+                      <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75" />
+                      <span className="relative inline-flex rounded-full h-3.5 w-3.5 bg-emerald-500 border-2 border-slate-900 shadow-xs" />
+                    </span>
+                  ) : (
+                    <span
+                      className="absolute -bottom-0.5 -right-0.5 h-3 w-3 rounded-full bg-slate-600 border-2 border-slate-900 cursor-help"
+                      title={conv.lastActiveTooltip || "Offline"}
+                    />
                   )}
                 </div>
 
@@ -579,10 +788,45 @@ export default function MessagesTab({ role = "MEMBER", currentUserId }: Messages
                   </span>
                 )}
               </h3>
-              <p className="text-[10px] text-slate-400 flex items-center gap-1.5">
-                <span className="h-1.5 w-1.5 rounded-full bg-emerald-500" />
-                {activeConversation?.roleDescription || "Active now"}
-              </p>
+              {activeConversation?.type === "GROUP" ? (
+                <p className="text-[10px] text-slate-400 flex items-center gap-1.5">
+                  <span className="h-1.5 w-1.5 rounded-full bg-emerald-500" />
+                  <span>
+                    {activeConversation?.membersCount || 0} family members
+                    {onlineUserIds.size > 0 && ` (${onlineUserIds.size} online now)`}
+                  </span>
+                </p>
+              ) : activeConversation?.online ? (
+                <p
+                  className="text-[10px] flex items-center gap-1.5 cursor-help"
+                  title={activeConversation?.lastActiveTooltip || "Online now (Active)"}
+                >
+                  <span className="relative flex h-2 w-2">
+                    <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75" />
+                    <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-500" />
+                  </span>
+                  <span className="text-emerald-400 font-bold">Active now</span>
+                  {activeConversation?.roleDescription && (
+                    <span className="text-slate-500">• {activeConversation.roleDescription}</span>
+                  )}
+                </p>
+              ) : (
+                <p
+                  className="text-[10px] flex items-center gap-1.5 cursor-help"
+                  title={activeConversation?.lastActiveTooltip || "Offline"}
+                >
+                  <span className="h-1.5 w-1.5 rounded-full bg-slate-500" />
+                  <span className="text-slate-300 font-semibold">
+                    {activeConversation?.lastActiveText || "Offline"}
+                  </span>
+                  {activeConversation?.lastActiveExactTime && (
+                    <span className="text-slate-500 font-medium">({activeConversation.lastActiveExactTime})</span>
+                  )}
+                  {activeConversation?.roleDescription && (
+                    <span className="text-slate-500">• {activeConversation.roleDescription}</span>
+                  )}
+                </p>
+              )}
             </div>
           </div>
 
