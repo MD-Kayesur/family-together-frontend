@@ -1,6 +1,6 @@
 "use client";
 
-import React, { Suspense } from "react";
+import React, { useState, useEffect, Suspense } from "react";
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
 import {
@@ -32,17 +32,21 @@ import SettingsTab from "@/components/dashboard/tabs/SettingsTab";
 import CreateMemberForm from "@/components/dashboard/members/CreateMemberForm";
 
 interface UserOverviewTabProps {
-  user: any;
-  memories: any[];
-  events: any[];
-  members: any[];
+  user?: any;
+  memories?: any[];
+  events?: any[];
+  members?: any[];
 }
 
-function UserOverviewTab({ user, memories, events, members }: UserOverviewTabProps) {
-  const userInitial = user.fullName ? user.fullName.charAt(0).toUpperCase() : "U";
+function UserOverviewTab({ user, memories = [], events = [], members = [] }: UserOverviewTabProps) {
+  const userInitial = user?.fullName
+    ? user?.fullName?.charAt(0)?.toUpperCase() || "U"
+    : user?.email
+    ? user?.email?.charAt(0)?.toUpperCase() || "U"
+    : "U";
 
   return (
-    <div className="space-y-8 w-full max-w-full">
+    <div suppressHydrationWarning className="space-y-8 w-full max-w-full">
       {/* Welcome Hero Card */}
       <div className="relative overflow-hidden rounded-3xl bg-linear-to-r from-indigo-900 via-indigo-800 to-slate-900 text-white p-8 sm:p-10 shadow-xl shadow-indigo-950/10">
         <div className="absolute -right-10 -bottom-10 opacity-10 pointer-events-none">
@@ -52,7 +56,7 @@ function UserOverviewTab({ user, memories, events, members }: UserOverviewTabPro
         <div className="relative z-10 max-w-2xl space-y-3">
           <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-white/10 backdrop-blur-md text-indigo-200 text-xs font-semibold border border-white/10">
             <Sparkles className="h-3.5 w-3.5 text-amber-300" />
-            <span>{user.role || "MEMBER"} Account</span>
+            <span>{user?.role || "MEMBER"} Account</span>
             <span className="mx-1">•</span>
             <span className="flex items-center gap-1 text-emerald-300">
               <CheckCircle className="h-3 w-3" />
@@ -61,7 +65,7 @@ function UserOverviewTab({ user, memories, events, members }: UserOverviewTabPro
           </div>
 
           <h1 className="text-2xl sm:text-3xl font-extrabold tracking-tight">
-            Welcome back, {user.fullName}!
+            Welcome back, {user?.fullName || "Family Member"}!
           </h1>
           <p className="text-indigo-100/80 text-sm leading-relaxed">
             Explore your family lineage, discover ancestors, preserve precious memories, and celebrate upcoming family gatherings together.
@@ -205,7 +209,9 @@ function UserOverviewTab({ user, memories, events, members }: UserOverviewTabPro
                   >
                     <div className="flex items-center gap-2 text-xs text-slate-400">
                       <Calendar className="h-3.5 w-3.5" />
-                      <span>{new Date(memory.createdAt).toLocaleDateString()}</span>
+                      <span suppressHydrationWarning>
+                        {memory.createdAt ? new Date(memory.createdAt).toLocaleDateString("en-US", { year: "numeric", month: "short", day: "numeric" }) : "Recently"}
+                      </span>
                     </div>
                     <h4 className="font-bold text-white text-sm line-clamp-1">{memory.title}</h4>
                     <p className="text-xs text-slate-400 line-clamp-2">{memory.description || "No description provided."}</p>
@@ -247,8 +253,12 @@ function UserOverviewTab({ user, memories, events, members }: UserOverviewTabPro
                   >
                     <div className="flex items-center gap-3">
                       <div className="h-10 w-10 rounded-lg bg-amber-950/60 text-amber-300 border border-amber-800/60 flex flex-col items-center justify-center font-bold leading-none">
-                        <span className="text-xs">{new Date(event.startDate || event.createdAt).toLocaleDateString("en-US", { month: "short" })}</span>
-                        <span className="text-sm">{new Date(event.startDate || event.createdAt).getDate()}</span>
+                        <span suppressHydrationWarning className="text-xs">
+                          {new Date(event.startDate || event.createdAt || "2026-01-01").toLocaleDateString("en-US", { month: "short" })}
+                        </span>
+                        <span suppressHydrationWarning className="text-sm">
+                          {new Date(event.startDate || event.createdAt || "2026-01-01").getDate()}
+                        </span>
                       </div>
                       <div>
                         <p className="font-bold text-xs text-white">{event.title}</p>
@@ -282,8 +292,8 @@ function UserOverviewTab({ user, memories, events, members }: UserOverviewTabPro
                 {userInitial}
               </div>
               <div>
-                <h4 className="font-bold text-sm text-white">{user.fullName}</h4>
-                <p className="text-xs text-slate-400">{user.email}</p>
+                <h4 className="font-bold text-sm text-white">{user?.fullName || "Family Member"}</h4>
+                <p className="text-xs text-slate-400">{user?.email || ""}</p>
               </div>
             </div>
 
@@ -291,7 +301,7 @@ function UserOverviewTab({ user, memories, events, members }: UserOverviewTabPro
               <div className="flex items-center justify-between">
                 <span className="text-slate-400">Role Status:</span>
                 <span className="font-semibold px-2 py-0.5 rounded-md bg-purple-950/60 text-purple-300 border border-purple-800 uppercase tracking-wide text-[10px]">
-                  {user.role || "USER"}
+                  {user?.role || "MEMBER"}
                 </span>
               </div>
               <div className="flex items-center justify-between">
@@ -347,27 +357,34 @@ function UserDashboardContent() {
   const { user, isAuthenticated } = useAppSelector((state) => state.auth);
 
   const { data: memories = [] } = useGetMemoriesQuery(
-    user ? { userId: user.id, userEmail: user.email } : undefined,
+    user?.id || user?.email ? { userId: user?.id, userEmail: user?.email } : undefined,
     { skip: !isAuthenticated }
   );
   const { data: events = [] } = useGetEventsQuery(undefined, { skip: !isAuthenticated });
   const { data: members = [] } = useGetMembersQuery(undefined, { skip: !isAuthenticated });
 
-  if (!user) return null;
+  if (!user) {
+    return (
+      <div className="flex items-center justify-center p-12 text-slate-400">
+        <span className="h-6 w-6 border-2 border-indigo-400 border-t-transparent rounded-full animate-spin mr-3" />
+        <span>Loading sanctuary account...</span>
+      </div>
+    );
+  }
 
   switch (currentTab) {
     case "tree":
       if (searchParams?.get("action") === "create" || searchParams?.get("view") === "create") {
         return <CreateMemberForm role="MEMBER" />;
       }
-      return <TreeTab role="MEMBER" currentUserId={user.id} />;
+      return <TreeTab role="MEMBER" currentUserId={user?.id} />;
     case "members":
       if (searchParams?.get("action") === "create" || searchParams?.get("view") === "create") {
         return <CreateMemberForm role="MEMBER" />;
       }
-      return <MembersTab role="MEMBER" currentUserId={user.id} />;
+      return <MembersTab role="MEMBER" currentUserId={user?.id} />;
     case "messages":
-      return <MessagesTab role="MEMBER" currentUserId={user.id} />;
+      return <MessagesTab role="MEMBER" currentUserId={user?.id} />;
     case "memories":
       return <MemoriesTab role="MEMBER" />;
     case "events":
@@ -393,6 +410,12 @@ function UserDashboardContent() {
 }
 
 export default function UserDashboardPage() {
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
+
   return (
     <SanctuaryDashboardWrapper>
       <Suspense
@@ -403,7 +426,14 @@ export default function UserDashboardPage() {
           </div>
         }
       >
-        <UserDashboardContent />
+        {mounted ? (
+          <UserDashboardContent />
+        ) : (
+          <div className="flex items-center justify-center p-12 text-slate-400">
+            <span className="h-6 w-6 border-2 border-indigo-400 border-t-transparent rounded-full animate-spin mr-3" />
+            <span>Loading sanctuary tab...</span>
+          </div>
+        )}
       </Suspense>
     </SanctuaryDashboardWrapper>
   );

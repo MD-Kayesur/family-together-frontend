@@ -276,7 +276,7 @@ export default function LandingFamilyTreeCanvas({
     if (!dbMembers || dbMembers.length === 0) return;
 
     const mappedMembers: DemoMember[] = dbMembers.map((m: any) => {
-      const isYou = user?.id && (m.userId === user.id || m.email === user.email);
+      const isYou = user?.id && (m.userId === user?.id || (user?.email && m.email === user?.email));
       const fullName = `${m.firstName || ""} ${m.lastName || ""}`.trim() || "Family Member";
       return {
         id: m.id,

@@ -42,7 +42,7 @@ import InteractiveFamilyTreeCanvas from "@/components/tree/InteractiveFamilyTree
 export default function FamilyTab() {
   const { user } = useAppSelector((state) => state.auth);
   const { data: sanctuaryData, isLoading: isLoadingSanctuary, refetch: refetchSanctuary } = useGetSanctuaryQuery(
-    user?.id ? { userId: user.id } : undefined
+    user?.id ? { userId: user?.id } : undefined
   );
 
   const family = sanctuaryData?.family;
@@ -60,7 +60,7 @@ export default function FamilyTab() {
       : { paginate: false }
   );
   const { data: memories = [], refetch: refetchMemories } = useGetMemoriesQuery(
-    user?.id || user?.email ? { userId: user.id, userEmail: user.email } : undefined,
+    user?.id || user?.email ? { userId: user?.id, userEmail: user?.email } : undefined,
     { skip: !user?.id && !user?.email }
   );
   const [updateFamilyDetails, { isLoading: isUpdating }] = useUpdateFamilyDetailsMutation();

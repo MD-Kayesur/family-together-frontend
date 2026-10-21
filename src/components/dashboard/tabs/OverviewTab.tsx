@@ -60,7 +60,7 @@ export default function OverviewTab() {
   const [timeRange, setTimeRange] = useState<"6M" | "1Y" | "ALL">("6M");
 
   const pendingRequests = invitations.filter((inv) => inv.status === "PENDING");
-  const familyName = user?.fullName ? user.fullName.split(" ").slice(-1)[0] : "Rahman";
+  const familyName = user?.fullName ? user?.fullName?.split(" ")?.slice(-1)[0] || "Rahman" : "Rahman";
 
   const totalMembersCount = members.length || 7;
   const maleCount = members.filter((m) => m.gender === "MALE").length || 4;

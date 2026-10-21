@@ -131,11 +131,11 @@ export default function SettingsTab() {
   // Populate user data
   useEffect(() => {
     if (user) {
-      setFullName(user.fullName || "");
-      setEmail(user.email || "");
-      setPhoneNumber(user.phoneNumber || "");
-      setBio(user.bio || "");
-      setAvatarUrl(user.avatarUrl || "");
+      setFullName(user?.fullName || "");
+      setEmail(user?.email || "");
+      setPhoneNumber(user?.phoneNumber || "");
+      setBio(user?.bio || "");
+      setAvatarUrl(user?.avatarUrl || "");
     }
   }, [user]);
 
@@ -269,9 +269,13 @@ export default function SettingsTab() {
   };
 
   const userRole = (user?.role || "OWNER").toUpperCase();
-  const userInitial = user?.fullName ? user.fullName.charAt(0).toUpperCase() : "U";
+  const userInitial = user?.fullName
+    ? user?.fullName?.charAt(0)?.toUpperCase() || "U"
+    : user?.email
+    ? user?.email?.charAt(0)?.toUpperCase() || "U"
+    : "U";
   const memberSince = user?.createdAt
-    ? new Date(user.createdAt).toLocaleDateString("en-US", {
+    ? new Date(user?.createdAt).toLocaleDateString("en-US", {
         year: "numeric",
         month: "long",
         day: "numeric",
@@ -374,7 +378,7 @@ export default function SettingsTab() {
                   {user?.phoneNumber && (
                     <div className="flex items-center gap-1.5">
                       <Phone className="h-4 w-4 text-slate-400" />
-                      <span>{user.phoneNumber}</span>
+                      <span>{user?.phoneNumber}</span>
                     </div>
                   )}
                   <div className="flex items-center gap-1.5 text-slate-400">
@@ -385,7 +389,7 @@ export default function SettingsTab() {
 
                 {user?.bio && (
                   <p className="text-xs text-slate-300 font-normal italic pt-1 max-w-xl">
-                    &ldquo;{user.bio}&rdquo;
+                    &ldquo;{user?.bio}&rdquo;
                   </p>
                 )}
               </div>

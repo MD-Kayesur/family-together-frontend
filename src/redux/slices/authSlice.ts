@@ -54,7 +54,7 @@ const getInitialState = (): AuthState => {
 
   const isAuth = Boolean(token);
   if (isAuth && user) {
-    syncAuthCookies(true, user.role);
+    syncAuthCookies(true, user?.role);
   }
 
   return {
@@ -84,7 +84,7 @@ const authSlice = createSlice({
           if (refreshToken) {
             localStorage.setItem("refreshToken", refreshToken);
           }
-          syncAuthCookies(true, user.role);
+          syncAuthCookies(true, user?.role);
         }
       }
     },
@@ -105,7 +105,7 @@ const authSlice = createSlice({
         state.user = { ...state.user, ...action.payload };
         if (typeof window !== "undefined") {
           localStorage.setItem("user", JSON.stringify(state.user));
-          syncAuthCookies(true, state.user.role);
+          syncAuthCookies(true, state.user?.role);
         }
       }
     },

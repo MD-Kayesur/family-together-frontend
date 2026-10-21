@@ -158,15 +158,15 @@ export default function PublicNavbar() {
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-3">
                   <div className="h-10 w-10 rounded-full bg-indigo-600 text-white font-bold text-sm flex items-center justify-center overflow-hidden border border-slate-200 dark:border-slate-700 shrink-0">
-                    {user.avatarUrl ? (
-                      <img src={user.avatarUrl} alt={user.fullName} className="h-full w-full object-cover" />
+                    {user?.avatarUrl ? (
+                      <img src={user?.avatarUrl} alt={user?.fullName || "User avatar"} className="h-full w-full object-cover" />
                     ) : (
-                      <span>{user.fullName ? user.fullName.charAt(0).toUpperCase() : "U"}</span>
+                      <span>{user?.fullName ? user?.fullName?.charAt(0)?.toUpperCase() || "U" : "U"}</span>
                     )}
                   </div>
                   <div className="min-w-0">
-                    <p className="text-xs font-extrabold text-slate-900 dark:text-white truncate">{user.fullName}</p>
-                    <p className="text-[11px] text-slate-400 truncate">{user.email}</p>
+                    <p className="text-xs font-extrabold text-slate-900 dark:text-white truncate">{user?.fullName || "User"}</p>
+                    <p className="text-[11px] text-slate-400 truncate">{user?.email || ""}</p>
                   </div>
                 </div>
                 <NavbarNotificationMenu />

@@ -59,10 +59,10 @@ export default function CreateMemberForm({ role }: CreateMemberFormProps) {
   // Determine current member profile if user is a member
   const currentMember = existingMembers.find(
     (m: any) =>
-      (user?.id && (m.userId === user.id || m.user?.id === user.id)) ||
+      (user?.id && (m.userId === user?.id || m.user?.id === user?.id)) ||
       (user?.email &&
-        (m.email?.toLowerCase() === user.email.toLowerCase() ||
-          m.user?.email?.toLowerCase() === user.email.toLowerCase()))
+        (m.email?.toLowerCase() === user?.email?.toLowerCase() ||
+          m.user?.email?.toLowerCase() === user?.email?.toLowerCase()))
   );
 
   const resolvedRelativeToId = queryRelativeTo || (isMember ? currentMember?.id : undefined);

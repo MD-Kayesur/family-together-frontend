@@ -44,7 +44,7 @@ function MemoryFormContent() {
   // Queries & Mutations
   const { data: members = [] } = useGetMembersQuery();
   const { data: allMemories = [], refetch: refetchMemories } = useGetMemoriesQuery(
-    user?.id || user?.email ? { userId: user.id, userEmail: user.email } : undefined,
+    user?.id || user?.email ? { userId: user?.id, userEmail: user?.email } : undefined,
     { skip: !user?.id && !user?.email }
   );
   const { data: fetchedMemory, isLoading: isFetchingMemory } = useGetMemoryByIdQuery(

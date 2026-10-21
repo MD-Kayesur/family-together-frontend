@@ -64,7 +64,13 @@ export default function NavbarNotificationMenu() {
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
 
-  if (!user || (user.role && user.role.toUpperCase() === "VIEWER")) {
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
+
+  if (!mounted || !user || (user?.role && user?.role?.toUpperCase() === "VIEWER")) {
     return null;
   }
 

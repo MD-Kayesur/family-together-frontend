@@ -194,10 +194,13 @@ export default function MessagesTab({ role = "MEMBER", currentUserId }: Messages
   const [onlineUserIds, setOnlineUserIds] = useState<Set<string>>(new Set());
   const [lastActiveMap, setLastActiveMap] = useState<Record<string, string>>({});
 
-  // Real-time ticking state: updates every 10 seconds so elapsed time updates live on screen without page refresh
-  const [nowTimestamp, setNowTimestamp] = useState<number>(() => Date.now());
+  const [mounted, setMounted] = useState(false);
+  // Real-time ticking state: initialized safely on client mount to eliminate SSR hydration mismatch
+  const [nowTimestamp, setNowTimestamp] = useState<number>(0);
 
   useEffect(() => {
+    setMounted(true);
+    setNowTimestamp(Date.now());
     const timer = setInterval(() => {
       setNowTimestamp(Date.now());
     }, 10000);
@@ -428,7 +431,9 @@ export default function MessagesTab({ role = "MEMBER", currentUserId }: Messages
       const isRestrictedForMe = myRole === "MEMBER" && isOwner;
       const isOnline = otherUserId ? onlineUserIds.has(otherUserId) : false;
       const lastActiveIso = otherUserId ? lastActiveMap[otherUserId] : undefined;
-      const activeDetails = formatLastActive(lastActiveIso, nowTimestamp);
+      const activeDetails = mounted && nowTimestamp > 0
+        ? formatLastActive(lastActiveIso, nowTimestamp)
+        : { relativeText: "Offline", exactTimeStr: "", combinedText: "Offline", fullTooltip: "Offline" };
       const lastActiveText = isOnline ? "Active now" : activeDetails.relativeText;
       const lastActiveCombined = isOnline ? "Active now" : activeDetails.combinedText;
       const lastActiveExactTime = isOnline ? "" : activeDetails.exactTimeStr;
@@ -445,7 +450,7 @@ export default function MessagesTab({ role = "MEMBER", currentUserId }: Messages
         canMessage: !isRestrictedForMe,
         lastMessage: conv.lastMessage || "No messages yet",
         lastMessageTime: conv.lastMessageTime
-          ? new Date(conv.lastMessageTime).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })
+          ? (mounted ? new Date(conv.lastMessageTime).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }) : "")
           : isOnline
           ? "Active now"
           : activeDetails.relativeText,
@@ -472,7 +477,9 @@ export default function MessagesTab({ role = "MEMBER", currentUserId }: Messages
       const isRestrictedForMe = myRole === "MEMBER" && isOwner;
       const isOnline = memberUserId ? onlineUserIds.has(memberUserId) : false;
       const lastActiveIso = memberUserId ? lastActiveMap[memberUserId] : undefined;
-      const activeDetails = formatLastActive(lastActiveIso, nowTimestamp);
+      const activeDetails = mounted && nowTimestamp > 0
+        ? formatLastActive(lastActiveIso, nowTimestamp)
+        : { relativeText: "Offline", exactTimeStr: "", combinedText: "Offline", fullTooltip: "Offline" };
       const lastActiveText = isOnline ? "Active now" : activeDetails.relativeText;
       const lastActiveCombined = isOnline ? "Active now" : activeDetails.combinedText;
       const lastActiveExactTime = isOnline ? "" : activeDetails.exactTimeStr;
@@ -505,7 +512,7 @@ export default function MessagesTab({ role = "MEMBER", currentUserId }: Messages
     });
 
     return list;
-  }, [members, dbConversations, myUserId, myRole, onlineUserIds, lastActiveMap, nowTimestamp]);
+  }, [members, dbConversations, myUserId, myRole, onlineUserIds, lastActiveMap, nowTimestamp, mounted]);
 
   const activeConversation = conversations.find((c) => c.id === activeConversationId) || conversations[0];
   const activeMessages = localMessages[activeConversationId] || [];

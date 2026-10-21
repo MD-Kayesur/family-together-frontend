@@ -294,12 +294,12 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
               <h1 className="font-bold text-sm sm:text-base md:text-lg text-white truncate">
                 Admin Control
               </h1>
-              {user.role?.toUpperCase() === "SUPER_ADMIN" && (
+              {user?.role?.toUpperCase() === "SUPER_ADMIN" && (
                 <span className="hidden sm:inline-block px-2.5 py-0.5 rounded text-[10px] font-extrabold bg-rose-950/60 text-rose-400 border border-rose-800 uppercase tracking-wider shrink-0">
                   SUPER ADMIN
                 </span>
               )}
-              {user.role?.toUpperCase() === "ADMIN" && (
+              {user?.role?.toUpperCase() === "ADMIN" && (
                 <span className="hidden sm:inline-block px-2.5 py-0.5 rounded text-[10px] font-extrabold bg-purple-950/60 text-purple-400 border border-purple-800 uppercase tracking-wider shrink-0">
                   ADMIN
                 </span>
@@ -336,7 +336,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
             {/* User Profile Avatar Pill */}
             <div className="flex items-center gap-2 pl-1.5 sm:pl-2 border-l border-slate-800">
               <div className="h-8 w-8 rounded-full bg-indigo-600 text-white font-bold text-xs flex items-center justify-center shadow-sm">
-                {user.fullName.charAt(0)}
+                {user?.fullName?.charAt(0) || user?.email?.charAt(0) || "A"}
               </div>
             </div>
           </div>

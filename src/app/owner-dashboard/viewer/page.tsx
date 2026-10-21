@@ -48,7 +48,7 @@ export default function ViewerDashboardPage() {
   }, []);
 
   const { data: memories = [] } = useGetMemoriesQuery(
-    user?.id || user?.email ? { userId: user.id, userEmail: user.email } : undefined,
+    user?.id || user?.email ? { userId: user?.id, userEmail: user?.email } : undefined,
     { skip: !user?.id && !user?.email }
   );
   const { data: events = [] } = useGetEventsQuery();
@@ -72,7 +72,7 @@ export default function ViewerDashboardPage() {
     );
   }
 
-  const familyName = user.fullName.split(" ").slice(-1)[0] || "Rahman";
+  const familyName = user?.fullName ? user?.fullName?.split(" ")?.slice(-1)[0] || "Rahman" : "Rahman";
 
   const sidebarLinks = [
     { name: "Dashboard", href: "/owner-dashboard?tab=dashboard", icon: LayoutDashboard, badge: null },

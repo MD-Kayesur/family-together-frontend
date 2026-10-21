@@ -28,13 +28,27 @@ export default function UserNavbarAvatarMenu() {
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
 
-  if (!user) return null;
+  const [mounted, setMounted] = useState(false);
 
-  const userInitial = user.fullName ? user.fullName.charAt(0).toUpperCase() : "U";
-  const userRole = user.role || "OWNER";
-  const dashboardHref = getDashboardRouteByRole(user.role);
-  const dashboardLabel = getDashboardLabelByRole(user.role);
-  const avatarUrl = user.avatarUrl || (user as any).avatar || (user as any).profileImage || (user as any).image;
+  useEffect(() => {
+    setMounted(true);
+  }, []);
+
+  if (!mounted || !user) {
+    return (
+      <div className="h-9 w-9 rounded-full bg-slate-800 border border-slate-700 animate-pulse shrink-0" />
+    );
+  }
+
+  const userInitial = user?.fullName
+    ? user?.fullName?.charAt(0)?.toUpperCase() || "U"
+    : user?.email
+    ? user?.email?.charAt(0)?.toUpperCase() || "U"
+    : "U";
+  const userRole = user?.role || "MEMBER";
+  const dashboardHref = getDashboardRouteByRole(user?.role);
+  const dashboardLabel = getDashboardLabelByRole(user?.role);
+  const avatarUrl = user?.avatarUrl || (user as any)?.avatar || (user as any)?.profileImage || (user as any)?.image;
 
   const handleLogout = async () => {
     setIsOpen(false);
@@ -60,7 +74,7 @@ export default function UserNavbarAvatarMenu() {
           {avatarUrl && !imgError ? (
             <img
               src={avatarUrl}
-              alt={user.fullName || "User avatar"}
+              alt={user?.fullName || "User avatar"}
               className="h-full w-full object-cover"
               onError={() => setImgError(true)}
             />
@@ -70,7 +84,7 @@ export default function UserNavbarAvatarMenu() {
         </div>
         <div className="hidden sm:flex flex-col text-left">
           <span className="text-xs font-extrabold text-slate-900 dark:text-white leading-tight">
-            {user.fullName}
+            {user?.fullName || "User"}
           </span>
           <span className="text-[10px] font-bold text-indigo-600 dark:text-indigo-400 uppercase tracking-wider">
             {userRole}
@@ -89,7 +103,7 @@ export default function UserNavbarAvatarMenu() {
                 {avatarUrl && !imgError ? (
                   <img
                     src={avatarUrl}
-                    alt={user.fullName || "User avatar"}
+                    alt={user?.fullName || "User avatar"}
                     className="h-full w-full object-cover"
                   />
                 ) : (
@@ -99,11 +113,11 @@ export default function UserNavbarAvatarMenu() {
               <div className="flex-1 min-w-0">
                 <div className="flex items-center justify-between">
                   <span className="font-extrabold text-xs text-slate-900 dark:text-white truncate">
-                    {user.fullName}
+                    {user?.fullName || "User"}
                   </span>
                   <ShieldCheck className="h-4 w-4 text-emerald-500 shrink-0 ml-1" />
                 </div>
-                <p className="text-[11px] text-slate-400 truncate">{user.email}</p>
+                <p className="text-[11px] text-slate-400 truncate">{user?.email || ""}</p>
                 <span className="inline-block mt-1 text-[9px] font-extrabold uppercase tracking-wider px-2 py-0.5 rounded-full bg-indigo-100 dark:bg-indigo-950/60 text-indigo-600 dark:text-indigo-400">
                   {userRole}
                 </span>

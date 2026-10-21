@@ -30,7 +30,7 @@ export default function AddMemoryModal({ isOpen, onClose }: AddMemoryModalProps)
   const { user } = useAppSelector((state) => state.auth);
   const { data: members = [] } = useGetMembersQuery();
   const { refetch: refetchMemories } = useGetMemoriesQuery(
-    user ? { userId: user.id, userEmail: user.email } : undefined
+    user?.id || user?.email ? { userId: user?.id, userEmail: user?.email } : undefined
   );
 
   const [title, setTitle] = useState("");

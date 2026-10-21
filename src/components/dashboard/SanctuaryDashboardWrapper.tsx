@@ -162,13 +162,13 @@ export default function SanctuaryDashboardWrapper({
       return;
     }
 
-    if (mounted && user && !canAccessRoute(pathname, user.role)) {
-      const targetRoute = getDashboardRouteByRole(user.role);
+    if (mounted && user && !canAccessRoute(pathname, user?.role)) {
+      const targetRoute = getDashboardRouteByRole(user?.role);
       router.replace(targetRoute);
     }
   }, [mounted, isAuthenticated, user, pathname, router]);
 
-  if (!mounted || !isAuthenticated || !user || !canAccessRoute(pathname, user.role)) {
+  if (!mounted || !isAuthenticated || !user || !canAccessRoute(pathname, user?.role)) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-slate-900 text-white">
         <div className="flex items-center gap-3 text-indigo-400 font-semibold">

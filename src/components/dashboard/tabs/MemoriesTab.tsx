@@ -31,8 +31,8 @@ export default function MemoriesTab({ role }: MemoriesTabProps = {}) {
   const { data: memories = [], isLoading, refetch } = useGetMemoriesQuery(
     user?.id || user?.email
       ? {
-          userId: user.id,
-          userEmail: user.email,
+          userId: user?.id,
+          userEmail: user?.email,
           page,
           limit,
           search: debouncedSearch,
