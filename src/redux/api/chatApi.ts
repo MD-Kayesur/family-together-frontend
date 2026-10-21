@@ -120,6 +120,23 @@ export const chatApi = baseApi.injectEndpoints({
     getOnlineUsers: builder.query<{ onlineUserIds: string[]; lastActiveMap?: Record<string, string> }, void>({
       query: () => "/family/chat/online-users",
     }),
+    getChatUsers: builder.query<
+      {
+        id: string;
+        fullName: string;
+        email: string;
+        avatarUrl?: string;
+        role: string;
+        online: boolean;
+        lastActiveAt?: string | null;
+        canMessage: boolean;
+        isOwnerTarget: boolean;
+      }[],
+      void
+    >({
+      query: () => "/family/chat/users",
+      providesTags: ["Conversations"],
+    }),
   }),
   overrideExisting: true,
 });
@@ -135,5 +152,6 @@ export const {
   useDeleteChatMessageMutation,
   useDeleteConversationMutation,
   useGetOnlineUsersQuery,
+  useGetChatUsersQuery,
 } = chatApi;
 

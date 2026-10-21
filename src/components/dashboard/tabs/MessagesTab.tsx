@@ -40,6 +40,7 @@ import {
   useDeleteChatMessageMutation,
   useDeleteConversationMutation,
   useGetOnlineUsersQuery,
+  useGetChatUsersQuery,
 } from "@/redux/api/chatApi";
 import { useAppSelector } from "@/redux/store";
 
@@ -173,12 +174,18 @@ export default function MessagesTab({ role = "MEMBER", currentUserId }: Messages
 
   // RTK Queries
   const { data: members = [] } = useGetMembersQuery();
-  const { data: dbConversations = [], refetch: refetchConversations } = useGetConversationsQuery();
-  const [activeConversationId, setActiveConversationId] = useState<string>("sanctuary-circle");
+  const { data: dbConversations = [], refetch: refetchConversations } = useGetConversationsQuery(undefined, {
+    pollingInterval: 5000,
+  });
+  const { data: chatUsers = [], refetch: refetchChatUsers } = useGetChatUsersQuery(undefined, {
+    pollingInterval: 8000,
+  });
+  const [activeConversationId, setActiveConversationId] = useState<string>("");
+  const [isCreatingChat, setIsCreatingChat] = useState<boolean>(false);
 
   const { data: dbMessages = [], refetch: refetchMessages } = useGetConversationMessagesQuery(
     activeConversationId,
-    { skip: !activeConversationId || activeConversationId === "sanctuary-circle" }
+    { skip: !activeConversationId }
   );
 
   const [sendChatMessage] = useSendChatMessageMutation();
@@ -217,7 +224,7 @@ export default function MessagesTab({ role = "MEMBER", currentUserId }: Messages
     }
   }, [onlineUsersData]);
 
-  const [activeFilter, setActiveFilter] = useState<"ALL" | "CHANNELS" | "DIRECT">("ALL");
+  const [activeFilter, setActiveFilter] = useState<"ALL" | "CONVERSATIONS" | "USERS">("ALL");
   const [searchQuery, setSearchQuery] = useState("");
   const [mobileView, setMobileView] = useState<"list" | "chat">("list");
   const [inputText, setInputText] = useState("");
@@ -232,35 +239,12 @@ export default function MessagesTab({ role = "MEMBER", currentUserId }: Messages
   const socketRef = useRef<Socket | null>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
-  // Local message state for immediate responsive UI & fallback
-  const [localMessages, setLocalMessages] = useState<Record<string, Message[]>>({
-    "sanctuary-circle": [
-      {
-        id: "m-1",
-        senderId: "owner-1",
-        senderName: "Tariq Rahman",
-        text: "Welcome to the Family Sanctuary Circle! This is our private space for family news, updates, and milestone announcements.",
-        timestamp: "Yesterday",
-        isMe: false,
-        status: "read",
-        reactions: ["❤️", "🙏"],
-      },
-      {
-        id: "m-2",
-        senderId: "member-2",
-        senderName: "Sarah Rahman",
-        text: "So happy we have this dedicated space! Uploaded Grandma's anniversary recipes to the vault.",
-        timestamp: "10:15 AM",
-        isMe: false,
-        status: "read",
-        reactions: ["🎉"],
-      },
-    ],
-  });
+  // Real message state - Clean empty state for new users (NO mock data)
+  const [localMessages, setLocalMessages] = useState<Record<string, Message[]>>({});
 
   // Sync DB messages into active conversation
   useEffect(() => {
-    if (dbMessages && dbMessages.length > 0 && activeConversationId !== "sanctuary-circle") {
+    if (dbMessages && activeConversationId) {
       const formatted: Message[] = dbMessages.map((m) => ({
         id: m.id,
         senderId: m.senderId,
@@ -368,30 +352,7 @@ export default function MessagesTab({ role = "MEMBER", currentUserId }: Messages
   }, [activeConversationId, myUserId, refetchConversations, refetchMessages]);
 
   // Switch conversation and join room
-  const handleSelectConversation = async (id: string) => {
-    // If clicking a member from the directory who does not have an active thread yet
-    if (id.startsWith("member-")) {
-      const targetMember = conversations.find((c) => c.id === id);
-      if (targetMember?.recipientId) {
-        try {
-          const res = await createConversation({ recipientId: targetMember.recipientId }).unwrap();
-          if (res?.id) {
-            setActiveConversationId(res.id);
-            setMobileView("chat");
-            setIsTypingRemote(false);
-            if (socketRef.current) {
-              socketRef.current.emit("join_conversation", { conversationId: res.id });
-            }
-            markConversationAsRead(res.id);
-            refetchConversations();
-            return;
-          }
-        } catch (err) {
-          console.error("Direct conversation start error:", err);
-        }
-      }
-    }
-
+  const handleSelectConversation = (id: string) => {
     setActiveConversationId(id);
     setMobileView("chat");
     setIsTypingRemote(false);
@@ -400,30 +361,13 @@ export default function MessagesTab({ role = "MEMBER", currentUserId }: Messages
       socketRef.current.emit("join_conversation", { conversationId: id });
     }
 
-    if (id !== "sanctuary-circle") {
-      markConversationAsRead(id);
-    }
+    markConversationAsRead(id);
   };
 
-  // Build unified conversation list adhering to Facebook Messenger permissions
+  // Build unified conversation list strictly from database conversations
   const conversations: Conversation[] = useMemo(() => {
     const list: Conversation[] = [];
 
-    // 1. Group Sanctuary Circle (Always available to all family members)
-    list.push({
-      id: "sanctuary-circle",
-      name: "Family Sanctuary Circle",
-      type: "GROUP",
-      roleDescription: "Sanctuary-wide Announcements & Chat",
-      lastMessage: "Welcome to the Family Sanctuary Circle! Share news & reunions.",
-      lastMessageTime: "Today",
-      unreadCount: 0,
-      online: true,
-      membersCount: members.length > 0 ? members.length : 8,
-      canMessage: true,
-    });
-
-    // 2. Direct Conversations from database
     dbConversations.forEach((conv) => {
       const otherUser = conv.otherUser;
       const otherUserId = otherUser?.id;
@@ -465,57 +409,82 @@ export default function MessagesTab({ role = "MEMBER", currentUserId }: Messages
       });
     });
 
-    // 3. Populate Member directory contacts (Facebook connection logic: connected relatives)
-    members.forEach((m: any) => {
-      const memberUserId = m.userId || m.id;
-      if (memberUserId === myUserId) return; // Skip self
-
-      const existingInList = list.find((c) => c.recipientId === memberUserId || c.id === memberUserId);
-      if (existingInList) return;
-
-      const isOwner = m.role === "OWNER" || m.bio?.toLowerCase().includes("owner");
-      const isRestrictedForMe = myRole === "MEMBER" && isOwner;
-      const isOnline = memberUserId ? onlineUserIds.has(memberUserId) : false;
-      const lastActiveIso = memberUserId ? lastActiveMap[memberUserId] : undefined;
-      const activeDetails = mounted && nowTimestamp > 0
-        ? formatLastActive(lastActiveIso, nowTimestamp)
-        : { relativeText: "Offline", exactTimeStr: "", combinedText: "Offline", fullTooltip: "Offline" };
-      const lastActiveText = isOnline ? "Active now" : activeDetails.relativeText;
-      const lastActiveCombined = isOnline ? "Active now" : activeDetails.combinedText;
-      const lastActiveExactTime = isOnline ? "" : activeDetails.exactTimeStr;
-      const lastActiveTooltip = isOnline ? "Online now (Active)" : activeDetails.fullTooltip;
-
-      list.push({
-        id: `member-${m.id}`,
-        name: `${m.firstName || ""} ${m.lastName || ""}`.trim() || "Relative",
-        type: "DIRECT",
-        avatar: m.photoUrl,
-        targetRole: isOwner ? "OWNER" : "MEMBER",
-        roleDescription: isOwner ? "Sanctuary Owner" : (m.bio || "Connected Relative"),
-        isOwnerTarget: isOwner,
-        canMessage: !isRestrictedForMe,
-        lastMessage: isRestrictedForMe
-          ? "Direct messages to Sanctuary Owner restricted"
-          : isOnline
-          ? "Active now • Click to chat"
-          : `${activeDetails.combinedText} • Click to chat`,
-        lastMessageTime: isOnline ? "Online" : activeDetails.relativeText,
-        unreadCount: 0,
-        online: isOnline,
-        lastActiveText,
-        lastActiveCombined,
-        lastActiveExactTime,
-        lastActiveTooltip,
-        lastActiveAt: lastActiveIso,
-        recipientId: memberUserId,
-      });
-    });
-
     return list;
-  }, [members, dbConversations, myUserId, myRole, onlineUserIds, lastActiveMap, nowTimestamp, mounted]);
+  }, [dbConversations, myRole, onlineUserIds, lastActiveMap, nowTimestamp, mounted]);
 
-  const activeConversation = conversations.find((c) => c.id === activeConversationId) || conversations[0];
-  const activeMessages = localMessages[activeConversationId] || [];
+  // Build available users list from all registered platform/family accounts
+  const availableUsers = useMemo(() => {
+    return chatUsers
+      .filter((u) => u.id !== myUserId)
+      .map((u) => {
+        const isOnline = onlineUserIds.has(u.id) || u.online;
+        const lastActiveIso = lastActiveMap[u.id] || u.lastActiveAt;
+        const activeDetails = mounted && nowTimestamp > 0
+          ? formatLastActive(lastActiveIso, nowTimestamp)
+          : { relativeText: "Offline", exactTimeStr: "", combinedText: "Offline", fullTooltip: "Offline" };
+        const isOwner = u.role === "OWNER";
+        const isRestrictedForMe = myRole === "MEMBER" && isOwner;
+
+        const existingConv = conversations.find((c) => c.recipientId === u.id);
+
+        return {
+          id: u.id,
+          fullName: u.fullName || u.email,
+          email: u.email,
+          avatarUrl: u.avatarUrl,
+          role: u.role,
+          online: isOnline,
+          lastActiveText: isOnline ? "Active now" : activeDetails.relativeText,
+          lastActiveCombined: isOnline ? "Active now" : activeDetails.combinedText,
+          lastActiveExactTime: isOnline ? "" : activeDetails.exactTimeStr,
+          lastActiveTooltip: isOnline ? "Online now (Active)" : activeDetails.fullTooltip,
+          canMessage: !isRestrictedForMe,
+          isOwnerTarget: isOwner,
+          existingConversationId: existingConv?.id,
+          hasExistingConversation: !!existingConv,
+        };
+      });
+  }, [chatUsers, myUserId, onlineUserIds, lastActiveMap, mounted, nowTimestamp, myRole, conversations]);
+
+  // Handle selecting or starting a conversation with any user
+  const handleSelectUser = async (u: {
+    id: string;
+    fullName: string;
+    role: string;
+    isOwnerTarget: boolean;
+    existingConversationId?: string;
+  }) => {
+    if (u.isOwnerTarget && myRole === "MEMBER") {
+      alert("Direct messaging restricted: Members cannot message the Sanctuary Owner directly. Please wait for the Owner to message first or post in sanctuary updates.");
+      return;
+    }
+
+    if (u.existingConversationId) {
+      handleSelectConversation(u.existingConversationId);
+      return;
+    }
+
+    try {
+      setIsCreatingChat(true);
+      const res = await createConversation({ recipientId: u.id }).unwrap();
+      if (res?.id) {
+        setActiveConversationId(res.id);
+        setMobileView("chat");
+        setIsTypingRemote(false);
+        if (socketRef.current) {
+          socketRef.current.emit("join_conversation", { conversationId: res.id });
+        }
+        refetchConversations();
+      }
+    } catch (err: any) {
+      console.error("Failed to start conversation:", err);
+    } finally {
+      setIsCreatingChat(false);
+    }
+  };
+
+  const activeConversation = conversations.find((c) => c.id === activeConversationId) || null;
+  const activeMessages = activeConversationId ? (localMessages[activeConversationId] || []) : [];
 
   // Scroll to bottom on new messages
   useEffect(() => {
@@ -564,12 +533,12 @@ export default function MessagesTab({ role = "MEMBER", currentUserId }: Messages
     }));
 
     // Send via WebSocket or REST
-    if (socketRef.current && socketConnected && activeConversationId !== "sanctuary-circle") {
+    if (socketRef.current && socketConnected && activeConversationId) {
       socketRef.current.emit("send_message", {
         conversationId: activeConversationId,
         text: textToSend,
       });
-    } else if (activeConversationId !== "sanctuary-circle") {
+    } else if (activeConversationId) {
       try {
         await sendChatMessage({
           conversationId: activeConversationId,
@@ -581,13 +550,26 @@ export default function MessagesTab({ role = "MEMBER", currentUserId }: Messages
     }
   };
 
-  const filteredConversations = conversations.filter((c) => {
-    const matchesSearch = c.name.toLowerCase().includes(searchQuery.toLowerCase());
-    if (!matchesSearch) return false;
-    if (activeFilter === "CHANNELS") return c.type === "GROUP";
-    if (activeFilter === "DIRECT") return c.type === "DIRECT";
-    return true;
-  });
+  const filteredConversations = useMemo(() => {
+    const q = searchQuery.toLowerCase().trim();
+    if (!q) return conversations;
+    return conversations.filter(
+      (c) =>
+        c.name.toLowerCase().includes(q) ||
+        c.lastMessage.toLowerCase().includes(q)
+    );
+  }, [conversations, searchQuery]);
+
+  const filteredUsers = useMemo(() => {
+    const q = searchQuery.toLowerCase().trim();
+    if (!q) return availableUsers;
+    return availableUsers.filter(
+      (u) =>
+        u.fullName.toLowerCase().includes(q) ||
+        u.email.toLowerCase().includes(q) ||
+        u.role.toLowerCase().includes(q)
+    );
+  }, [availableUsers, searchQuery]);
 
   return (
     <div className="h-[calc(100vh-140px)] min-h-[580px] rounded-3xl bg-slate-900 border border-slate-800 shadow-2xl overflow-hidden flex flex-col md:flex-row">
@@ -638,246 +620,431 @@ export default function MessagesTab({ role = "MEMBER", currentUserId }: Messages
 
           {/* Filter Pills */}
           <div className="flex items-center gap-1.5 pt-1">
-            {(["ALL", "CHANNELS", "DIRECT"] as const).map((filter) => (
-              <button
-                key={filter}
-                onClick={() => setActiveFilter(filter)}
-                className={`px-3 py-1 rounded-lg text-[10px] font-bold transition-all cursor-pointer ${
-                  activeFilter === filter
-                    ? "bg-purple-600 text-white shadow-sm"
-                    : "bg-slate-950 text-slate-400 hover:text-slate-200 hover:bg-slate-800"
-                }`}
-              >
-                {filter === "ALL" ? "All Chats" : filter === "CHANNELS" ? "Channels" : "Direct"}
-              </button>
-            ))}
+            <button
+              onClick={() => setActiveFilter("ALL")}
+              className={`px-3 py-1 rounded-lg text-[10px] font-bold transition-all cursor-pointer ${
+                activeFilter === "ALL"
+                  ? "bg-purple-600 text-white shadow-sm"
+                  : "bg-slate-950 text-slate-400 hover:text-slate-200 hover:bg-slate-800"
+              }`}
+            >
+              All
+            </button>
+            <button
+              onClick={() => setActiveFilter("CONVERSATIONS")}
+              className={`px-3 py-1 rounded-lg text-[10px] font-bold transition-all cursor-pointer ${
+                activeFilter === "CONVERSATIONS"
+                  ? "bg-purple-600 text-white shadow-sm"
+                  : "bg-slate-950 text-slate-400 hover:text-slate-200 hover:bg-slate-800"
+              }`}
+            >
+              Chats ({filteredConversations.length})
+            </button>
+            <button
+              onClick={() => setActiveFilter("USERS")}
+              className={`px-3 py-1 rounded-lg text-[10px] font-bold transition-all cursor-pointer ${
+                activeFilter === "USERS"
+                  ? "bg-purple-600 text-white shadow-sm"
+                  : "bg-slate-950 text-slate-400 hover:text-slate-200 hover:bg-slate-800"
+              }`}
+            >
+              All Users ({filteredUsers.length})
+            </button>
           </div>
         </div>
 
-        {/* Conversation List */}
-        <div className="flex-1 overflow-y-auto divide-y divide-slate-800/40 p-2 space-y-1">
-          {filteredConversations.map((conv) => {
-            const isSelected = conv.id === activeConversationId;
-            const isRestricted = conv.isOwnerTarget && myRole === "MEMBER";
+        {/* Conversation List & Available Users */}
+        <div className="flex-1 overflow-y-auto divide-y divide-slate-800/40 p-2 space-y-3">
+          {/* Section A: Active Conversations */}
+          {(activeFilter === "ALL" || activeFilter === "CONVERSATIONS") && (
+            <div className="space-y-1">
+              <div className="px-2 py-1 flex items-center justify-between text-[11px] font-bold uppercase tracking-wider text-slate-400">
+                <span>Active Conversations</span>
+                <span className="text-[10px] font-semibold text-purple-400">
+                  {filteredConversations.length}
+                </span>
+              </div>
 
-            return (
-              <button
-                key={conv.id}
-                onClick={() => handleSelectConversation(conv.id)}
-                className={`w-full text-left p-3 rounded-2xl flex items-start gap-3 transition-all cursor-pointer relative ${
-                  isSelected
-                    ? "bg-purple-950/40 border border-purple-800/60 shadow-inner"
-                    : "hover:bg-slate-800/50 border border-transparent"
-                }`}
-              >
-                {/* Avatar */}
-                <div className="relative shrink-0 mt-0.5">
-                  {conv.type === "GROUP" ? (
-                    <div className="h-10 w-10 rounded-2xl bg-linear-to-tr from-purple-600 to-indigo-600 text-white flex items-center justify-center font-bold text-xs shadow-md">
-                      <Users className="h-5 w-5" />
-                    </div>
-                  ) : conv.avatar ? (
-                    <img
-                      src={conv.avatar}
-                      alt={conv.name}
-                      className="h-10 w-10 rounded-2xl object-cover border border-slate-700"
-                    />
-                  ) : (
-                    <div className="h-10 w-10 rounded-2xl bg-slate-800 text-purple-300 font-bold text-sm flex items-center justify-center border border-slate-700">
-                      {conv.name.charAt(0).toUpperCase()}
-                    </div>
-                  )}
-
-                  {conv.online ? (
-                    <span
-                      className="absolute -bottom-0.5 -right-0.5 flex h-3.5 w-3.5"
-                      title={conv.lastActiveTooltip || "Online now (Active)"}
-                    >
-                      <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75" />
-                      <span className="relative inline-flex rounded-full h-3.5 w-3.5 bg-emerald-500 border-2 border-slate-900 shadow-xs" />
-                    </span>
-                  ) : (
-                    <span
-                      className="absolute -bottom-0.5 -right-0.5 h-3 w-3 rounded-full bg-slate-600 border-2 border-slate-900 cursor-help"
-                      title={conv.lastActiveTooltip || "Offline"}
-                    />
-                  )}
-                </div>
-
-                {/* Details */}
-                <div className="flex-1 min-w-0">
-                  <div className="flex items-center justify-between gap-1 mb-0.5">
-                    <span className="font-bold text-xs text-white truncate flex items-center gap-1.5">
-                      {conv.name}
-                      {conv.isOwnerTarget && (
-                        <span className="px-1.5 py-0.2 rounded text-[9px] bg-amber-500/10 text-amber-400 border border-amber-500/20 font-semibold">
-                          Owner
-                        </span>
-                      )}
-                    </span>
-                    <span className="text-[10px] text-slate-500 shrink-0 font-medium">
-                      {conv.lastMessageTime}
-                    </span>
-                  </div>
-
-                  <p className="text-[11px] text-slate-400 truncate leading-snug">
-                    {conv.lastMessage}
+              {filteredConversations.length === 0 ? (
+                <div className="p-4 rounded-2xl bg-slate-950/60 border border-slate-800/60 text-center my-1 space-y-1">
+                  <p className="text-xs font-semibold text-slate-300">No conversations yet</p>
+                  <p className="text-[11px] text-slate-500">
+                    Pick a relative below to start your first chat!
                   </p>
-
-                  <div className="flex items-center justify-between mt-1.5">
-                    <span className="text-[10px] text-purple-400/80 font-medium truncate flex items-center gap-1">
-                      {isRestricted ? (
-                        <>
-                          <Lock className="h-2.5 w-2.5 text-amber-400" />
-                          <span className="text-amber-400 text-[9px]">Restricted for Member</span>
-                        </>
-                      ) : (
-                        <>
-                          <UserCheck className="h-2.5 w-2.5 text-emerald-400" />
-                          <span>{conv.roleDescription || "Connected"}</span>
-                        </>
-                      )}
-                    </span>
-
-                    {conv.unreadCount > 0 && (
-                      <span className="h-4 min-w-4 px-1 rounded-full bg-purple-600 text-white font-extrabold text-[9px] flex items-center justify-center">
-                        {conv.unreadCount}
-                      </span>
-                    )}
-                  </div>
                 </div>
-              </button>
-            );
-          })}
+              ) : (
+                filteredConversations.map((conv) => {
+                  const isSelected = conv.id === activeConversationId;
+                  const isRestricted = conv.isOwnerTarget && myRole === "MEMBER";
+
+                  return (
+                    <button
+                      key={conv.id}
+                      onClick={() => handleSelectConversation(conv.id)}
+                      className={`w-full text-left p-3 rounded-2xl flex items-start gap-3 transition-all cursor-pointer relative ${
+                        isSelected
+                          ? "bg-purple-950/40 border border-purple-800/60 shadow-inner"
+                          : "hover:bg-slate-800/50 border border-transparent"
+                      }`}
+                    >
+                      {/* Avatar */}
+                      <div className="relative shrink-0 mt-0.5">
+                        {conv.avatar ? (
+                          <img
+                            src={conv.avatar}
+                            alt={conv.name}
+                            className="h-10 w-10 rounded-2xl object-cover border border-slate-700"
+                          />
+                        ) : (
+                          <div className="h-10 w-10 rounded-2xl bg-slate-800 text-purple-300 font-bold text-sm flex items-center justify-center border border-slate-700">
+                            {conv.name?.charAt(0)?.toUpperCase() || "U"}
+                          </div>
+                        )}
+
+                        {conv.online ? (
+                          <span
+                            className="absolute -bottom-0.5 -right-0.5 flex h-3.5 w-3.5"
+                            title={conv.lastActiveTooltip || "Online now (Active)"}
+                          >
+                            <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75" />
+                            <span className="relative inline-flex rounded-full h-3.5 w-3.5 bg-emerald-500 border-2 border-slate-900 shadow-xs" />
+                          </span>
+                        ) : (
+                          <span
+                            className="absolute -bottom-0.5 -right-0.5 h-3 w-3 rounded-full bg-slate-600 border-2 border-slate-900 cursor-help"
+                            title={conv.lastActiveTooltip || "Offline"}
+                          />
+                        )}
+                      </div>
+
+                      {/* Details */}
+                      <div className="flex-1 min-w-0">
+                        <div className="flex items-center justify-between gap-1 mb-0.5">
+                          <span className="font-bold text-xs text-white truncate flex items-center gap-1.5">
+                            {conv.name}
+                            {conv.isOwnerTarget && (
+                              <span className="px-1.5 py-0.2 rounded text-[9px] bg-amber-500/10 text-amber-400 border border-amber-500/20 font-semibold">
+                                Owner
+                              </span>
+                            )}
+                          </span>
+                          <span className="text-[10px] text-slate-500 shrink-0 font-medium">
+                            {conv.lastMessageTime}
+                          </span>
+                        </div>
+
+                        <p className="text-[11px] text-slate-400 truncate leading-snug">
+                          {conv.lastMessage}
+                        </p>
+
+                        <div className="flex items-center justify-between mt-1.5">
+                          <span className="text-[10px] text-purple-400/80 font-medium truncate flex items-center gap-1">
+                            {isRestricted ? (
+                              <>
+                                <Lock className="h-2.5 w-2.5 text-amber-400" />
+                                <span className="text-amber-400 text-[9px]">Restricted for Member</span>
+                              </>
+                            ) : (
+                              <>
+                                <UserCheck className="h-2.5 w-2.5 text-emerald-400" />
+                                <span>{conv.roleDescription || "Connected"}</span>
+                              </>
+                            )}
+                          </span>
+
+                          {conv.unreadCount > 0 && (
+                            <span className="h-4 min-w-4 px-1 rounded-full bg-purple-600 text-white font-extrabold text-[9px] flex items-center justify-center">
+                              {conv.unreadCount}
+                            </span>
+                          )}
+                        </div>
+                      </div>
+                    </button>
+                  );
+                })
+              )}
+            </div>
+          )}
+
+          {/* Section B: All Available Users / Relatives */}
+          {(activeFilter === "ALL" || activeFilter === "USERS") && (
+            <div className="space-y-1 pt-2">
+              <div className="px-2 py-1 flex items-center justify-between text-[11px] font-bold uppercase tracking-wider text-slate-400">
+                <span>Family Relatives &amp; Users</span>
+                <span className="text-[10px] font-semibold text-emerald-400">
+                  {filteredUsers.length}
+                </span>
+              </div>
+
+              {filteredUsers.length === 0 ? (
+                <div className="p-4 rounded-2xl bg-slate-950/60 border border-slate-800/60 text-center my-1">
+                  <p className="text-xs text-slate-400">No other users found</p>
+                </div>
+              ) : (
+                filteredUsers.map((u) => {
+                  const isRestricted = u.isOwnerTarget && myRole === "MEMBER";
+
+                  return (
+                    <button
+                      key={`user-${u.id}`}
+                      onClick={() => handleSelectUser(u)}
+                      className="w-full text-left p-3 rounded-2xl flex items-center justify-between gap-3 hover:bg-slate-800/50 border border-transparent hover:border-slate-800 transition-all cursor-pointer group"
+                    >
+                      <div className="flex items-center gap-3 min-w-0">
+                        {/* Avatar */}
+                        <div className="relative shrink-0">
+                          {u.avatarUrl ? (
+                            <img
+                              src={u.avatarUrl}
+                              alt={u.fullName}
+                              className="h-10 w-10 rounded-2xl object-cover border border-slate-700"
+                            />
+                          ) : (
+                            <div className="h-10 w-10 rounded-2xl bg-indigo-950 text-indigo-300 font-bold text-sm flex items-center justify-center border border-indigo-800/60">
+                              {u.fullName?.charAt(0)?.toUpperCase() || "U"}
+                            </div>
+                          )}
+
+                          {u.online ? (
+                            <span
+                              className="absolute -bottom-0.5 -right-0.5 flex h-3.5 w-3.5"
+                              title={u.lastActiveTooltip || "Online now (Active)"}
+                            >
+                              <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75" />
+                              <span className="relative inline-flex rounded-full h-3.5 w-3.5 bg-emerald-500 border-2 border-slate-900 shadow-xs" />
+                            </span>
+                          ) : (
+                            <span
+                              className="absolute -bottom-0.5 -right-0.5 h-3 w-3 rounded-full bg-slate-600 border-2 border-slate-900 cursor-help"
+                              title={u.lastActiveTooltip || "Offline"}
+                            />
+                          )}
+                        </div>
+
+                        {/* User Details */}
+                        <div className="min-w-0">
+                          <div className="flex items-center gap-1.5 mb-0.5">
+                            <span className="font-bold text-xs text-white truncate">
+                              {u.fullName}
+                            </span>
+                            <span className="px-1.5 py-0.2 rounded text-[9px] bg-slate-800 text-slate-400 font-medium">
+                              {u.role}
+                            </span>
+                          </div>
+
+                          <p className="text-[11px] truncate flex items-center gap-1.5">
+                            {u.online ? (
+                              <span className="text-emerald-400 font-semibold">Active now</span>
+                            ) : (
+                              <span className="text-slate-400">{u.lastActiveText}</span>
+                            )}
+                          </p>
+                        </div>
+                      </div>
+
+                      {/* Action Pill */}
+                      <div className="shrink-0">
+                        {isRestricted ? (
+                          <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-xl bg-amber-950/40 text-amber-400 text-[10px] font-bold border border-amber-800/40">
+                            <Lock className="h-3 w-3" />
+                            <span>Restricted</span>
+                          </span>
+                        ) : u.hasExistingConversation ? (
+                          <span className="px-2.5 py-1 rounded-xl bg-purple-950/60 text-purple-300 text-[10px] font-bold border border-purple-800/60 group-hover:bg-purple-600 group-hover:text-white transition-all">
+                            Open Chat
+                          </span>
+                        ) : (
+                          <span className="px-2.5 py-1 rounded-xl bg-slate-800 text-slate-300 text-[10px] font-bold group-hover:bg-purple-600 group-hover:text-white transition-all flex items-center gap-1">
+                            <MessageSquare className="h-3 w-3" />
+                            <span>Message</span>
+                          </span>
+                        )}
+                      </div>
+                    </button>
+                  );
+                })
+              )}
+            </div>
+          )}
         </div>
       </div>
 
-      {/* 2. Right Side: Active Chat Stream */}
+      {/* 2. Right Side: Active Chat Stream or Empty State */}
       <div
         className={`flex-1 flex flex-col bg-slate-950 ${
           mobileView === "list" ? "hidden md:flex" : "flex"
         }`}
       >
-        {/* Chat Header */}
-        <div className="p-4 border-b border-slate-800 flex items-center justify-between bg-slate-900/60 backdrop-blur-md">
-          <div className="flex items-center gap-3">
-            <button
-              onClick={() => setMobileView("list")}
-              className="md:hidden p-1.5 rounded-lg text-slate-400 hover:text-white hover:bg-slate-800"
-            >
-              <ArrowLeft className="h-5 w-5" />
-            </button>
-
-            <div className="relative">
-              {activeConversation?.type === "GROUP" ? (
-                <div className="h-10 w-10 rounded-2xl bg-linear-to-tr from-purple-600 to-indigo-600 text-white flex items-center justify-center font-bold text-sm">
-                  <Users className="h-5 w-5" />
-                </div>
-              ) : activeConversation?.avatar ? (
-                <img
-                  src={activeConversation.avatar}
-                  alt={activeConversation.name}
-                  className="h-10 w-10 rounded-2xl object-cover border border-slate-700"
-                />
-              ) : (
-                <div className="h-10 w-10 rounded-2xl bg-slate-800 text-purple-300 font-bold text-sm flex items-center justify-center border border-slate-700">
-                  {activeConversation?.name.charAt(0).toUpperCase()}
-                </div>
-              )}
+        {!activeConversation ? (
+          <div className="flex-1 flex flex-col items-center justify-center p-8 text-center bg-slate-950">
+            <div className="relative mb-6">
+              <div className="h-20 w-20 rounded-3xl bg-linear-to-tr from-purple-900/60 to-indigo-900/60 border border-purple-800/80 text-purple-300 flex items-center justify-center shadow-2xl shadow-purple-950/40">
+                <MessageSquare className="h-10 w-10 stroke-[1.75]" />
+              </div>
+              <span className="absolute -bottom-1 -right-1 flex h-4 w-4">
+                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75" />
+                <span className="relative inline-flex rounded-full h-4 w-4 bg-emerald-500 border-2 border-slate-950" />
+              </span>
             </div>
 
-            <div>
-              <h3 className="font-extrabold text-sm text-white flex items-center gap-2">
-                {activeConversation?.name}
-                {activeConversation?.type === "GROUP" && (
-                  <span className="px-2 py-0.5 rounded-full text-[9px] font-bold bg-purple-900/40 text-purple-300 border border-purple-800">
-                    Group Channel
-                  </span>
-                )}
-              </h3>
-              {activeConversation?.type === "GROUP" ? (
-                <p className="text-[10px] text-slate-400 flex items-center gap-1.5">
-                  <span className="h-1.5 w-1.5 rounded-full bg-emerald-500" />
-                  <span>
-                    {activeConversation?.membersCount || 0} family members
-                    {onlineUserIds.size > 0 && ` (${onlineUserIds.size} online now)`}
-                  </span>
-                </p>
-              ) : activeConversation?.online ? (
-                <p
-                  className="text-[10px] flex items-center gap-1.5 cursor-help"
-                  title={activeConversation?.lastActiveTooltip || "Online now (Active)"}
-                >
-                  <span className="relative flex h-2 w-2">
-                    <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75" />
-                    <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-500" />
-                  </span>
-                  <span className="text-emerald-400 font-bold">Active now</span>
-                  {activeConversation?.roleDescription && (
-                    <span className="text-slate-500">• {activeConversation.roleDescription}</span>
-                  )}
-                </p>
-              ) : (
-                <p
-                  className="text-[10px] flex items-center gap-1.5 cursor-help"
-                  title={activeConversation?.lastActiveTooltip || "Offline"}
-                >
-                  <span className="h-1.5 w-1.5 rounded-full bg-slate-500" />
-                  <span className="text-slate-300 font-semibold">
-                    {activeConversation?.lastActiveText || "Offline"}
-                  </span>
-                  {activeConversation?.lastActiveExactTime && (
-                    <span className="text-slate-500 font-medium">({activeConversation.lastActiveExactTime})</span>
-                  )}
-                  {activeConversation?.roleDescription && (
-                    <span className="text-slate-500">• {activeConversation.roleDescription}</span>
-                  )}
-                </p>
-              )}
-            </div>
-          </div>
+            <h3 className="font-extrabold text-xl text-white mb-2">Private Family Messenger</h3>
+            <p className="text-xs sm:text-sm text-slate-400 max-w-md mb-6 leading-relaxed">
+              New to the sanctuary? You don&apos;t have any active conversations yet. Pick any relative or family member from the sidebar to start a real-time conversation.
+            </p>
 
-          <div className="flex items-center gap-1 text-slate-400">
-            <button
-              type="button"
-              className="p-2 rounded-xl hover:text-white hover:bg-slate-800 transition-all cursor-pointer"
-              title="Voice Call"
-            >
-              <Phone className="h-4 w-4" />
-            </button>
-            <button
-              type="button"
-              className="p-2 rounded-xl hover:text-white hover:bg-slate-800 transition-all cursor-pointer"
-              title="Video Gathering"
-            >
-              <Video className="h-4 w-4" />
-            </button>
-            {activeConversationId !== "sanctuary-circle" && (
+            <div className="flex flex-wrap items-center justify-center gap-2">
               <button
                 type="button"
-                onClick={() => setIsDeleteConvModalOpen(true)}
-                className="p-2 rounded-xl text-slate-400 hover:text-rose-400 hover:bg-rose-950/40 transition-all cursor-pointer"
-                title="Delete Conversation Thread"
+                onClick={() => setActiveFilter("USERS")}
+                className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-purple-600 hover:bg-purple-500 text-white font-bold text-xs shadow-md transition-all cursor-pointer hover:scale-105"
               >
-                <Trash2 className="h-4 w-4" />
+                <Users className="h-4 w-4" />
+                <span>Browse Relatives &amp; Users</span>
               </button>
+            </div>
+          </div>
+        ) : (
+          <>
+            {/* Chat Header */}
+            <div className="p-4 border-b border-slate-800 flex items-center justify-between bg-slate-900/60 backdrop-blur-md">
+              <div className="flex items-center gap-3">
+                <button
+                  onClick={() => setMobileView("list")}
+                  className="md:hidden p-1.5 rounded-lg text-slate-400 hover:text-white hover:bg-slate-800"
+                >
+                  <ArrowLeft className="h-5 w-5" />
+                </button>
+
+                <div className="relative">
+                  {activeConversation?.type === "GROUP" ? (
+                    <div className="h-10 w-10 rounded-2xl bg-linear-to-tr from-purple-600 to-indigo-600 text-white flex items-center justify-center font-bold text-sm">
+                      <Users className="h-5 w-5" />
+                    </div>
+                  ) : activeConversation?.avatar ? (
+                    <img
+                      src={activeConversation.avatar}
+                      alt={activeConversation.name}
+                      className="h-10 w-10 rounded-2xl object-cover border border-slate-700"
+                    />
+                  ) : (
+                    <div className="h-10 w-10 rounded-2xl bg-slate-800 text-purple-300 font-bold text-sm flex items-center justify-center border border-slate-700">
+                      {activeConversation?.name?.charAt(0)?.toUpperCase() || "U"}
+                    </div>
+                  )}
+                </div>
+
+                <div>
+                  <h3 className="font-extrabold text-sm text-white flex items-center gap-2">
+                    {activeConversation?.name}
+                    {activeConversation?.type === "GROUP" && (
+                      <span className="px-2 py-0.5 rounded-full text-[9px] font-bold bg-purple-900/40 text-purple-300 border border-purple-800">
+                        Group Channel
+                      </span>
+                    )}
+                  </h3>
+                  {activeConversation?.type === "GROUP" ? (
+                    <p className="text-[10px] text-slate-400 flex items-center gap-1.5">
+                      <span className="h-1.5 w-1.5 rounded-full bg-emerald-500" />
+                      <span>
+                        {activeConversation?.membersCount || 0} family members
+                        {onlineUserIds.size > 0 && ` (${onlineUserIds.size} online now)`}
+                      </span>
+                    </p>
+                  ) : activeConversation?.online ? (
+                    <p
+                      className="text-[10px] flex items-center gap-1.5 cursor-help"
+                      title={activeConversation?.lastActiveTooltip || "Online now (Active)"}
+                    >
+                      <span className="relative flex h-2 w-2">
+                        <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75" />
+                        <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-500" />
+                      </span>
+                      <span className="text-emerald-400 font-bold">Active now</span>
+                      {activeConversation?.roleDescription && (
+                        <span className="text-slate-500">• {activeConversation.roleDescription}</span>
+                      )}
+                    </p>
+                  ) : (
+                    <p
+                      className="text-[10px] flex items-center gap-1.5 cursor-help"
+                      title={activeConversation?.lastActiveTooltip || "Offline"}
+                    >
+                      <span className="h-1.5 w-1.5 rounded-full bg-slate-500" />
+                      <span className="text-slate-300 font-semibold">
+                        {activeConversation?.lastActiveText || "Offline"}
+                      </span>
+                      {activeConversation?.lastActiveExactTime && (
+                        <span className="text-slate-500 font-medium">({activeConversation.lastActiveExactTime})</span>
+                      )}
+                      {activeConversation?.roleDescription && (
+                        <span className="text-slate-500">• {activeConversation.roleDescription}</span>
+                      )}
+                    </p>
+                  )}
+                </div>
+              </div>
+
+              <div className="flex items-center gap-1 text-slate-400">
+                <button
+                  type="button"
+                  className="p-2 rounded-xl hover:text-white hover:bg-slate-800 transition-all cursor-pointer"
+                  title="Voice Call"
+                >
+                  <Phone className="h-4 w-4" />
+                </button>
+                <button
+                  type="button"
+                  className="p-2 rounded-xl hover:text-white hover:bg-slate-800 transition-all cursor-pointer"
+                  title="Video Gathering"
+                >
+                  <Video className="h-4 w-4" />
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setIsDeleteConvModalOpen(true)}
+                  className="p-2 rounded-xl text-slate-400 hover:text-rose-400 hover:bg-rose-950/40 transition-all cursor-pointer"
+                  title="Delete Conversation Thread"
+                >
+                  <Trash2 className="h-4 w-4" />
+                </button>
+              </div>
+            </div>
+
+            {/* Facebook Messenger Rule Notice Banner if Member -> Owner */}
+            {activeConversation?.isOwnerTarget && myRole === "MEMBER" && (
+              <div className="bg-amber-950/40 border-b border-amber-800/40 p-3 px-4 flex items-center gap-2.5 text-xs text-amber-300">
+                <ShieldAlert className="h-4 w-4 text-amber-400 shrink-0" />
+                <span>
+                  <strong>Facebook Messenger Rule:</strong> Members cannot initiate direct messages to the Sanctuary Owner. You can reply if the Owner messages you first.
+                </span>
+              </div>
             )}
-          </div>
-        </div>
 
-        {/* Facebook Messenger Rule Notice Banner if Member -> Owner */}
-        {activeConversation?.isOwnerTarget && myRole === "MEMBER" && (
-          <div className="bg-amber-950/40 border-b border-amber-800/40 p-3 px-4 flex items-center gap-2.5 text-xs text-amber-300">
-            <ShieldAlert className="h-4 w-4 text-amber-400 shrink-0" />
-            <span>
-              <strong>Facebook Messenger Rule:</strong> Members cannot initiate direct messages to the Sanctuary Owner. You can reply if the Owner messages you first, or post in the <strong>Family Sanctuary Circle</strong>.
-            </span>
-          </div>
-        )}
-
-        {/* Message Stream */}
-        <div className="flex-1 overflow-y-auto p-4 space-y-4">
-          {activeMessages.map((msg) => (
+            {/* Message Stream */}
+            <div className="flex-1 overflow-y-auto p-4 space-y-4">
+              {activeMessages.length === 0 ? (
+                <div className="h-full flex flex-col items-center justify-center text-center p-8">
+                  <div className="h-14 w-14 rounded-2xl bg-slate-900 border border-slate-800 text-purple-400 flex items-center justify-center mb-3 shadow-lg">
+                    <Sparkles className="h-7 w-7" />
+                  </div>
+                  <h4 className="font-bold text-white text-sm mb-1">
+                    Start your conversation with {activeConversation?.name}
+                  </h4>
+                  <p className="text-xs text-slate-400 max-w-xs mb-4">
+                    {activeConversation?.online
+                      ? "They are online right now!"
+                      : `Last active ${activeConversation?.lastActiveText || "recently"}.`}{" "}
+                    Send your first greeting below.
+                  </p>
+                  <button
+                    type="button"
+                    onClick={() => setInputText("Hello! 👋 Great to connect in our Family Sanctuary.")}
+                    className="px-3.5 py-2 rounded-xl bg-purple-950/80 hover:bg-purple-900 border border-purple-800 text-purple-200 text-xs font-semibold transition-all cursor-pointer hover:scale-105"
+                  >
+                    Say Hello 👋
+                  </button>
+                </div>
+              ) : activeMessages.map((msg) => (
             <div
               key={msg.id}
               className={`flex items-end gap-2.5 ${msg.isMe ? "justify-end" : "justify-start"}`}
@@ -1084,7 +1251,9 @@ export default function MessagesTab({ role = "MEMBER", currentUserId }: Messages
             </form>
           )}
         </div>
-      </div>
+      </>
+    )}
+  </div>
 
       {/* Delete Conversation Confirmation Modal */}
       {isDeleteConvModalOpen && (
@@ -1117,7 +1286,7 @@ export default function MessagesTab({ role = "MEMBER", currentUserId }: Messages
                 onClick={async () => {
                   try {
                     await deleteConversation(activeConversationId).unwrap();
-                    setActiveConversationId("sanctuary-circle");
+                    setActiveConversationId("");
                     setIsDeleteConvModalOpen(false);
                     refetchConversations();
                   } catch (err) {
