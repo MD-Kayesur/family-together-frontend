@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import Link from "next/link";
 import {
   TreePine,
@@ -41,7 +41,12 @@ import { useTranslation } from "@/lib/i18n/LanguageContext";
 export default function Home() {
   const { user, isAuthenticated } = useAppSelector((state) => state.auth);
   const [openFaqIndex, setOpenFaqIndex] = useState<number | null>(0);
+  const [mounted, setMounted] = useState(false);
   const { t } = useTranslation();
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
 
   const dashboardHref = getDashboardRouteByRole(user?.role);
   const dashboardLabel = getDashboardLabelByRole(user?.role);
@@ -53,52 +58,123 @@ export default function Home() {
 
       {/* Main Content */}
       <main className="pt-16 flex-1">
-        {/* Hero Section */}
-        <section className="relative bg-gradient-to-b from-[#f9f9ff] dark:from-slate-950 via-[#e2dfff]/30 dark:via-indigo-950/20 to-[#f9f9ff] dark:to-slate-950 pt-20 pb-28 px-6 lg:px-12 overflow-hidden transition-colors">
-          <div className="max-w-7xl mx-auto text-center flex flex-col items-center">
-            <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-indigo-50 dark:bg-indigo-950/60 border border-indigo-200 dark:border-indigo-800/80 text-indigo-700 dark:text-indigo-300 text-xs font-bold uppercase tracking-wider mb-6">
-              <Sparkles className="h-4 w-4 text-indigo-600 dark:text-indigo-400" />
-              <span>{t("home.badge")}</span>
+        {/* Hero Section - Immersive Full-Screen Edge-to-Edge with Deep Text-Side Shadow */}
+        <section className="relative w-full min-h-[calc(100vh-4rem)] lg:h-[calc(100vh-4rem)] flex items-center overflow-hidden bg-[#f9f9ff] dark:bg-slate-950 transition-colors">
+          {/* 1. Full-Screen Edge-to-Edge Background Image (Full Width & Full Height) */}
+          <div className="absolute inset-0 w-full h-full overflow-hidden pointer-events-none z-0">
+            <img
+              src="/hero-family-showcase.jpg"
+              alt="FamilyRoots Digital Sanctuary Showcase"
+              className="w-full h-full object-cover object-[75%_center] sm:object-[70%_center] lg:object-right-top scale-100 transform transition-transform duration-1000 ease-out"
+            />
+
+            {/* Ambient colorful glowing orbs softly augmenting the image */}
+            <div className="absolute -top-32 -left-32 w-[520px] h-[520px] bg-indigo-600/30 dark:bg-indigo-600/35 rounded-full blur-3xl animate-pulse" />
+            <div className="absolute top-1/2 right-12 w-[450px] h-[450px] bg-emerald-500/15 dark:bg-emerald-500/20 rounded-full blur-3xl" />
+            <div className="absolute -bottom-32 left-1/3 w-[500px] h-[500px] bg-purple-600/25 dark:bg-purple-600/30 rounded-full blur-3xl" />
+
+            {/* 2. CRITICAL: Left-Side Deep Shadow & Gradient Blur covering the text side */}
+            {/* Horizontal gradient: Solid on the left (under the text), smoothly fading to transparent towards the right */}
+            <div className="absolute inset-0 bg-gradient-to-r from-[#f9f9ff] via-[#f9f9ff]/95 via-35% sm:via-42% lg:via-48% to-transparent dark:from-slate-950 dark:via-slate-950/95 dark:via-35% dark:sm:via-42% dark:lg:via-50% dark:to-transparent pointer-events-none z-10" />
+
+            {/* Atmospheric extra left-side shadow & subtle blur so text readability is 100% razor sharp */}
+            <div className="absolute inset-y-0 left-0 w-full sm:w-2/3 lg:w-1/2 bg-gradient-to-r from-[#f9f9ff]/90 dark:from-slate-950/90 via-[#f9f9ff]/60 dark:via-slate-950/60 to-transparent backdrop-blur-[2px] pointer-events-none z-10" />
+
+            {/* Top and Bottom edge vignettes for seamless blend */}
+            <div className="absolute inset-x-0 top-0 h-24 bg-gradient-to-b from-[#f9f9ff] dark:from-slate-950 to-transparent pointer-events-none z-10" />
+            <div className="absolute inset-x-0 bottom-0 h-32 bg-gradient-to-t from-[#f9f9ff] dark:from-slate-950 to-transparent pointer-events-none z-10" />
+          </div>
+
+          {/* 3. Foreground Content Container */}
+          <div className="max-w-7xl mx-auto w-full relative z-20 px-6 sm:px-8 lg:px-12 py-12 lg:py-0 grid grid-cols-1 lg:grid-cols-12 items-center">
+            {/* Left Column: Hero Text, Badge & Actions (lg:col-span-7 xl:col-span-6) */}
+            <div className="lg:col-span-7 xl:col-span-6 text-left flex flex-col items-start space-y-6">
+              {/* Badge */}
+              <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-indigo-50/90 dark:bg-indigo-950/80 border border-indigo-200/80 dark:border-indigo-800/80 text-indigo-700 dark:text-indigo-300 text-xs font-bold uppercase tracking-wider backdrop-blur-md shadow-xs">
+                <Sparkles className="h-4 w-4 text-indigo-600 dark:text-indigo-400" />
+                <span>{t("home.badge")}</span>
+              </div>
+
+              {/* Title */}
+              <h1 className="text-3xl sm:text-5xl lg:text-[48px] xl:text-[56px] font-extrabold text-slate-950 dark:text-white leading-[1.12] tracking-tight">
+                {t("home.title")}{" "}
+                <span className="bg-gradient-to-r from-indigo-600 via-purple-600 to-emerald-600 bg-clip-text text-transparent">
+                  {t("home.titleHighlight")}
+                </span>
+              </h1>
+
+              {/* Subtitle */}
+              <p className="text-base sm:text-lg lg:text-xl text-slate-700 dark:text-slate-200 max-w-xl font-normal leading-relaxed drop-shadow-xs">
+                {t("home.subtitle")}
+              </p>
+
+              {/* CTA Buttons */}
+              <div className="flex flex-col sm:flex-row gap-4 pt-2 w-full sm:w-auto">
+                {mounted && isAuthenticated && user ? (
+                  <Link
+                    href={dashboardHref}
+                    className="bg-indigo-600 text-white px-8 py-4 rounded-xl font-bold text-sm hover:bg-indigo-700 transition-all shadow-lg shadow-indigo-600/30 flex items-center justify-center gap-2 hover:scale-[1.02] cursor-pointer"
+                  >
+                    <LayoutDashboard className="h-5 w-5" />
+                    <span>{t("common.goToDashboard", { dashboard: dashboardLabel })}</span>
+                    <ArrowRight className="h-5 w-5" />
+                  </Link>
+                ) : (
+                  <>
+                    <Link
+                      href="/signup"
+                      className="bg-indigo-600 text-white px-8 py-4 rounded-xl font-bold text-sm hover:bg-indigo-700 transition-all shadow-lg shadow-indigo-600/30 flex items-center justify-center gap-2 hover:scale-[1.02] cursor-pointer"
+                    >
+                      <span>{t("home.createFamily")}</span>
+                      <ArrowRight className="h-4 w-4" />
+                    </Link>
+                    <Link
+                      href="/signin"
+                      className="bg-white/90 dark:bg-slate-900/90 backdrop-blur-md border border-slate-200/90 dark:border-slate-800 text-slate-800 dark:text-slate-100 px-8 py-4 rounded-xl font-bold text-sm hover:bg-white dark:hover:bg-slate-800 transition-all flex items-center justify-center gap-2 shadow-md cursor-pointer"
+                    >
+                      <span>{t("home.exploreDemo")}</span>
+                    </Link>
+                  </>
+                )}
+              </div>
+
+              {/* Trust Badges / Highlights */}
+              <div className="flex flex-wrap items-center gap-6 pt-3 text-xs font-semibold text-slate-600 dark:text-slate-300">
+                <div className="flex items-center gap-2">
+                  <ShieldCheck className="h-4 w-4 text-emerald-600 dark:text-emerald-400" />
+                  <span>100% Private & Encrypted</span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <Globe className="h-4 w-4 text-indigo-600 dark:text-indigo-400" />
+                  <span>25+ Global Languages</span>
+                </div>
+              </div>
             </div>
 
-            <h1 className="text-4xl sm:text-6xl lg:text-[64px] font-extrabold text-slate-950 dark:text-white leading-[1.1] tracking-tight mb-6 max-w-4xl">
-              {t("home.title")}{" "}
-              <span className="bg-gradient-to-r from-indigo-600 via-purple-600 to-emerald-600 bg-clip-text text-transparent">
-                {t("home.titleHighlight")}
-              </span>
-            </h1>
+            {/* Right Column: Floating Interactive Glassmorphic Badges on the right of the full screen image */}
+            <div className="lg:col-span-5 xl:col-span-6 hidden lg:flex flex-col items-end justify-between h-[calc(100vh-14rem)] max-h-[580px] pointer-events-none relative z-20">
+              {/* Top-Right Floating Glass Badge */}
+              <div className="pointer-events-auto px-4 py-2 rounded-full bg-white/85 dark:bg-slate-950/85 backdrop-blur-md border border-white/40 dark:border-white/10 text-xs font-bold text-slate-800 dark:text-slate-200 shadow-xl flex items-center gap-2 hover:scale-105 transition-all">
+                <TreePine className="h-4 w-4 text-emerald-600 dark:text-emerald-400" />
+                <span>3+ Generations Connected</span>
+              </div>
 
-            <p className="text-base sm:text-xl text-slate-600 dark:text-slate-300 max-w-2xl mb-10 font-normal leading-relaxed">
-              {t("home.subtitle")}
-            </p>
-
-            <div className="flex flex-col sm:flex-row gap-4 mb-16">
-              {isAuthenticated && user ? (
-                <Link
-                  href={dashboardHref}
-                  className="bg-indigo-600 text-white px-8 py-4 rounded-xl font-bold text-sm hover:bg-indigo-700 transition-all shadow-lg shadow-indigo-600/25 flex items-center justify-center gap-2 hover:scale-[1.02]"
-                >
-                  <LayoutDashboard className="h-5 w-5" />
-                  <span>{t("common.goToDashboard", { dashboard: dashboardLabel })}</span>
-                  <ArrowRight className="h-5 w-5" />
-                </Link>
-              ) : (
-                <>
-                  <Link
-                    href="/signup"
-                    className="bg-indigo-600 text-white px-8 py-4 rounded-xl font-bold text-sm hover:bg-indigo-700 transition-all shadow-lg shadow-indigo-600/25 flex items-center justify-center gap-2 hover:scale-[1.02]"
-                  >
-                    <span>{t("home.createFamily")}</span>
-                  </Link>
-                  <Link
-                    href="/signin"
-                    className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 text-slate-700 dark:text-slate-200 px-8 py-4 rounded-xl font-bold text-sm hover:bg-slate-50 dark:hover:bg-slate-800 transition-all flex items-center justify-center gap-2 shadow-sm"
-                  >
-                    <span>{t("home.exploreDemo")}</span>
-                    <ArrowRight className="h-4 w-4 text-slate-400" />
-                  </Link>
-                </>
-              )}
+              {/* Bottom-Right Floating Glass Card */}
+              <div className="pointer-events-auto p-4 rounded-2xl bg-white/85 dark:bg-slate-900/85 backdrop-blur-md border border-white/40 dark:border-white/10 shadow-2xl flex items-center justify-between gap-4 max-w-sm hover:scale-[1.02] transition-all">
+                <div className="flex items-center gap-3">
+                  <div className="h-9 w-9 rounded-xl bg-indigo-600 text-white flex items-center justify-center shrink-0 shadow-md shadow-indigo-600/30">
+                    <Lock className="h-5 w-5" />
+                  </div>
+                  <div>
+                    <p className="text-xs sm:text-sm font-bold text-slate-900 dark:text-white">Family Tree Sanctuary</p>
+                    <p className="text-[11px] text-slate-500 dark:text-slate-400">Strict Multi-Tenant Privacy Isolation</p>
+                  </div>
+                </div>
+                <span className="flex h-3 w-3 relative">
+                  <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
+                  <span className="relative inline-flex rounded-full h-3 w-3 bg-emerald-500"></span>
+                </span>
+              </div>
             </div>
           </div>
         </section>
