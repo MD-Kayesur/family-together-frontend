@@ -83,6 +83,11 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
   const { user, isAuthenticated } = useAppSelector((state) => state.auth);
   const [logout] = useLogoutMutation();
   const [isMobileNavOpen, setIsMobileNavOpen] = useState(false);
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
 
   // Close mobile drawer on route change
   useEffect(() => {
@@ -91,12 +96,12 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
 
   // Protect Admin Routes
   useEffect(() => {
-    if (!isAuthenticated) {
+    if (mounted && !isAuthenticated) {
       router.push("/signin");
     }
-  }, [isAuthenticated, router]);
+  }, [mounted, isAuthenticated, router]);
 
-  if (!isAuthenticated || !user) {
+  if (!mounted || !isAuthenticated || !user) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-slate-900 text-white">
         <div className="flex items-center gap-3 text-indigo-400 font-semibold">

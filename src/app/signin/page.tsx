@@ -9,6 +9,7 @@ import { getDashboardRouteByRole } from "@/lib/utils/roleUtils";
 import { Eye, EyeOff } from "lucide-react";
 import ThemeToggle from "@/components/theme/ThemeToggle";
 import ForgotPasswordModal from "@/components/modals/ForgotPasswordModal";
+import SocialAuthButtons from "@/components/auth/SocialAuthButtons";
 import { useTranslation } from "@/lib/i18n/LanguageContext";
 
 function SignInContent() {
@@ -26,15 +27,20 @@ function SignInContent() {
 
   const [signIn, { isLoading: isSigningIn }] = useSignInMutation();
   const [forgotPassword] = useForgotPasswordMutation();
+  const [mounted, setMounted] = useState(false);
 
   useEffect(() => {
-    if (isAuthenticated) {
+    setMounted(true);
+  }, []);
+
+  useEffect(() => {
+    if (mounted && isAuthenticated) {
       router.replace(getDashboardRouteByRole(user?.role));
     }
-  }, [isAuthenticated, user, router]);
+  }, [mounted, isAuthenticated, user, router]);
 
   // Prevent flash of sign-in page if already authenticated
-  if (isAuthenticated) {
+  if (mounted && isAuthenticated) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-background text-on-surface">
         <div className="flex flex-col items-center gap-4 text-center p-8 rounded-2xl bg-surface-container-high/70 backdrop-blur-md border border-outline-variant/30 shadow-2xl max-w-sm">
@@ -83,6 +89,12 @@ function SignInContent() {
         router.replace(target);
       }, 800);
     } catch (err: any) {
+      if (err?.status === "FETCH_ERROR" || !err?.data) {
+        setErrorMsg(
+          "Unable to connect to the backend server (http://localhost:8000). Please verify the backend service is running."
+        );
+        return;
+      }
       if (err?.data?.requiresEmailVerification) {
         setNeedsVerification(true);
       }
@@ -282,6 +294,11 @@ function SignInContent() {
               )}
             </button>
           </form>
+
+          {/* Social OAuth Providers */}
+          <div className="mt-4">
+            <SocialAuthButtons labelPrefix="Continue with" />
+          </div>
 
           {/* Footer Link */}
           <div className="mt-stack-lg text-center">

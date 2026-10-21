@@ -1,6 +1,6 @@
 "use client";
 
-import React from "react";
+import React, { useState, useEffect } from "react";
 import Link from "next/link";
 import {
   TreePine,
@@ -27,6 +27,11 @@ import LandingFamilyTreeCanvas from "@/components/tree/LandingFamilyTreeCanvas";
 
 export default function FeaturesPage() {
   const { user, isAuthenticated } = useAppSelector((state) => state.auth);
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
 
   const dashboardHref = getDashboardRouteByRole(user?.role);
   const dashboardLabel = getDashboardLabelByRole(user?.role);
@@ -137,7 +142,7 @@ export default function FeaturesPage() {
 
             {/* CTAs */}
             <div className="flex flex-col sm:flex-row gap-4 mb-8">
-              {isAuthenticated && user ? (
+              {mounted && isAuthenticated && user ? (
                 <Link
                   href={dashboardHref}
                   className="bg-indigo-600 text-white px-8 py-4 rounded-xl font-bold text-sm hover:bg-indigo-700 transition-all shadow-lg shadow-indigo-600/25 flex items-center justify-center gap-2 hover:scale-[1.02]"

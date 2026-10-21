@@ -12,6 +12,7 @@ import { useAppSelector } from "@/redux/store";
 import { getDashboardRouteByRole } from "@/lib/utils/roleUtils";
 import { Eye, EyeOff } from "lucide-react";
 import ThemeToggle from "@/components/theme/ThemeToggle";
+import SocialAuthButtons from "@/components/auth/SocialAuthButtons";
 import { useTranslation } from "@/lib/i18n/LanguageContext";
 
 function SignUpContent() {
@@ -38,15 +39,20 @@ function SignUpContent() {
   const [signUp, { isLoading: isSigningUp }] = useSignUpMutation();
   const [verifyEmail, { isLoading: isVerifying }] = useVerifyEmailMutation();
   const [resendVerification, { isLoading: isResending }] = useResendVerificationMutation();
+  const [mounted, setMounted] = useState(false);
 
   useEffect(() => {
-    if (isAuthenticated) {
+    setMounted(true);
+  }, []);
+
+  useEffect(() => {
+    if (mounted && isAuthenticated) {
       router.replace(getDashboardRouteByRole(user?.role));
     }
-  }, [isAuthenticated, user, router]);
+  }, [mounted, isAuthenticated, user, router]);
 
   // Prevent flash of sign-up page if already authenticated
-  if (isAuthenticated) {
+  if (mounted && isAuthenticated) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-background text-on-surface">
         <div className="flex flex-col items-center gap-4 text-center p-8 rounded-2xl bg-surface-container-high/70 backdrop-blur-md border border-outline-variant/30 shadow-2xl max-w-sm">
@@ -116,6 +122,12 @@ function SignUpContent() {
         otpInputRefs.current[0]?.focus();
       }, 100);
     } catch (err: any) {
+      if (err?.status === "FETCH_ERROR" || !err?.data) {
+        setErrorMsg(
+          "Unable to connect to the backend server (http://localhost:8000). Please verify the backend service is running."
+        );
+        return;
+      }
       const msg =
         err?.data?.message || "Failed to create account. Email may already be registered.";
       setErrorMsg(Array.isArray(msg) ? msg.join(", ") : msg);
@@ -179,6 +191,10 @@ function SignUpContent() {
         router.push(`/signin?verified=true&email=${encodeURIComponent(email.trim())}`);
       }, 1200);
     } catch (err: any) {
+      if (err?.status === "FETCH_ERROR" || !err?.data) {
+        setErrorMsg("Unable to connect to the server. Please check your backend connection.");
+        return;
+      }
       const msg =
         err?.data?.message || "Invalid or expired verification code. Please request a new one.";
       setErrorMsg(Array.isArray(msg) ? msg.join(", ") : msg);
@@ -195,6 +211,10 @@ function SignUpContent() {
       setSuccessMsg(result.message || "A new 6-digit code has been sent to your email.");
       setResendCooldown(60);
     } catch (err: any) {
+      if (err?.status === "FETCH_ERROR" || !err?.data) {
+        setErrorMsg("Unable to connect to the server. Please check your backend connection.");
+        return;
+      }
       const msg = err?.data?.message || "Failed to resend code. Please try again.";
       setErrorMsg(Array.isArray(msg) ? msg.join(", ") : msg);
     }
@@ -384,6 +404,11 @@ function SignUpContent() {
                   )}
                 </button>
               </form>
+
+              {/* Social OAuth Providers */}
+              <div className="mt-4">
+                <SocialAuthButtons labelPrefix="Sign up with" />
+              </div>
 
               <div className="mt-6 text-center text-sm text-on-surface-variant">
                 {t("auth.hasAccount")}{" "}

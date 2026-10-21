@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import { usePathname } from "next/navigation";
@@ -19,7 +19,12 @@ export default function PublicNavbar() {
   const { user, isAuthenticated } = useAppSelector((state) => state.auth);
   const [logout] = useLogoutMutation();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [mounted, setMounted] = useState(false);
   const { t } = useTranslation();
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
 
   const dashboardHref = getDashboardRouteByRole(user?.role);
   const dashboardLabel = getDashboardLabelByRole(user?.role);
@@ -78,7 +83,7 @@ export default function PublicNavbar() {
             {/* Dark/Light Theme Toggle */}
             <ThemeToggle />
 
-            {isAuthenticated && user ? (
+            {mounted && isAuthenticated && user ? (
               <div className="flex items-center gap-3 pl-1 border-l border-slate-200 dark:border-slate-800">
                 <NavbarNotificationMenu />
                 <Link
@@ -148,7 +153,7 @@ export default function PublicNavbar() {
             );
           })}
 
-          {isAuthenticated && user ? (
+          {mounted && isAuthenticated && user ? (
             <div className="pt-3 border-t border-slate-200 dark:border-slate-800 space-y-3">
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-3">

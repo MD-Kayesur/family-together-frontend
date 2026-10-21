@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import Link from "next/link";
 import {
   CheckCircle2,
@@ -18,7 +18,12 @@ import { useTranslation } from "@/lib/i18n/LanguageContext";
 export default function PricingPage() {
   const { user, isAuthenticated } = useAppSelector((state) => state.auth);
   const [openFaqIndex, setOpenFaqIndex] = useState<number | null>(0);
+  const [mounted, setMounted] = useState(false);
   const { t } = useTranslation();
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
 
   const dashboardHref = getDashboardRouteByRole(user?.role);
 
@@ -70,7 +75,7 @@ export default function PricingPage() {
               {t("pricing.subtitle") || "Start with our Free Forever tier or choose an expanded capacity plan for high-resolution document scans, lifelong photo vaults, and historical exports."}
             </p>
 
-            {isAuthenticated && user && (
+            {mounted && isAuthenticated && user && (
               <div className="mb-6">
                 <Link
                   href={`${dashboardHref}?tab=billing`}

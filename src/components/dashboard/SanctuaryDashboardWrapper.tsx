@@ -144,6 +144,11 @@ export default function SanctuaryDashboardWrapper({
   const router = useRouter();
   const { user, isAuthenticated } = useAppSelector((state) => state.auth);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
 
   // Close mobile drawer when route changes
   useEffect(() => {
@@ -152,18 +157,18 @@ export default function SanctuaryDashboardWrapper({
 
   // Route Protection & Role Authorization: Redirect unauthenticated or unauthorized users
   useEffect(() => {
-    if (!isAuthenticated) {
+    if (mounted && !isAuthenticated) {
       router.push("/signin");
       return;
     }
 
-    if (user && !canAccessRoute(pathname, user.role)) {
+    if (mounted && user && !canAccessRoute(pathname, user.role)) {
       const targetRoute = getDashboardRouteByRole(user.role);
       router.replace(targetRoute);
     }
-  }, [isAuthenticated, user, pathname, router]);
+  }, [mounted, isAuthenticated, user, pathname, router]);
 
-  if (!isAuthenticated || !user || !canAccessRoute(pathname, user.role)) {
+  if (!mounted || !isAuthenticated || !user || !canAccessRoute(pathname, user.role)) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-slate-900 text-white">
         <div className="flex items-center gap-3 text-indigo-400 font-semibold">
