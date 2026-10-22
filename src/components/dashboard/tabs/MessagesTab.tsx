@@ -230,6 +230,7 @@ export default function MessagesTab({ role = "MEMBER", currentUserId }: Messages
   const [inputText, setInputText] = useState("");
   const [isTypingRemote, setIsTypingRemote] = useState(false);
   const [socketConnected, setSocketConnected] = useState(false);
+  const [authExpired, setAuthExpired] = useState(false);
 
   // Message Editing & Deletion State
   const [editingMessageId, setEditingMessageId] = useState<string | null>(null);
@@ -238,6 +239,19 @@ export default function MessagesTab({ role = "MEMBER", currentUserId }: Messages
 
   const socketRef = useRef<Socket | null>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
+
+  // Stable refs to prevent effect recreation & unnecessary disconnect storms
+  const refetchConversationsRef = useRef(refetchConversations);
+  refetchConversationsRef.current = refetchConversations;
+
+  const refetchMessagesRef = useRef(refetchMessages);
+  refetchMessagesRef.current = refetchMessages;
+
+  const activeConversationIdRef = useRef(activeConversationId);
+  activeConversationIdRef.current = activeConversationId;
+
+  const myUserIdRef = useRef(myUserId);
+  myUserIdRef.current = myUserId;
 
   // Real message state - Clean empty state for new users (NO mock data)
   const [localMessages, setLocalMessages] = useState<Record<string, Message[]>>({});
@@ -262,28 +276,56 @@ export default function MessagesTab({ role = "MEMBER", currentUserId }: Messages
     }
   }, [dbMessages, activeConversationId, myUserId]);
 
-  // Connect Socket.io client
+  // Connect Socket.io client (Persistent, fast-negotiating singleton connection)
   useEffect(() => {
     const backendUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
     const token = typeof window !== "undefined" ? localStorage.getItem("accessToken") : null;
 
+    if (!token) {
+      setSocketConnected(false);
+      return;
+    }
+
     const socket = io(backendUrl, {
-      auth: { token: token ? `Bearer ${token}` : undefined },
+      auth: { token: `Bearer ${token}` },
       transports: ["websocket", "polling"],
-      reconnectionAttempts: 5,
+      upgrade: true,
+      rememberUpgrade: true,
+      timeout: 5000,
+      reconnection: true,
+      reconnectionAttempts: 6,
+      reconnectionDelay: 1000,
+      reconnectionDelayMax: 3000,
     });
 
     socketRef.current = socket;
 
     socket.on("connect", () => {
       setSocketConnected(true);
-      if (activeConversationId) {
-        socket.emit("join_conversation", { conversationId: activeConversationId });
+      setAuthExpired(false);
+      if (activeConversationIdRef.current) {
+        socket.emit("join_conversation", { conversationId: activeConversationIdRef.current });
       }
     });
 
     socket.on("disconnect", () => {
       setSocketConnected(false);
+    });
+
+    socket.on("auth_error", (err: any) => {
+      console.warn("Socket auth_error:", err?.message);
+      if (err?.message?.includes("expired") || err?.message?.includes("jwt")) {
+        setAuthExpired(true);
+        socket.disconnect(); // Terminate retry loop if JWT is expired
+      }
+    });
+
+    socket.on("connect_error", (err: any) => {
+      console.warn("Socket connect_error:", err?.message);
+      if (err?.message?.includes("expired") || err?.message?.includes("jwt")) {
+        setAuthExpired(true);
+        socket.disconnect();
+      }
     });
 
     socket.on("new_message", (savedMessage: any) => {
@@ -294,7 +336,7 @@ export default function MessagesTab({ role = "MEMBER", currentUserId }: Messages
         avatar: savedMessage.avatar,
         text: savedMessage.text,
         timestamp: new Date(savedMessage.createdAt).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }),
-        isMe: savedMessage.senderId === myUserId,
+        isMe: savedMessage.senderId === myUserIdRef.current,
         status: "delivered",
       };
 
@@ -307,17 +349,17 @@ export default function MessagesTab({ role = "MEMBER", currentUserId }: Messages
         };
       });
 
-      refetchConversations();
+      refetchConversationsRef.current?.();
     });
 
     socket.on("user_typing", (data: any) => {
-      if (data.conversationId === activeConversationId && data.userId !== myUserId) {
+      if (data.conversationId === activeConversationIdRef.current && data.userId !== myUserIdRef.current) {
         setIsTypingRemote(data.isTyping);
       }
     });
 
     socket.on("message_read", () => {
-      refetchMessages();
+      refetchMessagesRef.current?.();
     });
 
     // Real-Time Online Presence & Last Active Listeners
@@ -349,7 +391,14 @@ export default function MessagesTab({ role = "MEMBER", currentUserId }: Messages
     return () => {
       socket.disconnect();
     };
-  }, [activeConversationId, myUserId, refetchConversations, refetchMessages]);
+  }, []); // Run ONCE on mount; stays connected persistently!
+
+  // Join active conversation room when conversation changes (without tearing down socket)
+  useEffect(() => {
+    if (socketRef.current && socketConnected && activeConversationId) {
+      socketRef.current.emit("join_conversation", { conversationId: activeConversationId });
+    }
+  }, [activeConversationId, socketConnected]);
 
   // Switch conversation and join room
   const handleSelectConversation = (id: string) => {
@@ -357,7 +406,7 @@ export default function MessagesTab({ role = "MEMBER", currentUserId }: Messages
     setMobileView("chat");
     setIsTypingRemote(false);
 
-    if (socketRef.current) {
+    if (socketRef.current && socketConnected) {
       socketRef.current.emit("join_conversation", { conversationId: id });
     }
 
@@ -591,11 +640,19 @@ export default function MessagesTab({ role = "MEMBER", currentUserId }: Messages
                 <div className="flex items-center gap-1.5 mt-0.5">
                   <span
                     className={`h-2 w-2 rounded-full ${
-                      socketConnected ? "bg-emerald-500 animate-pulse" : "bg-amber-500"
+                      socketConnected
+                        ? "bg-emerald-500 animate-pulse"
+                        : authExpired
+                        ? "bg-rose-500"
+                        : "bg-amber-500 animate-ping"
                     }`}
                   />
                   <span className="text-[10px] font-bold text-slate-400">
-                    {socketConnected ? "Socket.io Live" : "Connecting..."}
+                    {socketConnected
+                      ? "Socket.io Live"
+                      : authExpired
+                      ? "Session Expired (Please Re-login)"
+                      : "Connecting..."}
                   </span>
                 </div>
               </div>
