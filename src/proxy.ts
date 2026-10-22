@@ -42,3 +42,5 @@ export function proxy(request: NextRequest) {
 export const config = {
   matcher: ["/signin", "/signup", "/login"],
 };
+
+export default proxy;
