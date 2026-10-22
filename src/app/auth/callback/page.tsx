@@ -3,7 +3,8 @@
 import React, { useEffect, useState, Suspense } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useAppDispatch } from "@/redux/store";
-import { setCredentials, syncAuthCookies, User } from "@/redux/slices/authSlice";
+import { setCredentials, User } from "@/redux/slices/authSlice";
+import { saveAuthCookies } from "@/lib/utils/cookieUtils";
 import { getDashboardRouteByRole } from "@/lib/utils/roleUtils";
 import { CheckCircle2, AlertCircle, Sparkles } from "lucide-react";
 import ThemeToggle from "@/components/theme/ThemeToggle";
@@ -49,7 +50,7 @@ function OAuthCallbackContent() {
         status: "ACTIVE",
       };
 
-      // 1. Dispatch to Redux store
+      // 1. Dispatch to Redux store (which also persists in Cookies)
       dispatch(
         setCredentials({
           user,
@@ -58,15 +59,13 @@ function OAuthCallbackContent() {
         })
       );
 
-      // 2. Persist in LocalStorage
-      localStorage.setItem("accessToken", token);
-      localStorage.setItem("user", JSON.stringify(user));
-      if (refreshToken) {
-        localStorage.setItem("refreshToken", refreshToken);
-      }
-
-      // 3. Sync HTTP Lax cookies for middleware & SSR navigation
-      syncAuthCookies(true, role);
+      // 2. Explicitly persist to Cookies
+      saveAuthCookies({
+        accessToken: token,
+        refreshToken: refreshToken || undefined,
+        user,
+        role,
+      });
 
       setStatus("success");
 

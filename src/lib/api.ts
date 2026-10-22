@@ -33,11 +33,17 @@ export interface SignInData {
   password: string;
 }
 
+import {
+  getAuthToken,
+  saveAuthCookies,
+  clearAllAuthCookies,
+} from "@/lib/utils/cookieUtils";
+
 /**
  * Universal fetch wrapper that manages base URLs, JSON headers, and error parsing
  */
 async function fetchApi<T>(endpoint: string, options: RequestInit = {}): Promise<T> {
-  const token = typeof window !== "undefined" ? localStorage.getItem("accessToken") : null;
+  const token = getAuthToken();
 
   const headers: Record<string, string> = {
     "Content-Type": "application/json",
@@ -88,12 +94,13 @@ export async function signInApi(data: SignInData): Promise<AuthResponse> {
     body: JSON.stringify(data),
   });
 
-  if (result.accessToken && typeof window !== "undefined") {
-    localStorage.setItem("accessToken", result.accessToken);
-    if (result.refreshToken) {
-      localStorage.setItem("refreshToken", result.refreshToken);
-    }
-    localStorage.setItem("user", JSON.stringify(result.user));
+  if (result.accessToken) {
+    saveAuthCookies({
+      accessToken: result.accessToken,
+      refreshToken: result.refreshToken,
+      user: result.user,
+      role: result.user?.role,
+    });
   }
 
   return result;
@@ -128,10 +135,6 @@ export async function logoutApi(): Promise<{ message: string }> {
     });
     return result;
   } finally {
-    if (typeof window !== "undefined") {
-      localStorage.removeItem("accessToken");
-      localStorage.removeItem("refreshToken");
-      localStorage.removeItem("user");
-    }
+    clearAllAuthCookies();
   }
 }

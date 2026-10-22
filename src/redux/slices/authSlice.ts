@@ -21,40 +21,27 @@ interface AuthState {
   isAuthenticated: boolean;
 }
 
-export const syncAuthCookies = (isAuth: boolean, role?: string) => {
-  if (typeof document === "undefined") return;
-  if (isAuth) {
-    const maxAge = 7 * 24 * 60 * 60; // 7 days
-    document.cookie = `is_authenticated=true; path=/; max-age=${maxAge}; SameSite=Lax`;
-    if (role) {
-      document.cookie = `user_role=${role}; path=/; max-age=${maxAge}; SameSite=Lax`;
-    }
-  } else {
-    document.cookie = "is_authenticated=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT; SameSite=Lax";
-    document.cookie = "user_role=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT; SameSite=Lax";
-  }
-};
+import {
+  saveAuthCookies,
+  clearAllAuthCookies,
+  getAuthToken,
+  getStoredUser,
+} from "@/lib/utils/cookieUtils";
+
+export { syncAuthCookies } from "@/lib/utils/cookieUtils";
 
 const getInitialState = (): AuthState => {
   if (typeof window === "undefined") {
     return { user: null, token: null, isAuthenticated: false };
   }
 
-  const token = localStorage.getItem("accessToken");
-  const storedUser = localStorage.getItem("user");
-  let user: User | null = null;
-
-  if (storedUser) {
-    try {
-      user = JSON.parse(storedUser);
-    } catch {
-      user = null;
-    }
-  }
-
+  // Prioritize Cookies first for SSR & Security, fallback to localStorage
+  const token = getAuthToken();
+  const user = getStoredUser();
   const isAuth = Boolean(token);
+
   if (isAuth && user) {
-    syncAuthCookies(true, user?.role);
+    saveAuthCookies({ accessToken: token || undefined, user, role: user?.role });
   }
 
   return {
@@ -78,35 +65,31 @@ const authSlice = createSlice({
 
       if (accessToken) {
         state.token = accessToken;
-        if (typeof window !== "undefined") {
-          localStorage.setItem("accessToken", accessToken);
-          localStorage.setItem("user", JSON.stringify(user));
-          if (refreshToken) {
-            localStorage.setItem("refreshToken", refreshToken);
-          }
-          syncAuthCookies(true, user?.role);
-        }
       }
+
+      // Persist to Cookies (primary) and localStorage (fallback)
+      saveAuthCookies({
+        accessToken,
+        refreshToken,
+        user,
+        role: user?.role,
+      });
     },
     logout: (state) => {
       state.user = null;
       state.token = null;
       state.isAuthenticated = false;
 
-      if (typeof window !== "undefined") {
-        localStorage.removeItem("accessToken");
-        localStorage.removeItem("refreshToken");
-        localStorage.removeItem("user");
-        syncAuthCookies(false);
-      }
+      // Clear all auth cookies and local fallback
+      clearAllAuthCookies();
     },
     updateUser: (state, action: PayloadAction<Partial<User>>) => {
       if (state.user) {
         state.user = { ...state.user, ...action.payload };
-        if (typeof window !== "undefined") {
-          localStorage.setItem("user", JSON.stringify(state.user));
-          syncAuthCookies(true, state.user?.role);
-        }
+        saveAuthCookies({
+          user: state.user,
+          role: state.user?.role,
+        });
       }
     },
   },

@@ -9,7 +9,8 @@ import type { NextRequest } from "next/server";
 export function proxy(request: NextRequest) {
   const { pathname } = request.nextUrl;
 
-  const isAuth = request.cookies.get("is_authenticated")?.value === "true";
+  const hasToken = Boolean(request.cookies.get("access_token")?.value);
+  const isAuth = hasToken || request.cookies.get("is_authenticated")?.value === "true";
   const userRole = request.cookies.get("user_role")?.value;
 
   // Resolve target dashboard route based on user role
