@@ -39,7 +39,18 @@ function SignInContent() {
     }
   }, [mounted, isAuthenticated, user, router]);
 
-  // Prevent flash of sign-in page if already authenticated
+  useEffect(() => {
+    const verified = searchParams.get("verified");
+    const paramEmail = searchParams.get("email");
+    if (paramEmail) {
+      setEmail(paramEmail);
+    }
+    if (verified === "true") {
+      setSuccessMsg("Email verified successfully! Please enter your password to sign in.");
+    }
+  }, [searchParams]);
+
+  // Prevent flash of sign-in page if already authenticated (rendered AFTER all hooks)
   if (mounted && isAuthenticated) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-background text-on-surface">
@@ -53,17 +64,6 @@ function SignInContent() {
       </div>
     );
   }
-
-  useEffect(() => {
-    const verified = searchParams.get("verified");
-    const paramEmail = searchParams.get("email");
-    if (paramEmail) {
-      setEmail(paramEmail);
-    }
-    if (verified === "true") {
-      setSuccessMsg("Email verified successfully! Please enter your password to sign in.");
-    }
-  }, [searchParams]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -91,7 +91,7 @@ function SignInContent() {
     } catch (err: any) {
       if (err?.status === "FETCH_ERROR" || !err?.data) {
         setErrorMsg(
-          "Unable to connect to the backend server (http://localhost:8000). Please verify the backend service is running."
+          "Unable to connect to the backend server. Please check your internet connection or verify the backend service is running."
         );
         return;
       }

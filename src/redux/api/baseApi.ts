@@ -1,7 +1,8 @@
 import { createApi, fetchBaseQuery } from "@reduxjs/toolkit/query/react";
 import { getAuthToken } from "@/lib/utils/cookieUtils";
+import { getBackendUrl } from "@/lib/apiConfig";
 
-const baseUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
+const baseUrl = getBackendUrl();
 
 export const baseApi = createApi({
   reducerPath: "api",

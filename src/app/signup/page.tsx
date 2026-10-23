@@ -51,21 +51,6 @@ function SignUpContent() {
     }
   }, [mounted, isAuthenticated, user, router]);
 
-  // Prevent flash of sign-up page if already authenticated
-  if (mounted && isAuthenticated) {
-    return (
-      <div className="min-h-screen flex items-center justify-center bg-background text-on-surface">
-        <div className="flex flex-col items-center gap-4 text-center p-8 rounded-2xl bg-surface-container-high/70 backdrop-blur-md border border-outline-variant/30 shadow-2xl max-w-sm">
-          <div className="h-10 w-10 border-3 border-primary border-t-transparent rounded-full animate-spin" />
-          <div>
-            <h3 className="text-lg font-semibold text-on-surface">Already Logged In</h3>
-            <p className="text-sm text-on-surface-variant mt-1">Redirecting to your dashboard...</p>
-          </div>
-        </div>
-      </div>
-    );
-  }
-
   // Check if routed with ?verifyEmail=... query param
   useEffect(() => {
     const queryEmail = searchParams.get("verifyEmail");
@@ -83,6 +68,21 @@ function SignUpContent() {
     }, 1000);
     return () => clearInterval(interval);
   }, [resendCooldown]);
+
+  // Prevent flash of sign-up page if already authenticated (rendered AFTER all hooks)
+  if (mounted && isAuthenticated) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-background text-on-surface">
+        <div className="flex flex-col items-center gap-4 text-center p-8 rounded-2xl bg-surface-container-high/70 backdrop-blur-md border border-outline-variant/30 shadow-2xl max-w-sm">
+          <div className="h-10 w-10 border-3 border-primary border-t-transparent rounded-full animate-spin" />
+          <div>
+            <h3 className="text-lg font-semibold text-on-surface">Already Logged In</h3>
+            <p className="text-sm text-on-surface-variant mt-1">Redirecting to your dashboard...</p>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -124,7 +124,7 @@ function SignUpContent() {
     } catch (err: any) {
       if (err?.status === "FETCH_ERROR" || !err?.data) {
         setErrorMsg(
-          "Unable to connect to the backend server (http://localhost:8000). Please verify the backend service is running."
+          "Unable to connect to the backend server. Please check your internet connection or verify the backend service is running."
         );
         return;
       }

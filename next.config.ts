@@ -1,9 +1,18 @@
 import type { NextConfig } from "next";
 
-const BACKEND_URL =
+const rawUrl =
   process.env.NEXT_PUBLIC_API_URL ||
   process.env.BACKEND_URL ||
-  "http://localhost:8000";
+  "https://family-together-backend-f18y.onrender.com";
+
+// Normalize URL (strip trailing slashes, /api/docs, or accidental /api)
+const BACKEND_URL = rawUrl
+  .trim()
+  .replace(/\/+$/, "")
+  .replace(/\/api\/docs$/i, "")
+  .replace(/\/docs$/i, "")
+  .replace(/\/api$/i, "")
+  .replace(/\/+$/, "");
 
 const nextConfig: NextConfig = {
   async rewrites() {
@@ -21,12 +30,20 @@ const nextConfig: NextConfig = {
         destination: `${BACKEND_URL}/users/:path*`,
       },
       {
-        source: "/api/:path*",
-        destination: `${BACKEND_URL}/api/:path*`,
+        source: "/billing/:path*",
+        destination: `${BACKEND_URL}/billing/:path*`,
       },
       {
         source: "/health",
         destination: `${BACKEND_URL}/health`,
+      },
+      {
+        source: "/api/docs/:path*",
+        destination: `${BACKEND_URL}/api/docs/:path*`,
+      },
+      {
+        source: "/docs/:path*",
+        destination: `${BACKEND_URL}/docs/:path*`,
       },
     ];
   },

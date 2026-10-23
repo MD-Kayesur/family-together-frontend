@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState } from "react";
+import { getBackendUrl } from "@/lib/apiConfig";
 
 interface SocialAuthButtonsProps {
   labelPrefix?: string;
@@ -9,7 +10,7 @@ interface SocialAuthButtonsProps {
 export default function SocialAuthButtons({ labelPrefix = "Continue with" }: SocialAuthButtonsProps) {
   const [redirectingProvider, setRedirectingProvider] = useState<string | null>(null);
 
-  const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
+  const apiUrl = getBackendUrl();
 
   const handleOAuthRedirect = (provider: "google" | "facebook") => {
     setRedirectingProvider(provider);
