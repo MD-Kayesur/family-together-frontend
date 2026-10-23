@@ -43,6 +43,7 @@ import {
   useGetChatUsersQuery,
 } from "@/redux/api/chatApi";
 import { useAppSelector } from "@/redux/store";
+import { getBackendUrl } from "@/lib/apiConfig";
 import { getAuthToken } from "@/lib/utils/cookieUtils";
 
 interface Message {
@@ -279,7 +280,7 @@ export default function MessagesTab({ role = "MEMBER", currentUserId }: Messages
 
   // Connect Socket.io client (Persistent, fast-negotiating singleton connection)
   useEffect(() => {
-    const backendUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
+    const backendUrl = getBackendUrl();
     const token = getAuthToken();
 
     if (!token) {
