@@ -28,6 +28,13 @@ import UserNavbarAvatarMenu from "@/components/dashboard/UserNavbarAvatarMenu";
 import ThemeToggle from "@/components/theme/ThemeToggle";
 import LanguageSwitcherModal from "@/components/common/LanguageSwitcherModal";
 import { getDashboardRouteByRole, canAccessRoute } from "@/lib/utils/roleUtils";
+import { io } from "socket.io-client";
+import { getBackendUrl } from "@/lib/apiConfig";
+import { getAuthToken } from "@/lib/utils/cookieUtils";
+import {
+  showDeviceNotification,
+  requestDeviceNotificationPermission,
+} from "@/lib/notifications/deviceNotificationService";
 
 export function normalizeDashboardTab(rawTab?: string | null): string {
   if (!rawTab) return "dashboard";
@@ -167,6 +174,50 @@ export default function SanctuaryDashboardWrapper({
       router.replace(targetRoute);
     }
   }, [mounted, isAuthenticated, user, pathname, router]);
+
+  // Background Socket Listener for Real-Time Device Notifications Across All Sanctuary Tabs
+  useEffect(() => {
+    if (!mounted || !user?.id) return;
+
+    // Register service worker if available
+    if (typeof window !== "undefined" && "serviceWorker" in navigator) {
+      navigator.serviceWorker.register("/sw.js", { scope: "/" }).catch(() => {});
+    }
+
+    const token = getAuthToken();
+    const backendUrl = getBackendUrl();
+
+    const bgSocket = io(backendUrl, {
+      auth: { token },
+      transports: ["websocket", "polling"],
+      reconnectionAttempts: 5,
+      reconnectionDelay: 2000,
+    });
+
+    bgSocket.on("message_notification", (notif: any) => {
+      if (notif.senderId !== user.id) {
+        const isMessagesOpen =
+          pathname.includes("/messages") ||
+          (typeof window !== "undefined" && window.location.search.includes("tab=messages"));
+
+        const isHidden = typeof document !== "undefined" && document.hidden;
+        if (!isMessagesOpen || isHidden) {
+          showDeviceNotification({
+            title: `Message from ${notif.senderName}`,
+            body: notif.text || "Sent an attachment",
+            icon: notif.avatar || "/icon.png",
+            conversationId: notif.conversationId,
+            url: user.role === "OWNER" ? "/owner-dashboard?tab=messages" : "/user-dashboard?tab=messages",
+            playSound: true,
+          });
+        }
+      }
+    });
+
+    return () => {
+      bgSocket.disconnect();
+    };
+  }, [mounted, user?.id, user?.role, pathname]);
 
   if (!mounted || !isAuthenticated || !user || !canAccessRoute(pathname, user?.role)) {
     return (

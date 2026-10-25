@@ -27,6 +27,8 @@ import {
   AlertTriangle,
   X,
   Loader2,
+  Bell,
+  BellRing,
 } from "lucide-react";
 import { io, Socket } from "socket.io-client";
 import { useGetMembersQuery } from "@/redux/api/familyApi";
@@ -45,6 +47,12 @@ import {
 import { useAppSelector } from "@/redux/store";
 import { getBackendUrl } from "@/lib/apiConfig";
 import { getAuthToken } from "@/lib/utils/cookieUtils";
+import {
+  showDeviceNotification,
+  requestDeviceNotificationPermission,
+  getNotificationPermission,
+  isNotificationSupported,
+} from "@/lib/notifications/deviceNotificationService";
 
 interface Message {
   id: string;
@@ -234,6 +242,26 @@ export default function MessagesTab({ role = "MEMBER", currentUserId }: Messages
   const [socketConnected, setSocketConnected] = useState(false);
   const [authExpired, setAuthExpired] = useState(false);
 
+  // Device Notifications State
+  const [notificationPermission, setNotificationPermission] = useState<NotificationPermission>("default");
+
+  useEffect(() => {
+    setNotificationPermission(getNotificationPermission());
+  }, []);
+
+  const handleToggleNotifications = async () => {
+    const perm = await requestDeviceNotificationPermission();
+    setNotificationPermission(perm);
+    if (perm === "granted") {
+      showDeviceNotification({
+        title: "Device Notifications Enabled! 🔔",
+        body: "You will now receive alerts whenever a relative sends a message.",
+        icon: "/icon.png",
+        playSound: true,
+      });
+    }
+  };
+
   // Message Editing & Deletion State
   const [editingMessageId, setEditingMessageId] = useState<string | null>(null);
   const [editingText, setEditingText] = useState<string>("");
@@ -351,7 +379,42 @@ export default function MessagesTab({ role = "MEMBER", currentUserId }: Messages
         };
       });
 
+      // Trigger device push notification & chime when message is from another user
+      // and either document is hidden (background) or user is looking at another conversation
+      if (savedMessage.senderId !== myUserIdRef.current) {
+        const isHidden = typeof document !== "undefined" && document.hidden;
+        const isOtherConv = savedMessage.conversationId !== activeConversationIdRef.current;
+        if (isHidden || isOtherConv) {
+          showDeviceNotification({
+            title: `Message from ${savedMessage.senderName}`,
+            body: savedMessage.text || "Sent an attachment",
+            icon: savedMessage.avatar || "/icon.png",
+            conversationId: savedMessage.conversationId,
+            url: role === "OWNER" ? "/owner-dashboard?tab=messages" : "/user-dashboard?tab=messages",
+            playSound: true,
+          });
+        }
+      }
+
       refetchConversationsRef.current?.();
+    });
+
+    socket.on("message_notification", (notif: any) => {
+      if (notif.senderId !== myUserIdRef.current) {
+        const isHidden = typeof document !== "undefined" && document.hidden;
+        const isOtherConv = notif.conversationId !== activeConversationIdRef.current;
+        if (isHidden || isOtherConv) {
+          showDeviceNotification({
+            title: `Message from ${notif.senderName}`,
+            body: notif.text || "Sent an attachment",
+            icon: notif.avatar || "/icon.png",
+            conversationId: notif.conversationId,
+            url: role === "OWNER" ? "/owner-dashboard?tab=messages" : "/user-dashboard?tab=messages",
+            playSound: true,
+          });
+        }
+        refetchConversationsRef.current?.();
+      }
     });
 
     socket.on("user_typing", (data: any) => {
@@ -660,9 +723,39 @@ export default function MessagesTab({ role = "MEMBER", currentUserId }: Messages
               </div>
             </div>
 
-            <span className="px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-purple-950 text-purple-300 border border-purple-800">
-              {myRole}
-            </span>
+            <div className="flex items-center gap-2">
+              {/* Device Push Notification Toggle Button */}
+              <button
+                type="button"
+                onClick={handleToggleNotifications}
+                title={
+                  notificationPermission === "granted"
+                    ? "Device Notifications Active: You will receive real-time alerts on this device"
+                    : "Click to enable device push notifications for new family messages"
+                }
+                className={`px-2.5 py-1 rounded-xl text-[10px] font-bold transition-all flex items-center gap-1.5 cursor-pointer border ${
+                  notificationPermission === "granted"
+                    ? "bg-emerald-950/70 text-emerald-300 border-emerald-800/80 shadow-xs hover:bg-emerald-900/60"
+                    : "bg-slate-900 text-slate-300 border-slate-700/80 hover:bg-purple-900/40 hover:border-purple-600 hover:text-white"
+                }`}
+              >
+                {notificationPermission === "granted" ? (
+                  <>
+                    <BellRing className="h-3 w-3 text-emerald-400 shrink-0" />
+                    <span className="hidden sm:inline">Alerts Active</span>
+                  </>
+                ) : (
+                  <>
+                    <Bell className="h-3 w-3 text-amber-400 shrink-0" />
+                    <span className="hidden sm:inline">Enable Alerts</span>
+                  </>
+                )}
+              </button>
+
+              <span className="px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-purple-950 text-purple-300 border border-purple-800">
+                {myRole}
+              </span>
+            </div>
           </div>
 
           {/* Search Bar */}
