@@ -46,40 +46,6 @@ export default function MemberCreationHeatmap({ members = [] }: MemberCreationHe
       }
     });
 
-    // Also include simulated historical pattern for realistic display if database has few records
-    // but ALWAYS give priority to actual members created
-    const today = new Date();
-    const mockDates = [
-      { daysAgo: 1, count: 2, names: ["Amina Rahman", "Zayd Rahman"] },
-      { daysAgo: 3, count: 4, names: ["Farhan Khan", "Bilal Khan", "Sara Khan", "Aliya Khan"] },
-      { daysAgo: 7, count: 1, names: ["Yusuf Rahman"] },
-      { daysAgo: 12, count: 3, names: ["Nadia Ahmed", "Ibrahim Ahmed", "Layla Ahmed"] },
-      { daysAgo: 18, count: 2, names: ["Kareem Rahman", "Salma Rahman"] },
-      { daysAgo: 25, count: 5, names: ["Hamza Malik", "Maryam Malik", "Rashid Malik", "Hana Malik", "Noor Malik"] },
-      { daysAgo: 38, count: 2, names: ["Tariq Rahman", "Fatima Rahman"] },
-      { daysAgo: 50, count: 3, names: ["Zainab Ali", "Mustafa Ali", "Hassan Ali"] },
-      { daysAgo: 65, count: 1, names: ["Sami Rahman"] },
-      { daysAgo: 82, count: 4, names: ["Omar Farooq", "Aisha Farooq", "Khalid Farooq", "Maya Farooq"] },
-      { daysAgo: 110, count: 2, names: ["Bilal Rahman", "Hafsa Rahman"] },
-      { daysAgo: 145, count: 3, names: ["Rehan Choudhury", "Tasnim Choudhury", "Adil Choudhury"] },
-      { daysAgo: 180, count: 6, names: ["Sanctuary Founder Lineage (6 Patriarchs)"] },
-      { daysAgo: 220, count: 2, names: ["Nasreen Akhtar", "Kabir Akhtar"] },
-      { daysAgo: 275, count: 3, names: ["Asif Mahmud", "Rina Mahmud", "Tanvir Mahmud"] },
-      { daysAgo: 310, count: 1, names: ["Habib Rahman"] },
-      { daysAgo: 340, count: 4, names: ["Ancestor Branch Roots (4 Members)"] },
-    ];
-
-    mockDates.forEach((mock) => {
-      const d = new Date(today);
-      d.setDate(d.getDate() - mock.daysAgo);
-      const dStr = d.toISOString().split("T")[0];
-      if (!counts[dStr]) {
-        counts[dStr] = mock.count;
-        names[dStr] = mock.names;
-        total += mock.count;
-      }
-    });
-
     return { creationsByDate: counts, memberNamesByDate: names, totalCreations: total };
   }, [members]);
 

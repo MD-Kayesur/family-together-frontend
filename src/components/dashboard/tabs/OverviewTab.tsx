@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useMemo } from "react";
 import Link from "next/link";
 import {
   Users,
@@ -60,24 +60,118 @@ export default function OverviewTab() {
   const [timeRange, setTimeRange] = useState<"6M" | "1Y" | "ALL">("6M");
 
   const pendingRequests = invitations.filter((inv) => inv.status === "PENDING");
-  const familyName = user?.fullName ? user?.fullName?.split(" ")?.slice(-1)[0] || "Rahman" : "Rahman";
+  const familyName = sanctuaryData?.family?.name
+    ? sanctuaryData.family.name.replace(/^(The\s+)/i, "").replace(/(\s+Sanctuary|\s+Family)$/i, "")
+    : user?.fullName
+      ? user.fullName.split(" ").slice(-1)[0]
+      : "Family";
 
-  const totalMembersCount = members.length || 7;
-  const maleCount = members.filter((m) => m.gender === "MALE").length || 4;
-  const femaleCount = members.filter((m) => m.gender === "FEMALE").length || 3;
-  const malePct = Math.round((maleCount / totalMembersCount) * 100);
-  const femalePct = 100 - malePct;
+  const totalMembersCount = members.length;
+  const maleCount = members.filter((m) => m.gender === "MALE").length;
+  const femaleCount = members.filter((m) => m.gender === "FEMALE").length;
+  const malePct = totalMembersCount > 0 ? Math.round((maleCount / totalMembersCount) * 100) : 0;
+  const femalePct = totalMembersCount > 0 ? Math.round((femaleCount / totalMembersCount) * 100) : 0;
 
-  const monthlyGrowth = [
-    { month: "Feb", count: 2, height: "30%" },
-    { month: "Mar", count: 3, height: "45%" },
-    { month: "Apr", count: 2, height: "30%" },
-    { month: "May", count: 4, height: "60%" },
-    { month: "Jun", count: 4, height: "60%" },
-    { month: "Jul", count: 5, height: "75%" },
-    { month: "Aug", count: 6, height: "90%" },
-    { month: "Sep", count: totalMembersCount, height: "100%", isCurrent: true },
-  ];
+  // Real calculation of current month additions from database
+  const currentMonthAdditions = useMemo(() => {
+    const now = new Date();
+    return members.filter((m) => {
+      if (!m.createdAt) return false;
+      const created = new Date(m.createdAt);
+      return created.getFullYear() === now.getFullYear() && created.getMonth() === now.getMonth();
+    }).length;
+  }, [members]);
+
+  // Dynamic monthly member additions from live database
+  const monthlyGrowth = useMemo(() => {
+    const monthNames = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+    const now = new Date();
+    const numMonths = timeRange === "1Y" ? 12 : timeRange === "ALL" ? 12 : 6;
+    const result: Array<{ month: string; year: number; count: number; height: string; isCurrent?: boolean }> = [];
+
+    for (let i = numMonths - 1; i >= 0; i--) {
+      const d = new Date(now.getFullYear(), now.getMonth() - i, 1);
+      const mIdx = d.getMonth();
+      const yr = d.getFullYear();
+      const isCurrent = i === 0;
+
+      const count = members.filter((m) => {
+        if (!m.createdAt) return false;
+        const created = new Date(m.createdAt);
+        return created.getFullYear() === yr && created.getMonth() === mIdx;
+      }).length;
+
+      result.push({
+        month: monthNames[mIdx],
+        year: yr,
+        count,
+        height: "0%",
+        isCurrent,
+      });
+    }
+
+    const maxCount = Math.max(...result.map((r) => r.count), 1);
+    return result.map((r) => ({
+      ...r,
+      height: r.count > 0 ? `${Math.max(15, Math.round((r.count / maxCount) * 100))}%` : "6px",
+    }));
+  }, [members, timeRange]);
+
+  // Dynamic generational breakdown calculated from live members
+  const generationStats = useMemo(() => {
+    if (members.length === 0) {
+      return {
+        activeGenerationsCount: 0,
+        gen1Count: 0,
+        gen1Pct: 0,
+        gen2Count: 0,
+        gen2Pct: 0,
+        gen3Count: 0,
+        gen3Pct: 0,
+      };
+    }
+
+    let g1 = 0; // Elders / Grandparents / Born before 1970
+    let g2 = 0; // Parents / Middle-aged / Born 1970 - 2000
+    let g3 = 0; // Children / Youth / Born 2000+
+
+    members.forEach((m: any) => {
+      let year = 0;
+      if (m.dateOfBirth) {
+        try {
+          year = new Date(m.dateOfBirth).getFullYear();
+        } catch {}
+      }
+
+      if (year > 0) {
+        if (year < 1970) g1++;
+        else if (year <= 2000) g2++;
+        else g3++;
+      } else {
+        const role = `${m.roleInFamily || ""} ${m.bio || ""}`.toLowerCase();
+        if (role.includes("grand") || role.includes("elder") || role.includes("patriarch") || role.includes("matriarch")) {
+          g1++;
+        } else if (role.includes("child") || role.includes("son") || role.includes("daughter") || role.includes("baby") || role.includes("cousin")) {
+          g3++;
+        } else {
+          g2++;
+        }
+      }
+    });
+
+    const total = members.length;
+    const activeGens = (g1 > 0 ? 1 : 0) + (g2 > 0 ? 1 : 0) + (g3 > 0 ? 1 : 0);
+
+    return {
+      activeGenerationsCount: activeGens || (total > 0 ? 1 : 0),
+      gen1Count: g1,
+      gen1Pct: total > 0 ? Math.round((g1 / total) * 100) : 0,
+      gen2Count: g2,
+      gen2Pct: total > 0 ? Math.round((g2 / total) * 100) : 0,
+      gen3Count: g3,
+      gen3Pct: total > 0 ? Math.round((g3 / total) * 100) : 0,
+    };
+  }, [members]);
 
   const handleApprove = async (id: string) => {
     try {
@@ -163,7 +257,9 @@ export default function OverviewTab() {
             <span className="text-3xl font-extrabold text-white">
               {sanctuaryData?.stats?.totalMembers ?? totalMembersCount}
             </span>
-            <span className="text-xs font-medium text-emerald-400">+3 this month</span>
+            <span className="text-xs font-medium text-emerald-400">
+              {currentMonthAdditions > 0 ? `+${currentMonthAdditions} this month` : "Updated live"}
+            </span>
           </div>
         </div>
 
@@ -176,7 +272,7 @@ export default function OverviewTab() {
             </div>
           </div>
           <div className="text-3xl font-extrabold text-white">
-            {sanctuaryData?.stats?.connectedUsers ?? 1}
+            {sanctuaryData?.stats?.connectedUsers ?? 0}
           </div>
         </div>
 
@@ -189,7 +285,7 @@ export default function OverviewTab() {
             </div>
           </div>
           <div className="text-3xl font-extrabold text-white">
-            {sanctuaryData?.stats?.relationships ?? 3}
+            {sanctuaryData?.stats?.relationships ?? 0}
           </div>
         </div>
 
@@ -287,7 +383,7 @@ export default function OverviewTab() {
                     +{totalMembersCount} Relatives Documented
                   </span>
                   <span className="text-xs font-bold text-emerald-300 bg-emerald-950/60 border border-emerald-800/80 px-2 py-0.5 rounded-full">
-                    +28.4% vs last quarter
+                    {currentMonthAdditions > 0 ? `+${currentMonthAdditions} added this month` : "Live sanctuary records"}
                   </span>
                 </div>
               </div>
@@ -340,7 +436,7 @@ export default function OverviewTab() {
                 <span>Generations Distribution</span>
               </div>
               <h3 className="font-extrabold text-base text-white">
-                3 Active Generations
+                {generationStats.activeGenerationsCount} Active Generation{generationStats.activeGenerationsCount === 1 ? "" : "s"}
               </h3>
               <p className="text-xs text-slate-400 font-medium">Spanning patriarchs to grandchildren</p>
             </div>
@@ -350,37 +446,45 @@ export default function OverviewTab() {
               <div className="space-y-1.5">
                 <div className="flex justify-between text-xs font-bold">
                   <span className="text-slate-300">1st Gen (Patriarchs & Matriarchs)</span>
-                  <span className="text-indigo-400">2 members (20%)</span>
+                  <span className="text-indigo-400">
+                    {generationStats.gen1Count} member{generationStats.gen1Count === 1 ? "" : "s"} ({generationStats.gen1Pct}%)
+                  </span>
                 </div>
                 <div className="w-full bg-slate-950 rounded-full h-2.5 overflow-hidden border border-slate-800">
-                  <div className="bg-indigo-600 h-2.5 rounded-full" style={{ width: "20%" }} />
+                  <div className="bg-indigo-600 h-2.5 rounded-full transition-all duration-500" style={{ width: `${generationStats.gen1Pct}%` }} />
                 </div>
               </div>
 
               <div className="space-y-1.5">
                 <div className="flex justify-between text-xs font-bold">
                   <span className="text-slate-300">2nd Gen (Parents, Aunts & Uncles)</span>
-                  <span className="text-emerald-400">4 members (50%)</span>
+                  <span className="text-emerald-400">
+                    {generationStats.gen2Count} member{generationStats.gen2Count === 1 ? "" : "s"} ({generationStats.gen2Pct}%)
+                  </span>
                 </div>
                 <div className="w-full bg-slate-950 rounded-full h-2.5 overflow-hidden border border-slate-800">
-                  <div className="bg-emerald-500 h-2.5 rounded-full" style={{ width: "50%" }} />
+                  <div className="bg-emerald-500 h-2.5 rounded-full transition-all duration-500" style={{ width: `${generationStats.gen2Pct}%` }} />
                 </div>
               </div>
 
               <div className="space-y-1.5">
                 <div className="flex justify-between text-xs font-bold">
                   <span className="text-slate-300">3rd Gen (Children & Cousins)</span>
-                  <span className="text-purple-400">3 members (30%)</span>
+                  <span className="text-purple-400">
+                    {generationStats.gen3Count} member{generationStats.gen3Count === 1 ? "" : "s"} ({generationStats.gen3Pct}%)
+                  </span>
                 </div>
                 <div className="w-full bg-slate-950 rounded-full h-2.5 overflow-hidden border border-slate-800">
-                  <div className="bg-purple-500 h-2.5 rounded-full" style={{ width: "30%" }} />
+                  <div className="bg-purple-500 h-2.5 rounded-full transition-all duration-500" style={{ width: `${generationStats.gen3Pct}%` }} />
                 </div>
               </div>
             </div>
 
             <div className="pt-3 border-t border-slate-800 flex items-center justify-between text-[11px] font-semibold text-slate-400">
               <span>Deepest Lineage Depth</span>
-              <span className="font-extrabold text-white">3 Generations</span>
+              <span className="font-extrabold text-white">
+                {generationStats.activeGenerationsCount} Generation{generationStats.activeGenerationsCount === 1 ? "" : "s"}
+              </span>
             </div>
           </div>
         </div>
