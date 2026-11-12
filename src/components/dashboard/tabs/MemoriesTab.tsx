@@ -46,13 +46,6 @@ export default function MemoriesTab({ role }: MemoriesTabProps = {}) {
 
   const paginationMeta = (memories as any)?.meta;
 
-  const sampleImages = [
-    "https://images.unsplash.com/photo-1511895426328-dc8714191300?auto=format&fit=crop&w=800&q=80",
-    "https://images.unsplash.com/photo-1542037104857-ffbb0b9152fb?auto=format&fit=crop&w=800&q=80",
-    "https://images.unsplash.com/photo-1517457373958-b7bdd4587205?auto=format&fit=crop&w=800&q=80",
-    "https://images.unsplash.com/photo-1529156069898-49953e39b3ac?auto=format&fit=crop&w=800&q=80",
-  ];
-
   const handleOpenLightbox = (index: number) => {
     setLightboxIndex(index);
     setIsLightboxOpen(true);
@@ -175,9 +168,9 @@ export default function MemoriesTab({ role }: MemoriesTabProps = {}) {
                   ? mem.mediaUrls[0]
                   : mem.mediaUrl && mem.mediaUrl.startsWith("http")
                   ? mem.mediaUrl
-                  : sampleImages[idx % sampleImages.length];
+                  : null;
 
-              const totalMediaCount = mem.mediaUrls?.length || mem.photoCount || 1;
+              const totalMediaCount = mem.mediaUrls?.length || mem.photoCount || (displayImg ? 1 : 0);
 
               return (
                 <div
@@ -187,11 +180,18 @@ export default function MemoriesTab({ role }: MemoriesTabProps = {}) {
                 >
                   <div className="space-y-2">
                     <div className="h-48 rounded-2xl overflow-hidden relative border border-slate-800">
-                      <img
-                        src={displayImg}
-                        alt={mem.title}
-                        className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
-                      />
+                      {displayImg ? (
+                        <img
+                          src={displayImg}
+                          alt={mem.title}
+                          className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                        />
+                      ) : (
+                        <div className="w-full h-full bg-gradient-to-br from-purple-950/40 via-slate-900 to-slate-950 flex flex-col items-center justify-center p-4 text-center">
+                          <ImageIcon className="h-10 w-10 text-purple-400/40 mb-2" />
+                          <span className="text-xs font-semibold text-slate-400">Story Journal</span>
+                        </div>
+                      )}
                       <div className="absolute inset-0 bg-gradient-to-t from-slate-950/90 via-slate-950/20 to-transparent opacity-80" />
                       
                       {/* Top Left Media Count Badge */}

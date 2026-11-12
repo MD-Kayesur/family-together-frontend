@@ -204,7 +204,7 @@ export default function DocumentsTab() {
           attachments.push({
             name: item.name,
             size: item.sizeStr,
-            fileUrl: `https://www.w3.org/WAI/ER/tests/xhtml/testfiles/resources/pdf/dummy.pdf`,
+            fileUrl: "",
           });
         }
       }
@@ -287,15 +287,20 @@ export default function DocumentsTab() {
   const handleDownloadDoc = (doc: DocumentRecord) => {
     const filesToDownload =
       Array.isArray(doc.files) && doc.files.length > 0
-        ? doc.files
-        : [
+        ? doc.files.filter((f: any) => f.fileUrl)
+        : doc.fileUrl
+        ? [
             {
               name: doc.name,
-              fileUrl:
-                doc.fileUrl ||
-                "https://www.w3.org/WAI/ER/tests/xhtml/testfiles/resources/pdf/dummy.pdf",
+              fileUrl: doc.fileUrl,
             },
-          ];
+          ]
+        : [];
+
+    if (filesToDownload.length === 0) {
+      alert("No downloadable file attachment found for this document.");
+      return;
+    }
 
     filesToDownload.forEach((f, idx) => {
       setTimeout(() => {

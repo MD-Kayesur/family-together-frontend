@@ -139,13 +139,13 @@ export default function LandingFamilyTreeCanvas({
   });
 
   // Tree Data State
-  const [members, setMembers] = useState<DemoMember[]>(DEFAULT_MEMBERS);
-  const [connections, setConnections] = useState<DemoConnection[]>(DEFAULT_CONNECTIONS);
+  const [members, setMembers] = useState<DemoMember[]>(useDatabaseData ? [] : DEFAULT_MEMBERS);
+  const [connections, setConnections] = useState<DemoConnection[]>(useDatabaseData ? [] : DEFAULT_CONNECTIONS);
   const [nodePositions, setNodePositions] = useState<Record<string, { x: number; y: number }>>({});
 
   // Interaction Mode & Selection (only used in interactive mode)
   const [activeTool, setActiveTool] = useState<"MOVE" | "LINK">("MOVE");
-  const [selectedMemberId, setSelectedMemberId] = useState<string | null>("you");
+  const [selectedMemberId, setSelectedMemberId] = useState<string | null>(useDatabaseData ? null : "you");
   const [zoomLevel, setZoomLevel] = useState<number>(defaultZoom);
   const [isFullScreen, setIsFullScreen] = useState<boolean>(false);
 
@@ -273,7 +273,11 @@ export default function LandingFamilyTreeCanvas({
   // 1b. Load & Synchronize Real PostgreSQL Database Data when useDatabaseData is true
   useEffect(() => {
     if (!useDatabaseData) return;
-    if (!dbMembers || dbMembers.length === 0) return;
+    if (!dbMembers || dbMembers.length === 0) {
+      setMembers([]);
+      setConnections([]);
+      return;
+    }
 
     const mappedMembers: DemoMember[] = dbMembers.map((m: any) => {
       const isYou = user?.id && (m.userId === user?.id || (user?.email && m.email === user?.email));
