@@ -700,6 +700,23 @@ export const familyApi = baseApi.injectEndpoints({
       }),
       invalidatesTags: ["Announcements"],
     }),
+    exportGedcom: builder.query<{ success: boolean; filename: string; gedcom: string; totalPersons: number; totalRelationships: number }, { familyId?: string; userId?: string } | void>({
+      query: (params) => {
+        const sp = new URLSearchParams();
+        if (params?.familyId) sp.set("familyId", params.familyId);
+        if (params?.userId) sp.set("userId", params.userId);
+        const qs = sp.toString();
+        return qs ? `/family/gedcom/export-json?${qs}` : "/family/gedcom/export-json";
+      },
+    }),
+    importGedcom: builder.mutation<{ success: boolean; message: string; importedPersons: number; importedRelationships: number }, { gedcom: string; familyId?: string; userId?: string }>({
+      query: (body) => ({
+        url: "/family/gedcom/import",
+        method: "POST",
+        body,
+      }),
+      invalidatesTags: ["Members", "Relationships", "Sanctuary"],
+    }),
   }),
 });
 
@@ -743,5 +760,7 @@ export const {
   useGetBroadcastHistoryQuery,
   useGetBroadcastRecipientsPreviewQuery,
   useDeleteBroadcastHistoryItemMutation,
+  useLazyExportGedcomQuery,
+  useImportGedcomMutation,
 } = familyApi;
 
