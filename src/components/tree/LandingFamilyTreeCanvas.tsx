@@ -16,6 +16,9 @@ import {
   Maximize2,
   Minimize2,
   Info,
+  Download,
+  Image as ImageIcon,
+  Loader2,
 } from "lucide-react";
 import { useAppSelector } from "@/redux/store";
 import {
@@ -439,6 +442,204 @@ export default function LandingFamilyTreeCanvas({
   const handleResetZoom = () => {
     setZoomLevel(defaultZoom);
     setPanOffset({ x: 0, y: 0 });
+  };
+
+  const [isExportingPoster, setIsExportingPoster] = useState(false);
+
+  const handleExportPoster = async () => {
+    try {
+      setIsExportingPoster(true);
+
+      const exportCanvas = document.createElement("canvas");
+      const exportWidth = 2400;
+      const exportHeight = 1600;
+      exportCanvas.width = exportWidth;
+      exportCanvas.height = exportHeight;
+      const ctx = exportCanvas.getContext("2d");
+      if (!ctx) return;
+
+      // 1. Dark Gradient Background
+      const bgGrad = ctx.createLinearGradient(0, 0, exportWidth, exportHeight);
+      bgGrad.addColorStop(0, "#090d16");
+      bgGrad.addColorStop(0.5, "#0f172a");
+      bgGrad.addColorStop(1, "#090d16");
+      ctx.fillStyle = bgGrad;
+      ctx.fillRect(0, 0, exportWidth, exportHeight);
+
+      // 2. Subtle Grid Lines
+      ctx.strokeStyle = "rgba(99, 102, 241, 0.07)";
+      ctx.lineWidth = 1;
+      const gridSize = 40;
+      for (let x = 0; x < exportWidth; x += gridSize) {
+        ctx.beginPath();
+        ctx.moveTo(x, 0);
+        ctx.lineTo(x, exportHeight);
+        ctx.stroke();
+      }
+      for (let y = 0; y < exportHeight; y += gridSize) {
+        ctx.beginPath();
+        ctx.moveTo(0, y);
+        ctx.lineTo(exportWidth, y);
+        ctx.stroke();
+      }
+
+      // 3. Header Banner
+      ctx.fillStyle = "#ffffff";
+      ctx.font = "bold 52px system-ui, -apple-system, sans-serif";
+      ctx.textAlign = "center";
+      ctx.fillText("FamilyRoots Sanctuary Lineage Archive", exportWidth / 2, 110);
+
+      ctx.fillStyle = "#818cf8";
+      ctx.font = "bold 24px system-ui, -apple-system, sans-serif";
+      ctx.fillText(
+        `Family Tree Heritage • Generated on ${new Date().toLocaleDateString("en-US", { year: "numeric", month: "long", day: "numeric" })} • High-Resolution Poster`,
+        exportWidth / 2,
+        155
+      );
+
+      // Calculate bounding box of nodes to scale & center on export canvas
+      const nodeIds = Object.keys(nodePositions);
+      let minX = Infinity, maxX = -Infinity, minY = Infinity, maxY = -Infinity;
+      for (const id of nodeIds) {
+        const p = nodePositions[id];
+        if (p) {
+          minX = Math.min(minX, p.x);
+          maxX = Math.max(maxX, p.x + 150);
+          minY = Math.min(minY, p.y);
+          maxY = Math.max(maxY, p.y + 70);
+        }
+      }
+
+      if (!isFinite(minX)) {
+        minX = 0; maxX = 1000; minY = 0; maxY = 800;
+      }
+
+      const contentWidth = Math.max(maxX - minX, 400);
+      const contentHeight = Math.max(maxY - minY, 300);
+      const targetAreaWidth = exportWidth - 300;
+      const targetAreaHeight = exportHeight - 380;
+      const scale = Math.min(targetAreaWidth / contentWidth, targetAreaHeight / contentHeight, 2.0);
+
+      const targetCenterX = exportWidth / 2;
+      const targetCenterY = 220 + targetAreaHeight / 2;
+      const contentCenterX = (minX + maxX) / 2;
+      const contentCenterY = (minY + maxY) / 2;
+
+      const toExportCoords = (x: number, y: number) => ({
+        x: targetCenterX + (x - contentCenterX) * scale,
+        y: targetCenterY + (y - contentCenterY) * scale,
+      });
+
+      // 4. Draw Relationship Curves
+      const nW = 150 * scale;
+      const nH = 70 * scale;
+
+      for (const conn of connections) {
+        const pA = nodePositions[conn.fromId];
+        const pB = nodePositions[conn.toId];
+        if (pA && pB) {
+          const from = toExportCoords(pA.x, pA.y);
+          const to = toExportCoords(pB.x, pB.y);
+          const x1 = from.x + nW / 2;
+          const y1 = from.y + nH / 2;
+          const x2 = to.x + nW / 2;
+          const y2 = to.y + nH / 2;
+          const midY = (y1 + y2) / 2;
+
+          ctx.beginPath();
+          ctx.moveTo(x1, y1);
+          ctx.bezierCurveTo(x1, midY, x2, midY, x2, y2);
+          ctx.strokeStyle = "rgba(99, 102, 241, 0.75)";
+          ctx.lineWidth = 4 * scale;
+          ctx.stroke();
+
+          // Draw Connection Label Pill
+          const midX = (x1 + x2) / 2;
+          ctx.fillStyle = "rgba(15, 23, 42, 0.9)";
+          ctx.strokeStyle = "rgba(99, 102, 241, 0.8)";
+          ctx.lineWidth = 2;
+          const pillW = 160 * scale;
+          const pillH = 30 * scale;
+          ctx.beginPath();
+          if (typeof ctx.roundRect === "function") {
+            ctx.roundRect(midX - pillW / 2, midY - pillH / 2, pillW, pillH, 8 * scale);
+          } else {
+            ctx.rect(midX - pillW / 2, midY - pillH / 2, pillW, pillH);
+          }
+          ctx.fill();
+          ctx.stroke();
+
+          ctx.fillStyle = "#c7d2fe";
+          ctx.font = `bold ${Math.round(14 * scale)}px system-ui, sans-serif`;
+          ctx.textAlign = "center";
+          ctx.fillText(conn.type, midX, midY + 5 * scale);
+        }
+      }
+
+      // 5. Draw Relative Nodes
+      for (const m of members) {
+        const p = nodePositions[m.id];
+        if (!p) continue;
+        const screen = toExportCoords(p.x, p.y);
+
+        // Node card background
+        ctx.fillStyle = m.isYou ? "rgba(49, 46, 129, 0.95)" : "rgba(30, 41, 59, 0.95)";
+        ctx.strokeStyle = m.isYou ? "#818cf8" : "rgba(71, 85, 105, 0.8)";
+        ctx.lineWidth = 2.5 * scale;
+        ctx.beginPath();
+        if (typeof ctx.roundRect === "function") {
+          ctx.roundRect(screen.x, screen.y, nW, nH, 14 * scale);
+        } else {
+          ctx.rect(screen.x, screen.y, nW, nH);
+        }
+        ctx.fill();
+        ctx.stroke();
+
+        // Node avatar / emoji badge
+        const avatarSize = 42 * scale;
+        const avatarX = screen.x + 14 * scale;
+        const avatarY = screen.y + (nH - avatarSize) / 2;
+        ctx.fillStyle = m.gender === "FEMALE" ? "#be185d" : "#1d4ed8";
+        ctx.beginPath();
+        ctx.arc(avatarX + avatarSize / 2, avatarY + avatarSize / 2, avatarSize / 2, 0, Math.PI * 2);
+        ctx.fill();
+
+        ctx.fillStyle = "#ffffff";
+        ctx.font = `${Math.round(20 * scale)}px system-ui, sans-serif`;
+        ctx.textAlign = "center";
+        ctx.fillText(m.emoji || (m.gender === "FEMALE" ? "👩" : "👨"), avatarX + avatarSize / 2, avatarY + avatarSize / 2 + 7 * scale);
+
+        // Name & Role text
+        const textX = avatarX + avatarSize + 12 * scale;
+        ctx.textAlign = "left";
+        ctx.fillStyle = "#ffffff";
+        ctx.font = `bold ${Math.round(16 * scale)}px system-ui, sans-serif`;
+        ctx.fillText(m.name, textX, screen.y + nH / 2 - 4 * scale);
+
+        ctx.fillStyle = "#94a3b8";
+        ctx.font = `bold ${Math.round(12 * scale)}px system-ui, sans-serif`;
+        ctx.fillText(m.role, textX, screen.y + nH / 2 + 16 * scale);
+      }
+
+      // 6. Footer Signature
+      ctx.fillStyle = "rgba(148, 163, 184, 0.6)";
+      ctx.font = "italic 18px system-ui, -apple-system, sans-serif";
+      ctx.textAlign = "center";
+      ctx.fillText("Protected & Preserved by FamilyRoots • Designed for Sanctuary Multi-Generational Heritage", exportWidth / 2, exportHeight - 40);
+
+      // Trigger file download
+      const dataUrl = exportCanvas.toDataURL("image/png");
+      const a = document.createElement("a");
+      a.href = dataUrl;
+      a.download = `FamilyRoots_Tree_Poster_${Date.now()}.png`;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+    } catch (err) {
+      console.error("Poster export error:", err);
+    } finally {
+      setIsExportingPoster(false);
+    }
   };
 
   // Convert Screen Mouse Coordinates to Canvas Coordinates
@@ -995,6 +1196,22 @@ export default function LandingFamilyTreeCanvas({
               title="Reset to default tree centered in the middle"
             >
               <RotateCcw className="h-3.5 w-3.5" />
+            </button>
+
+            {/* Export High-Res Poster Button */}
+            <button
+              type="button"
+              disabled={isExportingPoster}
+              onClick={handleExportPoster}
+              className="px-2 py-1 rounded-lg border border-indigo-200 dark:border-indigo-800 bg-indigo-50 dark:bg-indigo-950/60 hover:bg-indigo-100 dark:hover:bg-indigo-900 text-indigo-700 dark:text-indigo-300 font-bold text-xs flex items-center gap-1 cursor-pointer transition-colors disabled:opacity-50"
+              title="Export high-resolution canvas poster (PNG)"
+            >
+              {isExportingPoster ? (
+                <Loader2 className="h-3.5 w-3.5 animate-spin" />
+              ) : (
+                <ImageIcon className="h-3.5 w-3.5" />
+              )}
+              <span className="hidden sm:inline">Export Poster</span>
             </button>
 
             {/* Fullscreen Toggle */}
