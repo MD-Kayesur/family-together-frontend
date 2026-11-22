@@ -54,6 +54,7 @@ import {
   isNotificationSupported,
   syncExistingPushSubscription,
 } from "@/lib/notifications/deviceNotificationService";
+import CallModal from "@/components/modals/CallModal";
 
 interface Message {
   id: string;
@@ -268,6 +269,16 @@ export default function MessagesTab({ role = "MEMBER", currentUserId }: Messages
   const [editingText, setEditingText] = useState<string>("");
   const [isDeleteConvModalOpen, setIsDeleteConvModalOpen] = useState(false);
 
+  // WebRTC Audio/Video Call States
+  const [isCallModalOpen, setIsCallModalOpen] = useState(false);
+  const [callIsVideo, setCallIsVideo] = useState(true);
+  const [isIncomingCall, setIsIncomingCall] = useState(false);
+  const [incomingOffer, setIncomingOffer] = useState<any>(null);
+  const [callTargetUser, setCallTargetUser] = useState<{ id: string; fullName: string; avatarUrl?: string }>({
+    id: "",
+    fullName: "",
+  });
+
   const socketRef = useRef<Socket | null>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
@@ -453,6 +464,19 @@ export default function MessagesTab({ role = "MEMBER", currentUserId }: Messages
       if (data.lastActiveAt) {
         setLastActiveMap((prev) => ({ ...prev, [data.userId]: data.lastActiveAt! }));
       }
+    });
+
+    // WebRTC Incoming Call Listener
+    socket.on("webrtc_incoming_call", (data: any) => {
+      setCallTargetUser({
+        id: data.callerId,
+        fullName: data.callerName || "Family Member",
+        avatarUrl: data.callerAvatar,
+      });
+      setCallIsVideo(data.isVideo ?? true);
+      setIncomingOffer(data.offer);
+      setIsIncomingCall(true);
+      setIsCallModalOpen(true);
     });
 
     return () => {
@@ -1141,6 +1165,19 @@ export default function MessagesTab({ role = "MEMBER", currentUserId }: Messages
               <div className="flex items-center gap-1 text-slate-400">
                 <button
                   type="button"
+                  onClick={() => {
+                    const targetId = activeConversation?.recipientId;
+                    if (!targetId) return;
+                    setCallTargetUser({
+                      id: targetId,
+                      fullName: activeConversation.name || "Family Member",
+                      avatarUrl: activeConversation.avatar,
+                    });
+                    setCallIsVideo(false);
+                    setIsIncomingCall(false);
+                    setIncomingOffer(null);
+                    setIsCallModalOpen(true);
+                  }}
                   className="p-2 rounded-xl hover:text-white hover:bg-slate-800 transition-all cursor-pointer"
                   title="Voice Call"
                 >
@@ -1148,6 +1185,19 @@ export default function MessagesTab({ role = "MEMBER", currentUserId }: Messages
                 </button>
                 <button
                   type="button"
+                  onClick={() => {
+                    const targetId = activeConversation?.recipientId;
+                    if (!targetId) return;
+                    setCallTargetUser({
+                      id: targetId,
+                      fullName: activeConversation.name || "Family Member",
+                      avatarUrl: activeConversation.avatar,
+                    });
+                    setCallIsVideo(true);
+                    setIsIncomingCall(false);
+                    setIncomingOffer(null);
+                    setIsCallModalOpen(true);
+                  }}
                   className="p-2 rounded-xl hover:text-white hover:bg-slate-800 transition-all cursor-pointer"
                   title="Video Gathering"
                 >
@@ -1455,6 +1505,29 @@ export default function MessagesTab({ role = "MEMBER", currentUserId }: Messages
             </div>
           </div>
         </div>
+      )}
+
+      {/* WebRTC Video & Audio Call Modal */}
+      {isCallModalOpen && (
+        <CallModal
+          isOpen={isCallModalOpen}
+          onClose={() => {
+            setIsCallModalOpen(false);
+            setIsIncomingCall(false);
+            setIncomingOffer(null);
+          }}
+          socket={socketRef.current}
+          targetUser={callTargetUser}
+          conversationId={activeConversationId}
+          myUser={{
+            id: myUserId,
+            fullName: user?.fullName || user?.email || "Me",
+            avatarUrl: user?.avatarUrl,
+          }}
+          isVideoCall={callIsVideo}
+          isIncoming={isIncomingCall}
+          incomingOffer={incomingOffer}
+        />
       )}
     </div>
   );
