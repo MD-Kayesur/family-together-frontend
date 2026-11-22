@@ -52,6 +52,7 @@ import {
   requestDeviceNotificationPermission,
   getNotificationPermission,
   isNotificationSupported,
+  syncExistingPushSubscription,
 } from "@/lib/notifications/deviceNotificationService";
 
 interface Message {
@@ -308,6 +309,7 @@ export default function MessagesTab({ role = "MEMBER", currentUserId }: Messages
 
   // Connect Socket.io client (Persistent, fast-negotiating singleton connection)
   useEffect(() => {
+    syncExistingPushSubscription();
     const backendUrl = getBackendUrl();
     const token = getAuthToken();
 

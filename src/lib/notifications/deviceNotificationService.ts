@@ -160,6 +160,21 @@ async function registerPushSubscriptionWithBackend(registration: ServiceWorkerRe
   }
 }
 
+/**
+ * Automatically re-syncs existing push subscription on user login/app mount
+ */
+export async function syncExistingPushSubscription(): Promise<void> {
+  if (typeof window === "undefined" || !("serviceWorker" in navigator)) return;
+  try {
+    const registration = await navigator.serviceWorker.ready;
+    if (registration) {
+      await registerPushSubscriptionWithBackend(registration);
+    }
+  } catch (err: any) {
+    console.debug("[Device Notifications] Push sync check:", err?.message);
+  }
+}
+
 interface ShowNotificationOptions {
   title: string;
   body: string;
