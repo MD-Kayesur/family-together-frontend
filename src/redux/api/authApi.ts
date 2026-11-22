@@ -239,6 +239,68 @@ export const authApi = baseApi.injectEndpoints({
       },
       invalidatesTags: ["User", "Auth", "Sessions"],
     }),
+
+    generate2FA: builder.mutation<
+      { success: boolean; secret: string; otpauthUrl: string; email: string; isAlreadyEnabled: boolean },
+      void
+    >({
+      query: () => ({
+        url: "/auth/2fa/generate",
+        method: "GET",
+      }),
+    }),
+
+    enable2FA: builder.mutation<
+      { success: boolean; message: string; isTwoFactorEnabled: boolean },
+      { code: string }
+    >({
+      query: (body) => ({
+        url: "/auth/2fa/enable",
+        method: "POST",
+        body,
+      }),
+      invalidatesTags: ["User"],
+    }),
+
+    disable2FA: builder.mutation<
+      { success: boolean; message: string; isTwoFactorEnabled: boolean },
+      { code: string }
+    >({
+      query: (body) => ({
+        url: "/auth/2fa/disable",
+        method: "POST",
+        body,
+      }),
+      invalidatesTags: ["User"],
+    }),
+
+    authenticate2FA: builder.mutation<
+      AuthResponse,
+      { userId: string; code: string }
+    >({
+      query: (body) => ({
+        url: "/auth/2fa/authenticate",
+        method: "POST",
+        body,
+      }),
+      async onQueryStarted(_, { dispatch, queryFulfilled }) {
+        try {
+          const { data } = await queryFulfilled;
+          if (data?.user) {
+            dispatch(
+              setCredentials({
+                user: data.user,
+                accessToken: data.accessToken,
+                refreshToken: data.refreshToken,
+              })
+            );
+          }
+        } catch {
+          // Handled in component
+        }
+      },
+      invalidatesTags: ["User", "Auth"],
+    }),
   }),
 });
 
@@ -257,4 +319,8 @@ export const {
   useRefreshTokenMutation,
   useGetSessionsQuery,
   useLogoutAllMutation,
+  useGenerate2FAMutation,
+  useEnable2FAMutation,
+  useDisable2FAMutation,
+  useAuthenticate2FAMutation,
 } = authApi;

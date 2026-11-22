@@ -7,6 +7,9 @@ import {
   useChangePasswordMutation,
   useGetSessionsQuery,
   useLogoutAllMutation,
+  useGenerate2FAMutation,
+  useEnable2FAMutation,
+  useDisable2FAMutation,
 } from "@/redux/api/authApi";
 import {
   useGetSanctuaryQuery,
@@ -88,7 +91,8 @@ export default function SettingsTab() {
   const [verificationError, setVerificationError] = useState("");
   const [isCopiedBackup, setIsCopiedBackup] = useState(false);
 
-  const secretKey = "JBSWY3DPEHPK3PXP";
+  const [secretKey, setSecretKey] = useState("JBSWY3DPEHPK3PXP");
+  const [otpauthUrl, setOtpauthUrl] = useState("");
   const backupCodes = [
     "A8X9-4F11",
     "B2Y3-9P22",
@@ -103,6 +107,9 @@ export default function SettingsTab() {
   // API Mutations
   const [updateProfile, { isLoading: isUpdatingProfile }] = useUpdateProfileMutation();
   const [changePassword, { isLoading: isChangingPassword }] = useChangePasswordMutation();
+  const [generate2FA, { isLoading: isGenerating2FA }] = useGenerate2FAMutation();
+  const [enable2FA, { isLoading: isEnabling2FA }] = useEnable2FAMutation();
+  const [disable2FA, { isLoading: isDisabling2FA }] = useDisable2FAMutation();
 
   // Active Sessions & Multi-Device Logout (Backend APIs)
   const {
@@ -248,18 +255,40 @@ export default function SettingsTab() {
     }
   };
 
-  // Handle 2FA Verification Code
-  const handleVerify2FACode = (e: React.FormEvent) => {
+  // Open 2FA Setup Modal and fetch live secret from backend
+  const handleOpen2FAModal = async () => {
+    setVerificationError("");
+    setVerificationCode("");
+    setSetupStep(1);
+    setIsSetup2FAModalOpen(true);
+    try {
+      const res = await generate2FA().unwrap();
+      if (res?.secret) {
+        setSecretKey(res.secret);
+        setOtpauthUrl(res.otpauthUrl || "");
+      }
+    } catch {
+      // Keep existing secret
+    }
+  };
+
+  // Handle 2FA Verification Code with Backend Validation
+  const handleVerify2FACode = async (e: React.FormEvent) => {
     e.preventDefault();
     setVerificationError("");
 
-    if (verificationCode.trim().length < 6) {
+    if (verificationCode.trim().length !== 6) {
       setVerificationError("Please enter a valid 6-digit authentication code.");
       return;
     }
 
-    setIs2FAEnabled(true);
-    setSetupStep(2);
+    try {
+      await enable2FA({ code: verificationCode.trim() }).unwrap();
+      setIs2FAEnabled(true);
+      setSetupStep(2);
+    } catch (err: any) {
+      setVerificationError(err?.data?.message || "Invalid 6-digit authentication code. Please check your authenticator app.");
+    }
   };
 
   const handleCopyBackupCodes = () => {
@@ -873,12 +902,7 @@ export default function SettingsTab() {
                 {!is2FAEnabled ? (
                   <button
                     type="button"
-                    onClick={() => {
-                      setSetupStep(1);
-                      setVerificationCode("");
-                      setVerificationError("");
-                      setIsSetup2FAModalOpen(true);
-                    }}
+                    onClick={handleOpen2FAModal}
                     className="px-5 py-2.5 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white font-bold text-xs shadow-md shadow-indigo-600/25 flex items-center gap-2 cursor-pointer transition-all hover:scale-[1.02]"
                   >
                     <Shield className="h-4 w-4" />

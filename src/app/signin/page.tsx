@@ -3,10 +3,14 @@
 import React, { useState, useEffect, Suspense } from "react";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
-import { useSignInMutation, useForgotPasswordMutation } from "@/redux/api/authApi";
+import {
+  useSignInMutation,
+  useForgotPasswordMutation,
+  useAuthenticate2FAMutation,
+} from "@/redux/api/authApi";
 import { useAppSelector } from "@/redux/store";
 import { getDashboardRouteByRole } from "@/lib/utils/roleUtils";
-import { Eye, EyeOff } from "lucide-react";
+import { Eye, EyeOff, Loader2 } from "lucide-react";
 import ThemeToggle from "@/components/theme/ThemeToggle";
 import ForgotPasswordModal from "@/components/modals/ForgotPasswordModal";
 import SocialAuthButtons from "@/components/auth/SocialAuthButtons";
@@ -24,9 +28,13 @@ function SignInContent() {
   const [successMsg, setSuccessMsg] = useState("");
   const [needsVerification, setNeedsVerification] = useState(false);
   const [isForgotModalOpen, setIsForgotModalOpen] = useState(false);
+  const [requires2FA, setRequires2FA] = useState(false);
+  const [twoFAUserId, setTwoFAUserId] = useState("");
+  const [twoFACode, setTwoFACode] = useState("");
 
   const [signIn, { isLoading: isSigningIn }] = useSignInMutation();
   const [forgotPassword] = useForgotPasswordMutation();
+  const [authenticate2FA, { isLoading: isAuthenticating2FA }] = useAuthenticate2FAMutation();
   const [mounted, setMounted] = useState(false);
 
   useEffect(() => {
@@ -82,7 +90,13 @@ function SignInContent() {
     }
 
     try {
-      const response = await signIn({ email, password }).unwrap();
+      const response: any = await signIn({ email, password }).unwrap();
+      if (response?.requires2FA) {
+        setRequires2FA(true);
+        setTwoFAUserId(response.userId || "");
+        setSuccessMsg("Two-factor authentication required. Please enter your 6-digit code.");
+        return;
+      }
       const target = getDashboardRouteByRole(response.user?.role);
       setSuccessMsg(`Welcome back, ${response.user?.fullName || "User"}! Redirecting...`);
       setTimeout(() => {
@@ -104,6 +118,31 @@ function SignInContent() {
           : err.data.message
         : "Failed to sign in. Please check your credentials.";
       setErrorMsg(message);
+    }
+  };
+
+  const handle2FASubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setErrorMsg("");
+    setSuccessMsg("");
+
+    if (!twoFACode || twoFACode.trim().length !== 6) {
+      setErrorMsg("Please enter a valid 6-digit authentication code.");
+      return;
+    }
+
+    try {
+      const response = await authenticate2FA({
+        userId: twoFAUserId,
+        code: twoFACode.trim(),
+      }).unwrap();
+      const target = getDashboardRouteByRole(response.user?.role);
+      setSuccessMsg(`Authentication successful! Welcome back, ${response.user?.fullName || "User"}!`);
+      setTimeout(() => {
+        router.replace(target);
+      }, 800);
+    } catch (err: any) {
+      setErrorMsg(err?.data?.message || "Invalid two-factor authentication code.");
     }
   };
 
@@ -202,7 +241,49 @@ function SignInContent() {
           )}
 
           {/* Form */}
-          <form onSubmit={handleSubmit} className="space-y-stack-md">
+          {requires2FA ? (
+            <form onSubmit={handle2FASubmit} className="space-y-4">
+              <div className="p-5 rounded-2xl bg-surface-container-high border border-outline-variant/40 space-y-3 text-center">
+                <span className="material-symbols-outlined text-[36px] text-primary">security</span>
+                <h4 className="font-bold text-on-surface text-base">Enter Authentication Code</h4>
+                <p className="text-xs text-on-surface-variant max-w-xs mx-auto">
+                  Open your Google Authenticator or Authy app and enter the 6-digit verification code.
+                </p>
+                <input
+                  type="text"
+                  maxLength={6}
+                  value={twoFACode}
+                  onChange={(e) => setTwoFACode(e.target.value.replace(/\D/g, ""))}
+                  placeholder="000000"
+                  className="w-48 mx-auto text-center font-mono text-2xl tracking-widest py-2 rounded-xl bg-surface-container-lowest border border-outline-variant focus:ring-2 focus:ring-primary outline-none text-on-surface"
+                  autoFocus
+                  required
+                />
+              </div>
+
+              <div className="flex items-center gap-3">
+                <button
+                  type="button"
+                  onClick={() => {
+                    setRequires2FA(false);
+                    setTwoFACode("");
+                    setErrorMsg("");
+                  }}
+                  className="w-1/2 py-2.5 rounded-xl border border-outline-variant text-on-surface text-xs font-bold hover:bg-surface-container-high transition-colors cursor-pointer"
+                >
+                  Back
+                </button>
+                <button
+                  type="submit"
+                  disabled={isAuthenticating2FA}
+                  className="w-1/2 py-2.5 rounded-xl bg-primary text-on-primary text-xs font-bold shadow-md hover:opacity-90 transition-opacity flex items-center justify-center gap-2 cursor-pointer"
+                >
+                  {isAuthenticating2FA ? <Loader2 className="h-4 w-4 animate-spin" /> : "Verify & Sign In"}
+                </button>
+              </div>
+            </form>
+          ) : (
+            <form onSubmit={handleSubmit} className="space-y-stack-md">
             <div className="space-y-4">
               {/* Email Field */}
               <div>
@@ -294,6 +375,7 @@ function SignInContent() {
               )}
             </button>
           </form>
+          )}
 
           {/* Social OAuth Providers */}
           <div className="mt-4">
