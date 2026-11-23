@@ -53,6 +53,7 @@ export function normalizeDashboardTab(rawTab?: string | null): string {
   if (cleaned === "broadcasts" || cleaned === "announcements" || cleaned === "broadcast" || cleaned === "emailhistory") return "broadcasts";
   if (cleaned === "settings" || cleaned === "setting") return "settings";
   if (cleaned === "billing" || cleaned === "subscription" || cleaned === "plans" || cleaned === "upgrade") return "billing";
+  if (cleaned === "membersubscriptions" || cleaned === "memberbilling" || cleaned === "memberquotas") return "member-subscriptions";
   if (cleaned === "profile" || cleaned === "myprofile") return "profile";
   return cleaned;
 }

@@ -22,6 +22,7 @@ import InvitationsTab from "@/components/dashboard/tabs/InvitationsTab";
 import SettingsTab from "@/components/dashboard/tabs/SettingsTab";
 import MessagesTab from "@/components/dashboard/tabs/MessagesTab";
 import BillingTab from "@/components/dashboard/tabs/BillingTab";
+import MemberSubscriptionsTab from "@/components/dashboard/tabs/MemberSubscriptionsTab";
 import BroadcastsTab from "@/components/dashboard/tabs/BroadcastsTab";
 import CreateMemberForm from "@/components/dashboard/members/CreateMemberForm";
 
@@ -64,6 +65,9 @@ function OwnerDashboardContent() {
       return <SettingsTab />;
     case "billing":
       return <BillingTab />;
+    case "member-subscriptions":
+    case "member-quotas":
+      return <MemberSubscriptionsTab />;
     case "broadcasts":
     case "announcements":
       return <BroadcastsTab />;

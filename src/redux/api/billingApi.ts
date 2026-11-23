@@ -60,6 +60,31 @@ export interface CheckoutResponse {
   message?: string;
 }
 
+export interface MemberSubscriptionRecord {
+  memberId: string;
+  personId: string;
+  userId?: string | null;
+  name: string;
+  email?: string | null;
+  avatarUrl?: string | null;
+  familyRole: string;
+  tier: "FREE" | "PRO" | "UNLIMITED";
+  storageLimitMb: number;
+  storageUsedMb: number;
+  canAddMembers: boolean;
+  canUseAllFeatures: boolean;
+  grantedAt?: string;
+  note?: string;
+}
+
+export interface MemberSubscriptionsResponse {
+  familyId: string;
+  totalMembers: number;
+  proMembersCount: number;
+  unlimitedMembersCount: number;
+  members: MemberSubscriptionRecord[];
+}
+
 export const billingApi = baseApi.injectEndpoints({
   endpoints: (builder) => ({
     getPlans: builder.query<PricingPlan[], void>({
@@ -99,6 +124,35 @@ export const billingApi = baseApi.injectEndpoints({
         body: body || {},
       }),
     }),
+    getMemberSubscriptions: builder.query<
+      MemberSubscriptionsResponse,
+      { familyId?: string } | void
+    >({
+      query: (params) => {
+        if (params?.familyId) {
+          return `/billing/member-subscriptions?familyId=${encodeURIComponent(params.familyId)}`;
+        }
+        return "/billing/member-subscriptions";
+      },
+      providesTags: ["MemberSubscriptions" as any],
+    }),
+    updateMemberSubscription: builder.mutation<
+      { success: boolean; message: string; member: MemberSubscriptionRecord },
+      {
+        memberId: string;
+        tier: "FREE" | "PRO" | "UNLIMITED";
+        storageLimitMb?: number;
+        canAddMembers?: boolean;
+        note?: string;
+      }
+    >({
+      query: ({ memberId, ...body }) => ({
+        url: `/billing/member-subscriptions/${memberId}`,
+        method: "PATCH",
+        body,
+      }),
+      invalidatesTags: ["MemberSubscriptions" as any, "Members" as any, "Subscription" as any],
+    }),
   }),
 });
 
@@ -107,4 +161,6 @@ export const {
   useGetSubscriptionQuery,
   useCreateCheckoutSessionMutation,
   useCreatePortalSessionMutation,
+  useGetMemberSubscriptionsQuery,
+  useUpdateMemberSubscriptionMutation,
 } = billingApi;

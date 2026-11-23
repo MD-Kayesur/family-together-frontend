@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState } from "react";
+import Link from "next/link";
 import {
   CreditCard,
   CheckCircle2,
@@ -113,7 +114,15 @@ export default function BillingTab() {
           </p>
         </div>
 
-        <div className="flex items-center gap-3">
+        <div className="flex flex-wrap items-center gap-3">
+          <Link
+            href="/owner-dashboard?tab=member-subscriptions"
+            className="px-4 py-2.5 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-bold flex items-center gap-2 transition-all cursor-pointer shadow-md shadow-indigo-600/30 hover:scale-105"
+          >
+            <Sparkles className="h-4 w-4 text-amber-300" />
+            <span>Delegate Member Pro Quotas (5,000 MB)</span>
+          </Link>
+
           <button
             type="button"
             onClick={() => refetchSubscription()}
